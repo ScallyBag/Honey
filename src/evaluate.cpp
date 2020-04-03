@@ -697,9 +697,8 @@ namespace {
         } // r > RANK_3
 
         // Scale down bonus for candidate passers which need more than one
-        // pawn push to become passed, or have a pawn in front of them.
-        if (   !pos.pawn_passed(Us, s + Up)
-            || (pos.pieces(PAWN) & (s + Up)))
+        // pawn push to become passed.
+        if (!pos.pawn_passed(Us, s + Up))
             bonus = bonus / 2;
 #ifndef Stockfish
         score += bonus - PassedFile * map_to_queenside(file_of(s));
