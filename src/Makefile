@@ -47,7 +47,7 @@ DATE2=$(shell date +"%m%d")
 ### WEAKFISH = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
+RELEASEVER = no
 RELVERSION = XI-r1
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -99,11 +99,11 @@ ifeq ($(HONEY),yes)
 			endif
 		endif
 		ifeq ($(TEST),yes)
-		  ifeq ($(COMP),mingw)
-			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
-			else
-			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-      endif
+		        ifeq ($(COMP),mingw)
+			        EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+		        else
+			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+                        endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
@@ -136,20 +136,20 @@ ifneq ($(HONEY),yes)
 	NAME=$(PRE)fish$(SUF)
 endif
 	ifeq ($(RELEASEVER),no)
-    ifeq ($(TEST),no)
+                ifeq ($(TEST),no)
 		  ifeq ($(COMP),mingw)
 			  EXE = $(NAME)-dev-$(DATE).exe
 		  else
 			  EXE = $(NAME)-dev-$(DATE)
-		   endif
-		endif
+    		  endif
+                endif
 		ifeq ($(TEST),yes)
 		  ifeq ($(COMP),mingw)
 			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
-			else
+                  else
 			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-      endif
-		endif
+                  endif
+                endif
 	endif
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
@@ -808,28 +808,35 @@ icc-profile-make:
 	@mkdir -p profdir
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
-	all
+	al
 
-### Based on commits through 04/01/2020:
+
+
+
+
+
+
+
+### Based on commits through 04/05/2020:
 ### ======================================================
-### Black-Diamond-XI-r1.exe.bench:Nodes searched  : 9950748
-### Black-Diamond-XI-r1.exe.bench:Nodes/second    : 2586625
-### Bluefish-FD-XI-r1.exe.bench:Nodes searched  : 11350189
-### Bluefish-FD-XI-r1.exe.bench:Nodes/second    : 2703069
-### Bluefish-XI-r1.exe.bench:Nodes searched  : 5195370
-### Bluefish-XI-r1.exe.bench:Nodes/second    : 2551753
-### Blue-Honey-FD-XI-r1.exe.bench:Nodes searched  : 11383628
-### Blue-Honey-FD-XI-r1.exe.bench:Nodes/second    : 2667204
-### Blue-Honey-XI-r1.exe.bench:Nodes searched  : 4529848
-### Blue-Honey-XI-r1.exe.bench:Nodes/second    : 2497159
-### Honey-FD-XI-r1.exe.bench:Nodes searched  : 10156988
-### Honey-FD-XI-r1.exe.bench:Nodes/second    : 2676413
-### Honey-XI-r1.exe.bench:Nodes searched  : 4654422
-### Honey-XI-r1.exe.bench:Nodes/second    : 2594438
-### Stockfish-FD-XI-r1.exe.bench:Nodes searched  : 12113979
-### Stockfish-FD-XI-r1.exe.bench:Nodes/second    : 2581286
-### Stockfish-XI-r1.exe.bench:Nodes searched  : 5138771
-### Stockfish-XI-r1.exe.bench:Nodes/second    : 2621821
-### Weakfish-XI-r1.exe.bench:Nodes searched  : 8624980
-### Weakfish-XI-r1.exe.bench:Nodes/second    : 3633100
+### Black-Diamond-dev-040520.exe.bench:Nodes searched  : 9950748
+### Black-Diamond-dev-040520.exe.bench:Nodes/second    : 2464886
+### Bluefish-dev-040520.exe.bench:Nodes searched  : 5195370
+### Bluefish-dev-040520.exe.bench:Nodes/second    : 2502586
+### Bluefish-FD-dev-040520.exe.bench:Nodes searched  : 11350189
+### Bluefish-FD-dev-040520.exe.bench:Nodes/second    : 2589002
+### Blue-Honey-dev-040520.exe.bench:Nodes searched  : 4529848
+### Blue-Honey-dev-040520.exe.bench:Nodes/second    : 2408212
+### Blue-Honey-FD-dev-040520.exe.bench:Nodes searched  : 11383628
+### Blue-Honey-FD-dev-040520.exe.bench:Nodes/second    : 2479013
+### Honey-dev-040520.exe.bench:Nodes searched  : 4654422
+### Honey-dev-040520.exe.bench:Nodes/second    : 2491660
+### Honey-FD-dev-040520.exe.bench:Nodes searched  : 10156988
+### Honey-FD-dev-040520.exe.bench:Nodes/second    : 2531652
+### Stockfish-dev-040520.exe.bench:Nodes searched  : 5138771
+### Stockfish-dev-040520.exe.bench:Nodes/second    : 2490921
+### Stockfish-FD-dev-040520.exe.bench:Nodes searched  : 12113979
+### Stockfish-FD-dev-040520.exe.bench:Nodes/second    : 2490538
+### Weakfish-dev-040520.exe.bench:Nodes searched  : 8624980
+### Weakfish-dev-040520.exe.bench:Nodes/second    : 3378370
 ### ======================================================

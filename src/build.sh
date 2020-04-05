@@ -1,4 +1,4 @@
-#!/bin/bash
+mke#!/bin/bash
 ###  modify as appropriate for you system
 ### all builds have added features, 4 opening books can be used, adaptive ply,
 ### play by FIDE Elo ratings or CCRL Elo ratings
@@ -56,8 +56,8 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '760,882d' ../src/Makefile
-sed '759r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '820,942d' ../src/Makefile
+sed '819r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 
 
