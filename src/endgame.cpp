@@ -104,8 +104,9 @@ namespace Endgames {
     add<KQKP>("KQKP");
     add<KQKR>("KQKR");
     add<KNNKP>("KNNKP");
-
+#if defined (Sullivan) || (Blau) || (Noir)
     add<KNPK>("KNPK");
+#endif
     add<KRPKR>("KRPKR");
     add<KRPKB>("KRPKB");
     add<KBPKB>("KBPKB");
@@ -761,7 +762,7 @@ ScaleFactor Endgame<KBPKN>::operator()(const Position& pos) const {
   return SCALE_FACTOR_NONE;
 }
 
-
+#if defined (Sullivan) || (Blau) || (Noir)
 /// KNP vs K. There is a single rule: if the pawn is a rook pawn on the 7th rank
 /// and the defending king prevents the pawn from advancing, the position is drawn.
 template<>
@@ -779,7 +780,7 @@ ScaleFactor Endgame<KNPK>::operator()(const Position& pos) const {
 
   return SCALE_FACTOR_NONE;
 }
-
+#endif
 
 /// KP vs KP. This is done by removing the weakest side's pawn and probing the
 /// KP vs K bitbase: If the weakest side has a draw without the pawn, it probably

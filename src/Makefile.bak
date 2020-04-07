@@ -808,7 +808,7 @@ icc-profile-make:
 	@mkdir -p profdir
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
-	al
+	all
 
 
 
@@ -817,26 +817,26 @@ icc-profile-make:
 
 
 
-	### Based on commits through 04/05/2020:
+### Based on commits through 04/05/2020:
 ### ======================================================
 ### Black-Diamond-dev-040520.exe.bench:Nodes searched  : 9950748
-### Black-Diamond-dev-040520.exe.bench:Nodes/second    : 2427603
+### Black-Diamond-dev-040520.exe.bench:Nodes/second    : 2464886
 ### Bluefish-dev-040520.exe.bench:Nodes searched  : 5195370
-### Bluefish-dev-040520.exe.bench:Nodes/second    : 2468109
+### Bluefish-dev-040520.exe.bench:Nodes/second    : 2502586
 ### Bluefish-FD-dev-040520.exe.bench:Nodes searched  : 11350189
-### Bluefish-FD-dev-040520.exe.bench:Nodes/second    : 2484173
+### Bluefish-FD-dev-040520.exe.bench:Nodes/second    : 2589002
 ### Blue-Honey-dev-040520.exe.bench:Nodes searched  : 4529848
-### Blue-Honey-dev-040520.exe.bench:Nodes/second    : 2374134
+### Blue-Honey-dev-040520.exe.bench:Nodes/second    : 2408212
 ### Blue-Honey-FD-dev-040520.exe.bench:Nodes searched  : 11383628
-### Blue-Honey-FD-dev-040520.exe.bench:Nodes/second    : 2504648
+### Blue-Honey-FD-dev-040520.exe.bench:Nodes/second    : 2479013
 ### Honey-dev-040520.exe.bench:Nodes searched  : 4654422
-### Honey-dev-040520.exe.bench:Nodes/second    : 2466572
+### Honey-dev-040520.exe.bench:Nodes/second    : 2491660
 ### Honey-FD-dev-040520.exe.bench:Nodes searched  : 10156988
-### Honey-FD-dev-040520.exe.bench:Nodes/second    : 2512861
+### Honey-FD-dev-040520.exe.bench:Nodes/second    : 2531652
 ### Stockfish-dev-040520.exe.bench:Nodes searched  : 5138771
-### Stockfish-dev-040520.exe.bench:Nodes/second    : 2307485
+### Stockfish-dev-040520.exe.bench:Nodes/second    : 2490921
 ### Stockfish-FD-dev-040520.exe.bench:Nodes searched  : 12113979
-### Stockfish-FD-dev-040520.exe.bench:Nodes/second    : 2441350
+### Stockfish-FD-dev-040520.exe.bench:Nodes/second    : 2490538
 ### Weakfish-dev-040520.exe.bench:Nodes searched  : 8624980
-### Weakfish-dev-040520.exe.bench:Nodes/second    : 3341720
+### Weakfish-dev-040520.exe.bench:Nodes/second    : 3378370
 ### ======================================================
