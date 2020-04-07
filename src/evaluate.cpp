@@ -696,11 +696,12 @@ namespace {
             }
         } // r > RANK_3
 
+#ifndef Stockfish
         // Scale down bonus for candidate passers which need more than one
         // pawn push to become passed.
         if (!pos.pawn_passed(Us, s + Up))
             bonus = bonus / 2;
-#ifndef Stockfish
+
         score += bonus - PassedFile * map_to_queenside(file_of(s));
 #else
         score += bonus - PassedFile * edge_distance(file_of(s));
