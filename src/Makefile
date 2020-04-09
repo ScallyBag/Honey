@@ -810,7 +810,10 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
+.depend:
+	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
 
+-include .depend
 
 
 
