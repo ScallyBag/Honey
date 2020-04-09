@@ -1142,7 +1142,42 @@ bool Position::has_repeated() const {
     }
     return false;
 }
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+bool Position::king_danger() const {
 
+    Square ksq = square<KING>(sideToMove);
+    Bitboard kingRing, kingAttackers, legalKing;
+
+    kingRing = kingAttackers = legalKing = 0;
+
+    kingRing = attacks_from(KING, ksq);
+
+    while (kingRing)
+    {
+      Square to = pop_lsb(&kingRing);
+      Bitboard enemyAttackers = pieces(~sideToMove) & attackers_to(to);
+      if (!enemyAttackers)
+      {
+          if ((pieces(sideToMove) & to) == 0)
+              legalKing |= to;
+      }
+
+      while (enemyAttackers)
+      {
+        Square currentEnemy = pop_lsb(&enemyAttackers);
+        if ((currentEnemy & ~kingRing) || (more_than_one(attackers_to(to) & pieces(~sideToMove))))
+            kingAttackers |= currentEnemy;
+      }
+    }
+    int kingAttackersCount = popcount(kingAttackers);
+    int legalKingCount = popcount(legalKing);
+
+    if (kingAttackersCount > 1 && legalKingCount < 2)
+        return true;
+
+    return false;
+}
+#endif
 
 /// Position::has_game_cycle() tests if the position has a move which draws by repetition,
 /// or an earlier position has a move that directly reaches the current position.

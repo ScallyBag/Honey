@@ -495,6 +495,7 @@ namespace {
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+                 -  32 * bool (pos.king_danger())
                  -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
 #endif
                  -   6 * mg_value(score) / 8
