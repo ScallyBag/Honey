@@ -150,6 +150,11 @@ void set(istringstream& is) {
       sync_cout << "Confirmation: "<< "Large Pages" << " set to " << value << sync_endl;
     }
 #endif
+    else if (name == "mo")
+    {
+    Options["Min Output"] = {value};
+    sync_cout << "Confirmation: "<< "Min Output" << " set to " << value << sync_endl;
+    }
     else if (name == "mv")
     {
       Options["MultiPV"] = {value};
@@ -157,8 +162,13 @@ void set(istringstream& is) {
     }
     else if (name == "pro")
     {
-      Options["Profound"] = {value};
-      sync_cout << "Confirmation: "<< "Profound" << " set to " << value << sync_endl;
+      Options["Pro Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Pro Analysis" << " set to " << value << sync_endl;
+    }
+    else if (name == "so")
+    {
+    Options["Score Output"] = {value};
+    sync_cout << "Confirmation: "<< "Score Output" << " set to " << value << sync_endl;
     }
     else if (name == "z")
     {

@@ -398,12 +398,12 @@ skipLevels:
          }
 #endif
       if (!tactical)    {
-          profound = (Options["Profound"]);
+          profound = (Options["Pro Analysis"]);
           if ((profound) && (!tactical))
               profound_v = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
-          if (Options["Deep_Pro_Analysis"])
+          else if (Options["Deep_Pro_Analysis"])
               profound_v = 14400000;
-          std::cerr << "\ndpa value: " << profound_v << "\n" << sync_endl; //debug
+          std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
         }
       for (Thread* th : Threads)
       {
