@@ -124,7 +124,10 @@ void init(OptionsMap& o) {
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
 	  o["7 Man Probing"]            << Option(false);
 	  o["FastPlay"]                 << Option(false);
-	  o["Minimal_Output"]           << Option(false);
+	  o["Min Output"]                   << Option(false);
+    // Score percentage evalaution output, similair to Lc0 output
+    o["Score Output"]                << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
+                                           ,"Centipawn");
 #endif
 #ifdef LargePages
     o["Large Pages"]              << Option(true, on_large_pages);
@@ -157,13 +160,9 @@ void init(OptionsMap& o) {
 #elif (defined Add_Features)
     o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
 #endif
-    // Score percentage evalaution output, similair to Lc0 output is now the default
-    o["Output"]                   << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
-											                     ,"Centipawn");
+
 #ifdef Add_Features
     o["Tactical"]                 << Option(0, 0, 8);
-#endif
-#ifdef Add_Features
     o["Slow Mover"]               << Option(100, 10, 1000);
 #else
     o["Slow Mover"]               << Option(84, 10, 1000);
@@ -194,9 +193,9 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
 #ifndef Add_Features
-	//Stockfish method of play by Elo, a very nice implementation.
-	o["UCI_LimitStrength"]        << Option(false);
-	o["UCI_Elo"]                  << Option(1350, 1350, 2850);
+	   //Stockfish method of play by Elo, a very nice implementation.
+	   o["UCI_LimitStrength"]        << Option(false);
+	   o["UCI_Elo"]                  << Option(1350, 1350, 2850);
 #endif
 }
 

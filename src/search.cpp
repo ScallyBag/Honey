@@ -274,7 +274,7 @@ void MainThread::search() {
     defensive           = Options["Defensive"];
     fide                = Options["FIDE_Ratings"];
     jekyll              = Options["Variety"];
-    minOutput           = Options["Minimal_Output"];
+    minOutput           = Options["Min Output"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["Sleep"];
@@ -403,7 +403,7 @@ skipLevels:
               profound_v = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
           if (Options["Deep_Pro_Analysis"])
               profound_v = 14400000;
-          std::cerr << "\nprofound value: " << profound_v << "\n" << sync_endl; //debug
+          std::cerr << "\ndpa value: " << profound_v << "\n" << sync_endl; //debug
         }
       for (Thread* th : Threads)
       {
@@ -744,13 +744,13 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                 // When failing high/low give some update (without cluttering
                 // the UI) before a re-search.
                 if (
-#ifdef Add_Features
+/*#ifdef Add_Features
                     !minOutput &&
-#endif
+#endif*/
                     mainThread
                     && multiPV == 1
                     && (bestValue <= alpha || bestValue >= beta)
-                    && Time.elapsed() > 3000)
+                    && Time.elapsed() > 5000)
                     sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
               // In case of failing low/high increase aspiration window and
@@ -1304,7 +1304,7 @@ namespace {
         && !gameCycle
         &&  abs(eval) < 2 * VALUE_KNOWN_WIN)
     {
-       // Step 7. Razoring (~2 Elo)
+/*       // Step 7. Razoring (~2 Elo)
        if (   depth < 2
            &&  ss->ply > 2 * thisThread->rootDepth / 3
            && eval <= alpha - RazorMargin)
@@ -1314,7 +1314,7 @@ namespace {
            if (q <= alpha)
                return q;
        }
-
+*/
        // Step 8. Futility pruning: child node (~30 Elo)
        if (    depth < 7
            &&  !thisThread->nmpGuard
@@ -1337,18 +1337,19 @@ namespace {
       if (gameCycle)
           ss->staticEval = eval = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 #endif
+#if defined Stockfish || (Weakfish)
     // Step 7. Razoring (~0 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
 #ifdef Weakfish
         && !weakFishSearch
 #endif
         &&  depth == 1
-#ifdef Fortress
+/*#ifdef Fortress
         &&  !gameCycle
-#endif
+#endif*/
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-
+#endif
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
@@ -1552,7 +1553,7 @@ moves_loop: // When in check, search starts from here
       ss->moveCount = ++moveCount;
 
 #ifdef Add_Features
-      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 5000)
 #else
       if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
 #endif

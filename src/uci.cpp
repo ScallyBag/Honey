@@ -179,6 +179,7 @@ void set(istringstream& is) {
       sync_cout << "  'i' is the shortcut for 'infinite'"  << sync_endl;
       sync_cout << "  'lp' is the shortcut for 'Large Pages'"  << sync_endl;
       sync_cout << "  'm' is the shortcut for 'Mate'"  << sync_endl;
+      sync_cout << "  'mo' is the shortcut for 'Min Output'\n" << sync_endl;
       sync_cout << "  'mv' is the shortcut for 'MultiPV'"  << sync_endl;
       sync_cout << "  'mt' is the shortcut for 'Movetime'->\n " << sync_endl;
       sync_cout << " Note: 'mt' is in seconds, while" << sync_endl;
@@ -188,6 +189,7 @@ void set(istringstream& is) {
       sync_cout << "  'sm' is the shortcut for 'SearchMoves'\n" << sync_endl;
       sync_cout << " Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
       sync_cout << "        last option on the command line!\n"  << sync_endl;
+      sync_cout << "  'so' is the shortcut for 'Score Output'\n" << sync_endl;
       sync_cout << "  't' is the shortcut for 'Threads'"  << sync_endl;
       sync_cout << "  'q' is the shortcut for 'quit'"  << sync_endl;
       sync_cout << "  'z' is the shortcut for 'SyzygyPath'"  << sync_endl;
@@ -433,14 +435,14 @@ string UCI::value(Value v) {
 #ifdef Add_Features
   // Score percentage evalaution output, similair to Lc0 output.
   // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
-  if ( Options["Output"] == "ScorPct-GUI")
+  if ( Options["Score Output"] == "ScorPct-GUI")
        ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
 	  / (pow(sf,(sf * vs /1000)) + 1);
 
   // Centipawn scoring, value times centipawn factor
   // SF values the raw score of pawns much higher than 100, see types.h
   // The higher raw score allows for greater precison in many evaluation functions
-  else if (Options["Output"] == "Centipawn")
+  else if (Options["Score Output"] == "Centipawn")
 	  ss << fixed << setprecision(0) << "cp " << (vs * vf);
 
   else ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
