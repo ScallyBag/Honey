@@ -249,7 +249,7 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
 #ifndef Stockfish
       File d = map_to_queenside(f);
 #else
-      File d = edge_distance(f);
+      File d = File(edge_distance(f));
 #endif
       bonus += make_score(ShelterStrength[d][ourRank], 0);
 

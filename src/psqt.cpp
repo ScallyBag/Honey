@@ -148,7 +148,7 @@ void init() {
 #ifndef Stockfish
           File f = map_to_queenside(file_of(s));
 #else
-          File f = edge_distance(file_of(s));
+          File f = File(edge_distance(file_of(s)));
 #endif
           psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
                                                       : Bonus[pc][rank_of(s)][f]);

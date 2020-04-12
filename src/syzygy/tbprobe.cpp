@@ -719,7 +719,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
 #ifndef Stockfish
         tbFile = map_to_queenside(file_of(squares[0]));
 #else
-        tbFile = edge_distance(file_of(squares[0]));
+        tbFile = File(edge_distance(file_of(squares[0])));
 #endif
     }
 

@@ -824,7 +824,7 @@ namespace {
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
             sf = 16 + 4 * pe->passed_count();
 #else
-            sf = 22 ;
+            sf = 22;
 #endif
         else
             sf = std::min(sf, 36 + (pos.opposite_bishops() ? 2 : 7) * pos.count<PAWN>(strongSide));

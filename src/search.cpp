@@ -482,7 +482,8 @@ skipLevels:
               bestThread = th;
       }
   }
-      previousScore = bestThread->rootMoves[0].score;
+
+  bestPreviousScore = bestThread->rootMoves[0].score;
 
   // Send again PV info if we have a new best thread
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
@@ -494,31 +495,31 @@ skipLevels:
 	  jekyll = false;
 #endif
       size_t i = 0;
-      if ( previousScore >= -PawnValueMg && previousScore <= PawnValueMg * 4 )
+      if ( bestPreviousScore >= -PawnValueMg && bestPreviousScore <= PawnValueMg * 4 )
 	  {
-          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore)
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore)
           ++i;
-          previousScore = bestThread->rootMoves[i].score;
+          bestPreviousScore = bestThread->rootMoves[i].score;
           sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
-      else if ( previousScore > PawnValueMg * 4  && previousScore <  PawnValueMg * 7 )
+      else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 7 )
       {
-          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < previousScore
-                && previousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < bestPreviousScore
+                && bestPreviousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
 		  {
               ++i;
               break;
           }
-          previousScore = bestThread->rootMoves[i].score;
-          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > previousScore
-                && previousScore + PawnValueMg/2  < bestThread->rootMoves[i+1].score)
+          bestPreviousScore = bestThread->rootMoves[i].score;
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore
+                && bestPreviousScore + PawnValueMg/2  < bestThread->rootMoves[i+1].score)
           {
               ++i;
-              previousScore = bestThread->rootMoves[i-1].score;
+              bestPreviousScore = bestThread->rootMoves[i-1].score;
 
           }
-          previousScore = bestThread->rootMoves[i].score;
+          bestPreviousScore = bestThread->rootMoves[i].score;
           sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
       }
@@ -579,12 +580,12 @@ void Thread::search() {
 #if defined (Stockfish) || (Weakfish)
   if (mainThread)
   {
-      if (mainThread->previousScore == VALUE_INFINITE)
+      if (mainThread->bestPreviousScore == VALUE_INFINITE)
           for (int i=0; i<4; ++i)
               mainThread->iterValue[i] = VALUE_ZERO;
       else
           for (int i=0; i<4; ++i)
-              mainThread->iterValue[i] = mainThread->previousScore;
+              mainThread->iterValue[i] = mainThread->bestPreviousScore;
   }
 #endif
   size_t multiPV = Options["MultiPV"];
@@ -693,20 +694,20 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           // Reset aspiration window starting size
           if (rootDepth >= 4)
           {
-              Value previousScore = rootMoves[pvIdx].previousScore;
+              Value prev = rootMoves[pvIdx].previousScore;
 
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
-              delta = Value(20 + abs(previousScore) / 64);
+              delta = Value(20 + abs(prev) / 64);
 #else
               delta = Value(21);
 #endif
-              alpha = std::max(previousScore - delta,-VALUE_INFINITE);
-              beta  = std::min(previousScore + delta, VALUE_INFINITE);
+              alpha = std::max(prev - delta,-VALUE_INFINITE);
+              beta  = std::min(prev + delta, VALUE_INFINITE);
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
-			  // Adjust contempt based on root move's previousScore (dynamic contempt)
-              dct = ctempt * (ct + (111 - ct / 2) * previousScore / (abs(previousScore) + 176)) + defensive;
+			  // Adjust contempt based on root move's bestPreviousScore (dynamic contempt)
+              dct = ctempt * (ct + (111 - ct / 2) * prev / (abs(prev) + 176)) + defensive;
 #else
-              dct = ctempt * (ct + (102 - ct / 2) * previousScore / (abs(previousScore) + 157)) + defensive;
+              dct = ctempt * (ct + (102 - ct / 2) * prev / (abs(prev) + 157)) + defensive;
 #endif
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                        : -make_score(dct, dct / 2));
@@ -829,10 +830,10 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           && !mainThread->stopOnPonderhit)
       {
 #if defined (Stockfish) || (Weakfish)
-          double fallingEval = (332 +  6 * (mainThread->previousScore - bestValue)
+          double fallingEval = (332 +  6 * (mainThread->bestPreviousScore - bestValue)
                                     +  6 * (mainThread->iterValue[iterIdx]  - bestValue)) / 704.0;
 #else
-          double fallingEval = (354 + 10 * (mainThread->previousScore - bestValue)) / 692.0;
+          double fallingEval = (354 + 10 * (mainThread->bestPreviousScore - bestValue)) / 692.0;
 #endif
           fallingEval = Utility::clamp(fallingEval, 0.5, 1.5);
 
@@ -954,12 +955,12 @@ namespace {
     Depth extension, newDepth;
 #ifdef Noir
     Value bestValue, value, ttValue, eval;
-    bool ttHit, ttPv, inCheck, givesCheck, improving, didLMR, priorCapture, isMate, gameCycle;
+    bool ttHit, ttPv, formerPv, inCheck, givesCheck, improving, didLMR, priorCapture, isMate, gameCycle;
 #elif defined Fortress
-    bool ttHit, ttPv, inCheck, givesCheck, improving, didLMR, priorCapture, gameCycle;
+    bool ttHit, ttPv, formerPv, inCheck, givesCheck, improving, didLMR, priorCapture, gameCycle;
     Value bestValue, value, ttValue, eval, maxValue;
 #else
-    bool ttHit, ttPv, inCheck, givesCheck, improving, didLMR, priorCapture;
+    bool ttHit, ttPv, formerPv, inCheck, givesCheck, improving, didLMR, priorCapture;
     Value bestValue, value, ttValue, eval, maxValue;
 #endif
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularLMR;
@@ -1003,6 +1004,7 @@ namespace {
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = PvNode || (ttHit && tte->is_pv());
+    formerPv = ttPv && !PvNode;
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
     thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
@@ -1098,6 +1100,7 @@ namespace {
               : ttHit    ? tte->move() : MOVE_NONE;
 
     ttPv = PvNode || (ttHit && tte->is_pv());
+    formerPv = ttPv && !PvNode;
 
     if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
         thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
@@ -1455,7 +1458,8 @@ namespace {
         &&  depth >= 5
         &&  abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
     {
-        Value raisedBeta = std::min(beta + 189 - 45 * improving, VALUE_INFINITE);
+        Value raisedBeta = beta + 189 - 45 * improving;
+        assert(raisedBeta < VALUE_INFINITE);
         MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &captureHistory);
         int probCutCount = 0;
 
@@ -1528,7 +1532,6 @@ moves_loop: // When in check, search starts from here
     value = bestValue;
     singularLMR = moveCountPruning = false;
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
-    bool formerPv = ttPv && !PvNode;
 
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
@@ -1614,11 +1617,13 @@ moves_loop: // When in check, search starts from here
           }
           else
           {
+              // Capture history based pruning when the move doesn't give check
               if (   !givesCheck
                   && lmrDepth < 1
                   && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
 
+              // See based pruning
               if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
                   continue;
           }
