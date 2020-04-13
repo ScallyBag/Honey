@@ -49,6 +49,7 @@
 namespace Search {
 
   LimitsType Limits;
+
   bool adaptive;
   bool ctempt;
   bool profound=false;
@@ -57,6 +58,8 @@ namespace Search {
   int dct;
   int defensive;
   int profound_v;
+  int profound_v1;
+  int profound_v2;
   int dpl_factor;
 }
 
@@ -400,10 +403,17 @@ skipLevels:
       if (!tactical)    {
           profound = (Options["Pro Analysis"]);
           if ((profound) && (!tactical))
-              profound_v = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
-          else if (Options["Deep_Pro_Analysis"])
-              profound_v = 14400000;
-          std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
+               profound_v1 = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
+          else profound_v1 = 0;
+          if (Options["Deep Pro Analysis"])
+              {
+                profound_v2 = 14400000;
+                std::cerr << "\nPro Analysis value1: " << profound_v << "\n" << sync_endl; //debug
+                profound_v1 = 0;
+              }
+          else profound_v2 = 0;
+          profound_v = std::max(profound_v1, profound_v2);
+          std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
         }
       for (Thread* th : Threads)
       {
@@ -486,8 +496,10 @@ skipLevels:
   bestPreviousScore = bestThread->rootMoves[0].score;
 
   // Send again PV info if we have a new best thread
+
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+
 
   if  (adaptive ) //mutually exclusive with variety
   {
@@ -657,22 +669,17 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
       // MultiPV loop. We perform a full root search for each PV line
 
-
-
-
   profound_test = false;
+  //std::cerr << "\nPro Analysis value test 2: " << profound_v << "\n" << sync_endl;//debug
   if ((profound) && (!tactical)){
-    if(Options["MultiPV"] == 1 && profound_v > 0){
-        if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() >= 8){
+    if (Options["MultiPV"] == 1 && profound_v > 0){
+        if (Threads.nodes_searched() <= (uint64_t)profound_v)
+          {
             profound_test = true;
-            multiPV = 8;}
+            multiPV = std::min(8, int(rootMoves.size()));
+          }
 
-    if(Threads.nodes_searched() <= (uint64_t)profound_v && rootMoves.size() < 8){
-
-            profound_test = true;
-            multiPV = rootMoves.size();}
-
-    if(Threads.nodes_searched() > (uint64_t)profound_v){
+         else if (Threads.nodes_searched() > (uint64_t)profound_v){
             profound_test = false;
             multiPV = Options["MultiPV"];}
           }
@@ -766,6 +773,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                   failedHighCnt = 0;
 #endif
                   if (mainThread)
+
                       mainThread->stopOnPonderhit = false;
               }
               else if (bestValue >= beta)
@@ -1307,7 +1315,7 @@ namespace {
         && !gameCycle
         &&  abs(eval) < 2 * VALUE_KNOWN_WIN)
     {
-/*       // Step 7. Razoring (~2 Elo)
+       // Step 7. Razoring (~2 Elo)
        if (   depth < 2
            &&  ss->ply > 2 * thisThread->rootDepth / 3
            && eval <= alpha - RazorMargin)
@@ -1317,7 +1325,7 @@ namespace {
            if (q <= alpha)
                return q;
        }
-*/
+
        // Step 8. Futility pruning: child node (~30 Elo)
        if (    depth < 7
            &&  !thisThread->nmpGuard
@@ -1340,16 +1348,17 @@ namespace {
       if (gameCycle)
           ss->staticEval = eval = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 #endif
-#if defined Stockfish || (Weakfish)
+#if defined Stockfish || (Weakfish) || (Fortress)
     // Step 7. Razoring (~0 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
 #ifdef Weakfish
         && !weakFishSearch
 #endif
         &&  depth == 1
-/*#ifdef Fortress
+#ifdef Fortress
         &&  !gameCycle
-#endif*/
+#endif
+        &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
 #endif
@@ -1365,7 +1374,7 @@ namespace {
 #ifdef Fortress
         &&  !gameCycle
 #endif
-        && pos.this_thread()->profound_test != true
+        &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
@@ -1555,14 +1564,17 @@ moves_loop: // When in check, search starts from here
 
       ss->moveCount = ++moveCount;
 
+
 #ifdef Add_Features
-      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 5000)
+      if (!minOutput && rootNode && thisThread == Threads.main()
+           && Time.elapsed() > 5000)
 #else
-      if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+      if (rootNode && thisThread == Threads.main() && Time.elapsed() > 5000)
 #endif
-          sync_cout << "info depth " << depth
-                    << " currmove " << UCI::move(move, pos.is_chess960())
-                    << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
+               sync_cout << "info depth " << depth
+                         << " currmove " << UCI::move(move, pos.is_chess960())
+                         << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
+
       if (PvNode)
           (ss+1)->pv = nullptr;
 
@@ -2588,15 +2600,54 @@ void MainThread::check_time() {
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
   callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
 
-  static TimePoint lastInfoTime = now();
+  static TimePoint tick = now();
 
   TimePoint elapsed = Time.elapsed();
-  TimePoint tick = Limits.startTime + elapsed;
-
-  if (tick - lastInfoTime >= 1000)
+  TimePoint tock = Limits.startTime + elapsed;
+  if (elapsed < 61000)
   {
-      lastInfoTime = tick;
-      dbg_print();
+    if (tock - tick >= 5000 && minOutput)
+    {
+      tick = tock;
+      sync_cout << "\ninfo " << elapsed/1000 << " seconds" << sync_endl;
+      //dbg_print();
+    }
+  }
+  else if (elapsed < 181000)
+  {
+    if (tock - tick >= 15000 && minOutput)
+    {
+      tick = tock;
+      sync_cout << "\ninfo " << elapsed/1000 << " seconds" << sync_endl;
+      //dbg_print();
+    }
+  }
+  else if (elapsed < 1801000)
+  {
+    if (tock - tick >= 60000 && minOutput)
+    {
+      tick = tock;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      //dbg_print();
+    }
+  }
+  else if (elapsed < 72001000)
+  {
+    if (tock - tick >= 600000 && minOutput)
+    {
+      tick = tock;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      //dbg_print();
+    }
+  }
+  else
+  {
+    if (tock - tick >= 1800000 && minOutput)
+    {
+      tick = tock;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes?" << sync_endl;
+      //dbg_print();
+    }
   }
 
   // We should not stop pondering until told so by the GUI

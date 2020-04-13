@@ -133,8 +133,8 @@ void set(istringstream& is) {
     }
     else if (name == "dpa")
     {
-      Options["Deep_Pro_Analysis"] = {value};
-      sync_cout << "Confirmation: "<< "Deep_Pro_Analysis" << " set to " << value << sync_endl;
+      Options["Deep Pro Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << sync_endl;
     }
     else if (name == "t")  {
       Threads.set(stoi(value));
@@ -195,7 +195,7 @@ void set(istringstream& is) {
       sync_cout << " Note: 'mt' is in seconds, while" << sync_endl;
       sync_cout << "       'Movetime' is in milliseconds\n"  << sync_endl;
       sync_cout << "  'p f' is the shortcut for 'position fen'"  << sync_endl;
-      sync_cout << "  'pro' is the shortcut for 'Profound'"  << sync_endl;
+      sync_cout << "  'pro' is the shortcut for 'Pro Analysis'"  << sync_endl;
       sync_cout << "  'sm' is the shortcut for 'SearchMoves'\n" << sync_endl;
       sync_cout << " Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
       sync_cout << "        last option on the command line!\n"  << sync_endl;
