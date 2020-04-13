@@ -124,7 +124,7 @@ void init(OptionsMap& o) {
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
 	  o["7 Man Probing"]            << Option(false);
 	  o["FastPlay"]                 << Option(false);
-	  o["Min Output"]                   << Option(false);
+	  o["Min Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]                << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
                                            ,"Centipawn");
@@ -139,10 +139,11 @@ void init(OptionsMap& o) {
     o["Defensive"]                << Option(true);
     o["Pro Analysis"]             << Option(true);
 #else
-    o["Pro Analysis"]             << Option(false);
     o["Defensive"]                << Option(false);
+    o["Pro Analysis"]             << Option(false);
+
 #endif
-    o["Deep_Pro_Analysis"]        << Option(false);
+    o["Deep Pro Analysis"]        << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
 #ifdef Add_Features
