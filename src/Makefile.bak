@@ -820,23 +820,23 @@ icc-profile-make:
 ### Based on commits through 04/13/2020:
 ### ======================================================
 ### Black-Diamond-dev-041320.exe.bench:Nodes searched  : 10406988
-### Black-Diamond-dev-041320.exe.bench:Nodes/second    : 2247244
+### Black-Diamond-dev-041320.exe.bench:Nodes/second    : 2288759
 ### Bluefish-dev-041320.exe.bench:Nodes searched  : 5047747
-### Bluefish-dev-041320.exe.bench:Nodes/second    : 2317606
+### Bluefish-dev-041320.exe.bench:Nodes/second    : 2328296
 ### Bluefish-FD-dev-041320.exe.bench:Nodes searched  : 11182549
-### Bluefish-FD-dev-041320.exe.bench:Nodes/second    : 2308059
+### Bluefish-FD-dev-041320.exe.bench:Nodes/second    : 2313311
 ### Blue-Honey-dev-041320.exe.bench:Nodes searched  : 4660188
-### Blue-Honey-dev-041320.exe.bench:Nodes/second    : 2254566
+### Blue-Honey-dev-041320.exe.bench:Nodes/second    : 2273262
 ### Blue-Honey-FD-dev-041320.exe.bench:Nodes searched  : 10912096
-### Blue-Honey-FD-dev-041320.exe.bench:Nodes/second    : 2417925
+### Blue-Honey-FD-dev-041320.exe.bench:Nodes/second    : 2437367
 ### Honey-dev-041320.exe.bench:Nodes searched  : 4810901
-### Honey-dev-041320.exe.bench:Nodes/second    : 2353669
+### Honey-dev-041320.exe.bench:Nodes/second    : 2225208
 ### Honey-FD-dev-041320.exe.bench:Nodes searched  : 9914112
-### Honey-FD-dev-041320.exe.bench:Nodes/second    : 2382627
+### Honey-FD-dev-041320.exe.bench:Nodes/second    : 2158056
 ### Stockfish-dev-041320.exe.bench:Nodes searched  : 4702195
-### Stockfish-dev-041320.exe.bench:Nodes/second    : 2580787
-### Stockfish-FD-dev-041320.exe.bench:Nodes searched  : 12740803
-### Stockfish-FD-dev-041320.exe.bench:Nodes/second    : 2393088
+### Stockfish-dev-041320.exe.bench:Nodes/second    : 2587889
+### Stockfish-FD-dev-041320.exe.bench:Nodes searched  : 10385169
+### Stockfish-FD-dev-041320.exe.bench:Nodes/second    : 2385201
 ### Weakfish-dev-041320.exe.bench:Nodes searched  : 8954739
-### Weakfish-dev-041320.exe.bench:Nodes/second    : 3737370
+### Weakfish-dev-041320.exe.bench:Nodes/second    : 3647551
 ### ======================================================
