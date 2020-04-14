@@ -1,4 +1,4 @@
-mke#!/bin/bash
+#!/bin/bash
 ###  modify as appropriate for you system
 ### all builds have added features, 4 opening books can be used, adaptive ply,
 ### play by FIDE Elo ratings or CCRL Elo ratings

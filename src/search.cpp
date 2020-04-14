@@ -2607,7 +2607,7 @@ void MainThread::check_time() {
 
   TimePoint elapsed = Time.elapsed();
   TimePoint tock = Limits.startTime + elapsed;
-  if (elapsed < 61000)
+  if (elapsed < 60001)
   {
     if (tock - tick >= 5000 && minOutput)
     {
@@ -2616,7 +2616,7 @@ void MainThread::check_time() {
       //dbg_print();
     }
   }
-  else if (elapsed < 181000)
+  else if (elapsed < 180000)
   {
     if (tock - tick >= 15000 && minOutput)
     {
@@ -2625,7 +2625,7 @@ void MainThread::check_time() {
       //dbg_print();
     }
   }
-  else if (elapsed < 1801000)
+  else if (elapsed < 600001)
   {
     if (tock - tick >= 60000 && minOutput)
     {
@@ -2634,7 +2634,16 @@ void MainThread::check_time() {
       //dbg_print();
     }
   }
-  else if (elapsed < 72001000)
+  else if (elapsed < 1800001)
+  {
+    if (tock - tick >= 300000 && minOutput)
+    {
+      tick = tock;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      //dbg_print();
+    }
+  }
+  else if (elapsed < 72000001)
   {
     if (tock - tick >= 600000 && minOutput)
     {
