@@ -2331,18 +2331,18 @@ moves_loop: // When in check, search starts from here
 
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
       // Detect non-capture evasions that are candidates to be pruned
-            evasionPrunable =    inCheck
-                             &&  (depth != 0 || moveCount > 2)
-                             &&  bestValue > VALUE_TB_LOSS_IN_MAX_PLY
-                             && !pos.capture(move);
+      evasionPrunable =    inCheck
+                           &&  (depth != 0 || moveCount > 2)
+                           &&  bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+                           && !pos.capture(move);
       // Don't search moves with negative SEE values
 #endif
-#if defined (Stockfish) || (Weakfish)
-      if (  !inCheck && !pos.see_ge(move))
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+     if ( (!inCheck || evasionPrunable)
+                    && !(givesCheck && pos.is_discovery_check_on_king(~pos.side_to_move(), move))
+                    && !pos.see_ge(move))
 #else
-      if (  (!inCheck || evasionPrunable)
-          && !(givesCheck && pos.is_discovery_check_on_king(~pos.side_to_move(), move))
-          && !pos.see_ge(move))
+      if (  !inCheck && !pos.see_ge(move))
 #endif
           continue;
 #ifdef Noir
