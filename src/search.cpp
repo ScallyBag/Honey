@@ -2153,7 +2153,7 @@ moves_loop: // When in check, search starts from here
 
 #if defined (Fortress) || (Noir)
     bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion, evasionPrunable, gameCycle;
-#elif defined (Sullivan) || (Bluefish)
+#elif defined (Sullivan) || (Blau)
     bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion, evasionPrunable;
 #else
     bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion;
@@ -2329,7 +2329,7 @@ moves_loop: // When in check, search starts from here
           }
       }
 
-#if defined (Sullivan) || (Bluefish) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
       // Detect non-capture evasions that are candidates to be pruned
             evasionPrunable =    inCheck
                              &&  (depth != 0 || moveCount > 2)

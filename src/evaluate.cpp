@@ -838,6 +838,7 @@ namespace {
     {
         if (   pos.opposite_bishops()
             && pos.non_pawn_material() == 2 * BishopValueMg)
+
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
             sf = 16 + 4 * pe->passed_count();
 #else

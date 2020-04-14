@@ -282,7 +282,7 @@ inline Bitboard safe_destination(Square s, int step)
     Square to = Square(s + step);
     return is_ok(to) && distance(s, to) <= 2 ? square_bb(to) : Bitboard(0);
 }
-//#endif mfb
+
 /// attacks_bb() returns a bitboard representing all the squares attacked by a
 /// piece of type Pt (bishop or rook) placed on 's'.
 
