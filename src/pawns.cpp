@@ -133,7 +133,7 @@ namespace {
         phalanx    = neighbours & rank_bb(s);
         support    = neighbours & rank_bb(s - Up);
 
-        e->blockedCount[Us] += bool(blocked);
+        e->blockedCount[Us] += blocked || more_than_one(leverPush);
 
 #ifdef Sullivan
 
