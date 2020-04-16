@@ -1473,16 +1473,17 @@ namespace {
         int probCutCount = 0;
 #ifdef Stockfish
         while (   (move = mp.next_move()) != MOVE_NONE
-               && probCutCount < 2 + 2 * cutNode
-               && !(   move == ttMove
-                    && (tte->bound() & BOUND_LOWER)
-                    && tte->depth() >= depth - 4
-                    && ttValue < raisedBeta))
+                && probCutCount < 2 + 2 * cutNode
+                && !(   move == ttMove
+                && (tte->bound() & BOUND_LOWER)
+                && tte->depth() >= depth - 4
+                && ttValue < raisedBeta))
 #else
-        while (  (move = mp.next_move()) != MOVE_NONE	 
-              && probCutCount < 2 + 2 * cutNode)
+        while (  (move = mp.next_move()) != MOVE_NONE
+                && probCutCount < 2 + 2 * cutNode)
 #endif
             if (move != excludedMove && pos.legal(move))
+#endif
             {
                 assert(pos.capture_or_promotion(move));
                 assert(depth >= 5);
@@ -1662,6 +1663,11 @@ moves_loop: // When in check, search starts from here
 #endif
 #ifdef Weakfish
 			&& !weakFishSearch
+#endif
+#ifdef Stockfish
+#else
+// source:  https://github.com/joergoster/Stockfish/commit/9c93a4c3787e35fd7baf905c85c3e176e30b70de
+      && thisThread->rootDepth > 2
 #endif
 			&& pos.non_pawn_material(us)
 			&& bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
