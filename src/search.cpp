@@ -1456,9 +1456,6 @@ namespace {
            MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &thisThread->captureHistory);
            int probCutCount = 0;
 
-           while (  (move = mp.next_move()) != MOVE_NONE
-                  && probCutCount < 2 + 2 * cutNode)
-               if (move != excludedMove)
 #else
     if (   !PvNode
 #ifdef Weakfish
@@ -1471,19 +1468,13 @@ namespace {
         assert(raisedBeta < VALUE_INFINITE);
         MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &captureHistory);
         int probCutCount = 0;
-#ifdef Stockfish
+#endif
         while (   (move = mp.next_move()) != MOVE_NONE
-                && probCutCount < 2 + 2 * cutNode
-                && !(   move == ttMove
-                && (tte->bound() & BOUND_LOWER)
-                && tte->depth() >= depth - 4
-                && ttValue < raisedBeta))
-#else
-        while (  (move = mp.next_move()) != MOVE_NONE
-                && probCutCount < 2 + 2 * cutNode)
-#endif
+               && probCutCount < 2 + 2 * cutNode
+               && !(   move == ttMove
+                    && tte->depth() >= depth - 4
+                    && ttValue < raisedBeta))
             if (move != excludedMove && pos.legal(move))
-#endif
             {
                 assert(pos.capture_or_promotion(move));
                 assert(depth >= 5);
