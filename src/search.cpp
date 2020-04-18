@@ -2629,7 +2629,7 @@ void MainThread::check_time() {
       //dbg_print();
     }
   }
-  else if (elapsed < 600001)
+  else if (elapsed < 600000)
   {
     if (tock - tick >= 60000 && minOutput)
     {
@@ -2638,7 +2638,7 @@ void MainThread::check_time() {
       //dbg_print();
     }
   }
-  else if (elapsed < 1800001)
+  else if (elapsed < 1800000)
   {
     if (tock - tick >= 300000 && minOutput)
     {
@@ -2647,7 +2647,7 @@ void MainThread::check_time() {
       //dbg_print();
     }
   }
-  else if (elapsed < 72000001)
+  else if (elapsed < 72000000)
   {
     if (tock - tick >= 600000 && minOutput)
     {
