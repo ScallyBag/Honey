@@ -963,12 +963,12 @@ namespace {
     Depth extension, newDepth;
 #ifdef Noir
     Value bestValue, value, ttValue, eval;
-    bool ttHit, ttPv, formerPv, inCheck, givesCheck, improving, didLMR, priorCapture, isMate, gameCycle;
+    bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture, isMate, gameCycle;
 #elif defined Fortress
-    bool ttHit, ttPv, formerPv, inCheck, givesCheck, improving, didLMR, priorCapture, gameCycle;
+    bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture, gameCycle;
     Value bestValue, value, ttValue, eval, maxValue;
 #else
-    bool ttHit, ttPv, formerPv, inCheck, givesCheck, improving, didLMR, priorCapture;
+    bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
     Value bestValue, value, ttValue, eval, maxValue;
 #endif
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularLMR;
@@ -977,7 +977,7 @@ namespace {
 
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
-    inCheck = pos.checkers();
+    ss->inCheck = pos.checkers();
     priorCapture = pos.captured_piece();
     Color us = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
@@ -1049,7 +1049,7 @@ namespace {
             || pos.is_draw(ss->ply)
             || ss->ply >= MAX_PLY)
 #endif
-            return ss->ply >= MAX_PLY && !inCheck ? evaluate(pos)
+            return ss->ply >= MAX_PLY && !ss->inCheck ? evaluate(pos)
 #if defined (Fortress) || (Noir)
                                                     : VALUE_DRAW;
 #elif defined (Sullivan)
@@ -1263,8 +1263,7 @@ namespace {
     CapturePieceToHistory& captureHistory = thisThread->captureHistory;
 
     // Step 6. Static evaluation of the position
-    if (inCheck)
-
+    if (ss->inCheck)
     {
         ss->staticEval = eval = VALUE_NONE;
         improving = false;
@@ -1483,7 +1482,7 @@ namespace {
                 probCutCount++;
 
                 ss->currentMove = move;
-                ss->continuationHistory = &thisThread->continuationHistory[inCheck]
+                ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                           [captureOrPromotion]
                                                                           [pos.moved_piece(move)]
                                                                           [to_sq(move)];
@@ -1598,7 +1597,7 @@ moves_loop: // When in check, search starts from here
       // Step 13. Pruning at shallow depth (~200 Elo)
       {
           ss->currentMove = move;
-          ss->continuationHistory = &thisThread->continuationHistory[inCheck][priorCapture][movedPiece][to_sq(move)];
+          ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck][priorCapture][movedPiece][to_sq(move)];
           value = mate_in(ss->ply+1);
 
           // Reduced depth of the next LMR search
@@ -1615,7 +1614,7 @@ moves_loop: // When in check, search starts from here
 
               // Futility pruning: parent node (~5 Elo)
               if (   lmrDepth < 6
-                  && !inCheck
+                  && !ss->inCheck
                   && ss->staticEval + 235 + 172 * lmrDepth <= alpha
                   &&  (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1690,7 +1689,7 @@ moves_loop: // When in check, search starts from here
 #else
                 if (   lmrDepth < 6
 #endif
-                   && !inCheck
+                   && !ss->inCheck
                    && ss->staticEval + 235 + 172 * lmrDepth <= alpha
                    &&  (*contHist[0])[movedPiece][to_sq(move)]
                      + (*contHist[1])[movedPiece][to_sq(move)]
@@ -1859,7 +1858,7 @@ moves_loop: // When in check, search starts from here
 #endif
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[inCheck]
+      ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                 [captureOrPromotion]
                                                                 [movedPiece]
                                                                 [to_sq(move)];
@@ -2114,11 +2113,11 @@ moves_loop: // When in check, search starts from here
     // must be a mate or a stalemate. If we are in a singular extension search then
     // return a fail low score.
 
-    assert(moveCount || !inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
+    assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
     if (!moveCount)
         bestValue = excludedMove ? alpha
-                   :     inCheck ? mated_in(ss->ply) : VALUE_DRAW;
+                   :     ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
 
     else if (bestMove)
         update_all_stats(pos, ss, bestMove, bestValue, beta, prevSq,
@@ -2168,11 +2167,11 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
 
 #if defined (Fortress) || (Noir)
-    bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion, evasionPrunable, gameCycle;
+    bool ttHit, pvHit, givesCheck, captureOrPromotion, evasionPrunable, gameCycle;
 #elif defined (Sullivan) || (Blau)
-    bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion, evasionPrunable;
+    bool ttHit, pvHit, givesCheck, captureOrPromotion, evasionPrunable;
 #else
-    bool ttHit, pvHit, inCheck, givesCheck, captureOrPromotion;
+    bool ttHit, pvHit, givesCheck, captureOrPromotion;
 #endif
 
     int moveCount;
@@ -2187,7 +2186,7 @@ moves_loop: // When in check, search starts from here
     Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
     bestMove = MOVE_NONE;
-    inCheck = pos.checkers();
+    ss->inCheck = pos.checkers();
     moveCount = 0;
 #if defined (Fortress) || (Noir)
     gameCycle = false;
@@ -2206,7 +2205,7 @@ moves_loop: // When in check, search starts from here
 
     // Check for an immediate draw or maximum ply reached
     if (ss->ply >= MAX_PLY)
-        return !inCheck ? evaluate(pos) : VALUE_DRAW;
+        return !ss->inCheck ? evaluate(pos) : VALUE_DRAW;
 
     if (alpha >= mate_in(ss->ply+1))
         return alpha;
@@ -2214,14 +2213,14 @@ moves_loop: // When in check, search starts from here
     // Check for an immediate draw or maximum ply reached
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
-        return (ss->ply >= MAX_PLY && !inCheck) ? evaluate(pos) : VALUE_DRAW;
+        return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
 #endif
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
-    ttDepth = inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
+    ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
@@ -2253,7 +2252,7 @@ moves_loop: // When in check, search starts from here
         return ttValue;
 
     // Evaluate the position statically
-    if (inCheck)
+    if (ss->inCheck)
     {
         ss->staticEval = VALUE_NONE;
         bestValue = futilityBase = -VALUE_INFINITE;
@@ -2292,7 +2291,7 @@ moves_loop: // When in check, search starts from here
         futilityBase = bestValue + 154;
     }
 #if defined (Fortress) || (Noir)
-    if (gameCycle && !inCheck)
+    if (gameCycle && !ss->inCheck)
         ss->staticEval = bestValue = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 #endif
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
@@ -2323,7 +2322,7 @@ moves_loop: // When in check, search starts from here
       {
 #endif
       // Futility pruning
-      if (   !inCheck
+      if (   !ss->inCheck
           && !givesCheck
           &&  futilityBase > -VALUE_KNOWN_WIN
           && !pos.advanced_pawn_push(move))
@@ -2347,18 +2346,18 @@ moves_loop: // When in check, search starts from here
 
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
       // Detect non-capture evasions that are candidates to be pruned
-      evasionPrunable =    inCheck
+      evasionPrunable =    ss->inCheck
                            &&  (depth != 0 || moveCount > 2)
                            &&  bestValue > VALUE_TB_LOSS_IN_MAX_PLY
                            && !pos.capture(move);
       // Don't search moves with negative SEE values
 #endif
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
-     if ( (!inCheck || evasionPrunable)
+      if ( (!ss->inCheck || evasionPrunable)
                     && !(givesCheck && pos.is_discovery_check_on_king(~pos.side_to_move(), move))
                     && !pos.see_ge(move))
 #else
-      if (  !inCheck && !pos.see_ge(move))
+      if (  !ss->inCheck && !pos.see_ge(move))
 #endif
           continue;
 #ifdef Noir
@@ -2376,7 +2375,7 @@ moves_loop: // When in check, search starts from here
       }
 #endif
       ss->currentMove = move;
-      ss->continuationHistory = &thisThread->continuationHistory[inCheck]
+      ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
                                                                 [captureOrPromotion]
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
@@ -2421,7 +2420,7 @@ moves_loop: // When in check, search starts from here
 
     // All legal moves have been searched. A special case: If we're in check
     // and no legal moves were found, it is checkmate.
-    if (inCheck && bestValue == -VALUE_INFINITE)
+    if (ss->inCheck && bestValue == -VALUE_INFINITE)
         return mated_in(ss->ply); // Plies to mate from the root
 
     tte->save(posKey, value_to_tt(bestValue, ss->ply), pvHit,
@@ -2540,8 +2539,12 @@ moves_loop: // When in check, search starts from here
   void update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus) {
 
     for (int i : {1, 2, 4, 6})
+    {
+        if (ss->inCheck && i > 2)
+            break;
         if (is_ok((ss-i)->currentMove))
             (*(ss-i)->continuationHistory)[pc][to] << bonus;
+    }
   }
 
 
