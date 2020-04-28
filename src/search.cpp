@@ -1633,6 +1633,13 @@ moves_loop: // When in check, search starts from here
                   && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
 
+              // Futility pruning for captures
+              if (   !givesCheck
+                  && lmrDepth < 6
+                  && !ss->inCheck
+                  && ss->staticEval + 270 + 384 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
+                  continue;
+
               // See based pruning
               if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
                   continue;
@@ -1702,17 +1709,22 @@ moves_loop: // When in check, search starts from here
 					}
           else
           {
-          if (!givesCheck)
-              {
-                   captureHistory = thisThread->captureHistory;
-                   // Capture history pruning
-                   if (   lmrDepth < 1
-                       && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
-                       continue;
-               }
+            // Capture history based pruning when the move doesn't give check
+            if (   !givesCheck
+                && lmrDepth < 1
+                && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
+                continue;
 
-           if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
-					  	  continue;
+            // Futility pruning for captures
+            if (   !givesCheck
+                && lmrDepth < 6
+                && !ss->inCheck
+                && ss->staticEval + 270 + 384 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
+                continue;
+
+            // See based pruning
+            if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
+                continue;
            }
 		}
 
