@@ -85,8 +85,8 @@ namespace {
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV };
 
-  constexpr uint64_t ttHitAverageWindow     = 4096;
-  constexpr uint64_t ttHitAverageResolution = 1024;
+  constexpr uint64_t TtHitAverageWindow     = 4096;
+  constexpr uint64_t TtHitAverageResolution = 1024;
 
   // Razor and futility margins
   constexpr int RazorMargin = 531;
@@ -629,7 +629,7 @@ void Thread::search() {
       multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
-  ttHitAverage = ttHitAverageWindow * ttHitAverageResolution / 2;
+  ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
 
 int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // From centipawns
   // In analysis mode, adjust contempt in accordance with user preference
@@ -1015,8 +1015,8 @@ namespace {
     formerPv = ttPv && !PvNode;
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
-    thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
-    + ttHitAverageResolution * ttHit;
+    thisThread->ttHitAverage =   (TtHitAverageWindow - 1) * thisThread->ttHitAverage / TtHitAverageWindow
+    + TtHitAverageResolution * ttHit;
 #endif
     if (!rootNode)
     {
@@ -1114,8 +1114,8 @@ namespace {
         thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
-    thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
-                                + ttHitAverageResolution * ttHit;
+    thisThread->ttHitAverage =   (TtHitAverageWindow - 1) * thisThread->ttHitAverage / TtHitAverageWindow
+                                + TtHitAverageResolution * ttHit;
 #endif
 #endif
 
@@ -1900,9 +1900,9 @@ moves_loop: // When in check, search starts from here
               || cutNode
 #ifndef Noir
 #if defined (Stockfish) || (Weakfish)
-              || thisThread->ttHitAverage < 375 * ttHitAverageResolution * ttHitAverageWindow / 1024
+              || thisThread->ttHitAverage < 375 * TtHitAverageResolution * TtHitAverageWindow / 1024
 #else
-			  || thisThread->ttHitAverage < 384 * ttHitAverageResolution * ttHitAverageWindow / 1024
+			  || thisThread->ttHitAverage < 384 * TtHitAverageResolution * TtHitAverageWindow / 1024
 #endif
 #endif
       ))
@@ -1910,10 +1910,10 @@ moves_loop: // When in check, search starts from here
            Depth r = reduction(improving, depth, moveCount);
 #ifndef Noir
 #if defined (Stockfish) || (Weakfish)
-           if (thisThread->ttHitAverage > 500 * ttHitAverageResolution * ttHitAverageWindow / 1024)
+           if (thisThread->ttHitAverage > 500 * TtHitAverageResolution * TtHitAverageWindow / 1024)
 #else
            // Decrease reduction if the ttHit running average is large
-           if (thisThread->ttHitAverage > 544 * ttHitAverageResolution * ttHitAverageWindow / 1024)
+           if (thisThread->ttHitAverage > 544 * TtHitAverageResolution * TtHitAverageWindow / 1024)
 #endif
                r--;
 #endif
