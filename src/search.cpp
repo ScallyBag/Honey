@@ -1632,14 +1632,14 @@ moves_loop: // When in check, search starts from here
                   && lmrDepth < 1
                   && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
-
+/*
               // Futility pruning for captures
               if (   !givesCheck
                   && lmrDepth < 6
                   && !ss->inCheck
                   && ss->staticEval + 270 + 384 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
                   continue;
-
+*/
               // See based pruning
               if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
                   continue;
@@ -1714,14 +1714,14 @@ moves_loop: // When in check, search starts from here
                 && lmrDepth < 1
                 && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                 continue;
-
+#ifdef Stockfish
             // Futility pruning for captures
             if (   !givesCheck
                 && lmrDepth < 6
                 && !ss->inCheck
                 && ss->staticEval + 270 + 384 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
                 continue;
-
+#endif
             // See based pruning
             if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
                 continue;
