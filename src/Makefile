@@ -178,11 +178,11 @@ endif
 ifeq ($(FILES),with_c_book)
 	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 	material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
-	search.o thread.o timeman.o tt.o uci.o ucioption.o polybook.o syzygy/tbprobe.o
+	search.o thread.o timeman.o tt.o uci.o ucioption.o polybook.o tune.o syzygy/tbprobe.o
 else
 	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
 		material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
-		search.o thread.o timeman.o tt.o uci.o ucioption.o syzygy/tbprobe.o
+		search.o thread.o timeman.o tt.o uci.o ucioption.o tune.o syzygy/tbprobe.o
 endif
 ### Establish the operating system name
 KERNEL = $(shell uname -s)
@@ -817,26 +817,26 @@ icc-profile-make:
 
 
 
-### Based on commits through 04/30/2020:
+### Based on commits through 05/03/2020:
 ### ======================================================
-### Black-Diamond-dev-043020.exe.bench:Nodes searched  : 9575267
-### Black-Diamond-dev-043020.exe.bench:Nodes/second    : 2266871
-### Bluefish-dev-043020.exe.bench:Nodes searched  : 4674329
-### Bluefish-dev-043020.exe.bench:Nodes/second    : 2244036
-### Bluefish-FD-dev-043020.exe.bench:Nodes searched  : 10505844
-### Bluefish-FD-dev-043020.exe.bench:Nodes/second    : 2342962
-### Blue-Honey-dev-043020.exe.bench:Nodes searched  : 4396232
-### Blue-Honey-dev-043020.exe.bench:Nodes/second    : 2238407
-### Blue-Honey-FD-dev-043020.exe.bench:Nodes searched  : 11144125
-### Blue-Honey-FD-dev-043020.exe.bench:Nodes/second    : 2361543
-### Honey-dev-043020.exe.bench:Nodes searched  : 4522415
-### Honey-dev-043020.exe.bench:Nodes/second    : 2331141
-### Honey-FD-dev-043020.exe.bench:Nodes searched  : 9667573
-### Honey-FD-dev-043020.exe.bench:Nodes/second    : 2347067
-### Stockfish-dev-043020.exe.bench:Nodes searched  : 4405247
-### Stockfish-dev-043020.exe.bench:Nodes/second    : 2514410
-### Stockfish-FD-dev-043020.exe.bench:Nodes searched  : 9975182
-### Stockfish-FD-dev-043020.exe.bench:Nodes/second    : 2278479
-### Weakfish-dev-043020.exe.bench:Nodes searched  : 7844702
-### Weakfish-dev-043020.exe.bench:Nodes/second    : 3359615
+### Black-Diamond-dev-050320.exe.bench:Nodes searched  : 8227763
+### Black-Diamond-dev-050320.exe.bench:Nodes/second    : 2283586
+### Bluefish-dev-050320.exe.bench:Nodes searched  : 4900564
+### Bluefish-dev-050320.exe.bench:Nodes/second    : 2246934
+### Bluefish-FD-dev-050320.exe.bench:Nodes searched  : 9724222
+### Bluefish-FD-dev-050320.exe.bench:Nodes/second    : 2308146
+### Blue-Honey-dev-050320.exe.bench:Nodes searched  : 4515734
+### Blue-Honey-dev-050320.exe.bench:Nodes/second    : 2268073
+### Blue-Honey-FD-dev-050320.exe.bench:Nodes searched  : 9494534
+### Blue-Honey-FD-dev-050320.exe.bench:Nodes/second    : 2398821
+### Honey-dev-050320.exe.bench:Nodes searched  : 4566913
+### Honey-dev-050320.exe.bench:Nodes/second    : 2273226
+### Honey-FD-dev-050320.exe.bench:Nodes searched  : 9513006
+### Honey-FD-dev-050320.exe.bench:Nodes/second    : 2377062
+### Stockfish-dev-050320.exe.bench:Nodes searched  : 4247490
+### Stockfish-dev-050320.exe.bench:Nodes/second    : 2537329
+### Stockfish-FD-dev-050320.exe.bench:Nodes searched  : 31235768
+### Stockfish-FD-dev-050320.exe.bench:Nodes/second    : 1694740
+### Weakfish-dev-050320.exe.bench:Nodes searched  : 7891610
+### Weakfish-dev-050320.exe.bench:Nodes/second    : 3590359
 ### ======================================================

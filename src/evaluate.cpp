@@ -89,13 +89,13 @@ namespace {
 #if defined (Sullivan) || (Blau)
   constexpr int QueenSafeCheck  = 770;
   constexpr int RookSafeCheck   = 1074;
-  constexpr int BishopSafeCheck = 620;
-  constexpr int KnightSafeCheck = 770;
-#else
-  constexpr int QueenSafeCheck  = 780;
-  constexpr int RookSafeCheck   = 1078;
   constexpr int BishopSafeCheck = 635;
-  constexpr int KnightSafeCheck = 790;
+  constexpr int KnightSafeCheck = 782;
+#else
+  constexpr int QueenSafeCheck  = 772;
+  constexpr int RookSafeCheck   = 1084;
+  constexpr int BishopSafeCheck = 645;
+  constexpr int KnightSafeCheck = 792;
 #endif
 #define S(mg, eg) make_score(mg, eg)
 
@@ -142,37 +142,40 @@ namespace {
   };
   // Assorted bonuses and penalties
 
-  constexpr Score BishopPawns        = S(  3,  7);
-  constexpr Score CorneredBishop     = S( 50, 50);
-  constexpr Score FlankAttacks       = S(  8,  0);
-  constexpr Score Hanging            = S( 69, 36);
-  constexpr Score KingProtector      = S(  7,  8);
-  constexpr Score KnightOnQueen      = S( 16, 11);
-  constexpr Score LongDiagonalBishop = S( 45,  0);
-  constexpr Score MinorBehindPawn    = S( 18,  3);
-  constexpr Score Outpost            = S( 30, 21);
-  constexpr Score PassedFile         = S( 11,  8);
-  constexpr Score PawnlessFlank      = S( 17, 95);
-  constexpr Score RestrictedPiece    = S(  7,  7);
+  constexpr Score BishopPawns         = S(  3,  7);
+  constexpr Score CorneredBishop      = S( 50, 50);
+  constexpr Score FlankAttacks        = S(  8,  0);
+  constexpr Score Hanging             = S( 69, 36);
+  constexpr Score BishopKingProtector = S(  6,  9);
+  constexpr Score KnightKingProtector = S(  8,  9);
+  constexpr Score KnightOnQueen       = S( 16, 11);
+  constexpr Score LongDiagonalBishop  = S( 45,  0);
+  constexpr Score MinorBehindPawn     = S( 18,  3);
+  constexpr Score KnightOutpost       = S( 56, 36);
+  constexpr Score BishopOutpost       = S( 30, 23);
+  constexpr Score ReachableOutpost    = S( 31, 22);
+  constexpr Score PassedFile          = S( 11,  8);
+  constexpr Score PawnlessFlank       = S( 17, 95);
+  constexpr Score RestrictedPiece     = S(  7,  7);
 #ifdef Blau
-  constexpr Score RookOnPawn         = S( 10, 32);
-  constexpr Score RookOnQueenFile    = S( 7,  7);
+  constexpr Score RookOnPawn          = S( 10, 32);
+  constexpr Score RookOnQueenFile     = S( 7,  7);
 #elif defined (Sullivan) || (Noir)
-  constexpr Score RookOnPawn         = S( 10, 22);
-  constexpr Score RookOnQueenFile    = S( 6,  8);
+  constexpr Score RookOnPawn          = S( 10, 22);
+  constexpr Score RookOnQueenFile     = S( 6,  8);
 #else
-  constexpr Score RookOnQueenFile    = S(  5,  9);
+  constexpr Score RookOnQueenFile     = S(  5,  9);
 #endif
-  constexpr Score SliderOnQueen      = S( 59, 18);
-  constexpr Score ThreatByKing       = S( 24, 89);
-  constexpr Score ThreatByPawnPush   = S( 48, 39);
-  constexpr Score ThreatBySafePawn   = S(173, 94);
+  constexpr Score SliderOnQueen       = S( 59, 18);
+  constexpr Score ThreatByKing        = S( 24, 89);
+  constexpr Score ThreatByPawnPush    = S( 48, 39);
+  constexpr Score ThreatBySafePawn    = S(173, 94);
 #if defined (Stockfish) || (Weakfish)
-  constexpr Score TrappedRook        = S( 55, 13);
+  constexpr Score TrappedRook         = S( 55, 13);
 #else
-  constexpr Score TrappedRook        = S( 52, 10);
+  constexpr Score TrappedRook         = S( 52, 10);
 #endif
-  constexpr Score WeakQueen          = S( 51, 14);
+  constexpr Score WeakQueen           = S( 51, 14);
   constexpr Score WeakQueenProtection = S( 15, 0);
 
 
@@ -326,17 +329,17 @@ namespace {
             // Bonus if piece is on an outpost square or can reach one
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
             if (bb & s)
-                score += Outpost * (Pt == KNIGHT ? 2 : 1);
-
+                score += (Pt == KNIGHT) ? KnightOutpost : BishopOutpost;
             else if (Pt == KNIGHT && bb & b & ~pos.pieces(Us))
-                score += Outpost;
+                score += ReachableOutpost;
 
             // Bonus for a knight or bishop shielded by pawn
             if (shift<Down>(pos.pieces(PAWN)) & s)
                 score += MinorBehindPawn;
 
             // Penalty if the piece is far from the king
-            score -= KingProtector * distance(pos.square<KING>(Us), s);
+            score -= (Pt == KNIGHT ? KnightKingProtector
+                                   : BishopKingProtector) * distance(pos.square<KING>(Us), s);
 
             if (Pt == BISHOP)
             {
@@ -437,7 +440,7 @@ namespace {
     // Enemy rooks checks
     rookChecks = b1 & safe & attackedBy[Them][ROOK];
     if (rookChecks)
-        kingDanger += more_than_one(rookChecks) ? RookSafeCheck * 3/2
+        kingDanger += more_than_one(rookChecks) ? RookSafeCheck * 175/100
                                                 : RookSafeCheck;
     else
         unsafeChecks |= b1 & attackedBy[Them][ROOK];
@@ -450,7 +453,7 @@ namespace {
                  & ~attackedBy[Us][QUEEN]
                  & ~rookChecks;
     if (queenChecks)
-        kingDanger += more_than_one(queenChecks) ? QueenSafeCheck * 3/2
+        kingDanger += more_than_one(queenChecks) ? QueenSafeCheck * 145/100
                                                  : QueenSafeCheck;
 
     // Enemy bishops checks: we count them only if they are from squares from
@@ -468,7 +471,7 @@ namespace {
     // Enemy knights checks
     knightChecks = pos.attacks_from<KNIGHT>(ksq) & attackedBy[Them][KNIGHT];
     if (knightChecks & safe)
-        kingDanger += more_than_one(knightChecks & safe) ? KnightSafeCheck * 3/2
+        kingDanger += more_than_one(knightChecks & safe) ? KnightSafeCheck * 162/100
                                                          : KnightSafeCheck;
     else
         unsafeChecks |= knightChecks;
@@ -840,7 +843,7 @@ namespace {
         {
             if (   pos.non_pawn_material(WHITE) == BishopValueMg
                 && pos.non_pawn_material(BLACK) == BishopValueMg)
-                sf = 22;
+                sf = 18 + 4 * popcount(pe->passed_pawns(strongSide));
             else
                 sf = 22 + 3 * pos.count<ALL_PIECES>(strongSide);
         }
