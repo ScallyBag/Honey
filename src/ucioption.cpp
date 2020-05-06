@@ -47,9 +47,6 @@ void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(o); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 #ifdef Add_Features
-#ifdef LargePages
-void on_large_pages(const Option& o) { TT.resize(0); }  // warning is ok, will be removed
-#endif
 void on_book_file1(const Option& o) { polybook1.init(o); }
 void on_book_file2(const Option& o) { polybook2.init(o); }
 void on_book_file3(const Option& o) { polybook3.init(o); }
@@ -126,11 +123,8 @@ void init(OptionsMap& o) {
 	  o["FastPlay"]                 << Option(false);
 	  o["Min Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
-    o["Score Output"]                << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
+    o["Score Output"]             << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
                                            ,"Centipawn");
-#endif
-#ifdef LargePages
-    o["Large Pages"]              << Option(true, on_large_pages);
 #endif
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
@@ -146,6 +140,7 @@ void init(OptionsMap& o) {
     o["Deep Pro Analysis"]        << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
+    o["Large_Pages"]              << Option(true);
 #ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
 #else

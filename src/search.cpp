@@ -413,7 +413,7 @@ skipLevels:
               }
           else profound_v2 = 0;
           profound_v = std::max(profound_v1, profound_v2);
-          std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
+          //std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
         }
       for (Thread* th : Threads)
       {

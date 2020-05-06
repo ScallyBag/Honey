@@ -223,7 +223,7 @@ popcnt = no
 sse = no
 pext = no
 native = no
-largepages = no
+
 threadripper = no
 ### 2.2 Architecture specific
 
@@ -256,7 +256,7 @@ ifeq ($(ARCH),x86-64)
 	bits = 64
 	prefetch = yes
 	sse = yes
-	largepages = no
+
 	threadripper = no
 endif
 
@@ -266,7 +266,6 @@ ifeq ($(ARCH),x86-64-modern)
 	prefetch = yes
 	popcnt = yes
 	sse = yes
-	largepages = no
 	threadripper = no
 endif
 
@@ -275,7 +274,7 @@ ifeq ($(ARCH),x86-64-amd)
 	bits = 64
 	prefetch = yes
 	popcnt = yes
-	largepages = yes
+
 	threadripper = yes
 	sse = yes
 endif
@@ -288,7 +287,7 @@ ifeq ($(ARCH),x86-64-bmi2)
 	popcnt = yes
 	sse = yes
 	pext = yes
-	largepages = no
+
 	threadripper = no
 endif
 
@@ -520,9 +519,6 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(largepages),yes)
-		CXXFLAGS += -DLargePages
-	endif
 	ifeq ($(arch),ppc64)
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
@@ -536,9 +532,6 @@ endif
 ifeq ($(threadripper),yes)
 	CXXFLAGS += --param l1-cache-line-size=2048 -l2-cache-size=16384 -l3-cache-size=131072
 	### since we do not use native with a Threadripper to avoid bmi2
-	ifeq ($(largepages),yes)
-		CXXFLAGS += -DLargePages
-	endif
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse4.1 -msse4a -mbmi
 	endif
@@ -546,9 +539,6 @@ endif
 
 ### 3.7 pext
 ifeq ($(pext),yes)
-	ifeq ($(largepages),yes)
-		CXXFLAGS += -DLargePages
-		endif
 	CXXFLAGS += -DUSE_PEXT
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse4 -mbmi2
@@ -827,16 +817,26 @@ icc-profile-make:
 ### Bluefish-FD-dev-050320.exe.bench:Nodes/second    : 2308146
 ### Blue-Honey-dev-050320.exe.bench:Nodes searched  : 4515734
 ### Blue-Honey-dev-050320.exe.bench:Nodes/second    : 2268073
-### Blue-Honey-FD-dev-050320.exe.bench:Nodes searched  : 9494534
-### Blue-Honey-FD-dev-050320.exe.bench:Nodes/second    : 2398821
-### Honey-dev-050320.exe.bench:Nodes searched  : 4566913
-### Honey-dev-050320.exe.bench:Nodes/second    : 2273226
-### Honey-FD-dev-050320.exe.bench:Nodes searched  : 9513006
-### Honey-FD-dev-050320.exe.bench:Nodes/second    : 2377062
-### Stockfish-dev-050320.exe.bench:Nodes searched  : 4247490
-### Stockfish-dev-050320.exe.bench:Nodes/second    : 2537329
-### Stockfish-FD-dev-050320.exe.bench:Nodes searched  : 31235768
-### Stockfish-FD-dev-050320.exe.bench:Nodes/second    : 1694740
-### Weakfish-dev-050320.exe.bench:Nodes searched  : 7891610
-### Weakfish-dev-050320.exe.bench:Nodes/second    : 3590359
+### Based on commits through 05/06/2020:
+### ======================================================
+### Black-Diamond-dev-050620.exe.bench:Nodes searched  : 8227763
+### Black-Diamond-dev-050620.exe.bench:Nodes/second    : 2263483
+### Bluefish-dev-050620.exe.bench:Nodes searched  : 4900564
+### Bluefish-dev-050620.exe.bench:Nodes/second    : 2208456
+### Bluefish-FD-dev-050620.exe.bench:Nodes searched  : 9724222
+### Bluefish-FD-dev-050620.exe.bench:Nodes/second    : 2301046
+### Blue-Honey-dev-050620.exe.bench:Nodes searched  : 4515734
+### Blue-Honey-dev-050620.exe.bench:Nodes/second    : 2268073
+### Blue-Honey-FD-dev-050620.exe.bench:Nodes searched  : 9494534
+### Blue-Honey-FD-dev-050620.exe.bench:Nodes/second    : 2371854
+### Honey-dev-050620.exe.bench:Nodes searched  : 4566913
+### Honey-dev-050620.exe.bench:Nodes/second    : 2266458
+### Honey-FD-dev-050620.exe.bench:Nodes searched  : 9513006
+### Honey-FD-dev-050620.exe.bench:Nodes/second    : 2279656
+### Stockfish-dev-050620.exe.bench:Nodes searched  : 4247490
+### Stockfish-dev-050620.exe.bench:Nodes/second    : 2516285
+### Stockfish-FD-dev-050620.exe.bench:Nodes searched  : 31235768
+### Stockfish-FD-dev-050620.exe.bench:Nodes/second    : 1690064
+### Weakfish-dev-050620.exe.bench:Nodes searched  : 7891610
+### Weakfish-dev-050620.exe.bench:Nodes/second    : 3595266
 ### ======================================================

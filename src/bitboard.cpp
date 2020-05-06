@@ -47,14 +47,14 @@ Magic BishopMagics[SQUARE_NB];
 
 namespace {
 #ifdef Add_Features  //Niklas Fiekas fast magics
-#ifdef LargePages
+
   // De Bruijn sequences. See chessprogramming.wikispaces.com/BitScan
   const uint64_t DeBruijn64 = 0x3F79D71B4CB0A89ULL;
   const uint32_t DeBruijn32 = 0x783A9B23;
 
   int MSBTable[256];            // To implement software msb()
   Square BSFTable[SQUARE_NB];   // To implement software bitscan
-#endif
+
 Bitboard AttackTable[HasPext ? 107648 : 88772] = { 0 };
 
 struct MagicInit {
@@ -202,7 +202,7 @@ Bitboard relevant_occupancies(Direction directions[], Square s);
   // bsf_index() returns the index into BSFTable[] to look up the bitscan. Uses
   // Matt Taylor's folding for 32 bit case, extended to 64 bit by Kim Walisch.
 
-#ifdef LargePages
+#ifdef Add_Features
   unsigned bsf_index(Bitboard b) {
     b ^= b - 1;
     return Is64Bit ? (b * DeBruijn64) >> 58
@@ -248,7 +248,7 @@ const std::string Bitboards::pretty(Bitboard b) {
 }
 
 
-#ifdef LargePages
+#ifdef Add_Features
 /// Bitboards::init() initializes various bitboard tables. It is called at
 /// startup and relies on global objects to be already zero-initialized.
 
@@ -402,7 +402,7 @@ Bitboard relevant_occupancies(Direction directions[], Square s) {
   // called "fancy" approach.
 
 #ifdef Add_Features  //Niklas Fiekas fast magics
-//template<PieceType Pt>
+
 void init_magics(MagicInit init[], Magic magics[], Direction directions[], unsigned shift) {
 
     for (Square s = SQ_A1; s <= SQ_H8; ++s)

@@ -142,14 +142,8 @@ void set(istringstream& is) {
     }
     else if (name == "h")  {
       TT.resize(stoi(value));
-      sync_cout << "Confirmation: "<< "Hash" << " set to " << value << sync_endl;
+      sync_cout << "Confirmation: "<< "Hash" << " set to " << value << " Mb" << sync_endl;
     }
-#ifdef LargePages
-    else if (name == "lp")  {
-      Options["Large Pages"] = {value};
-      sync_cout << "Confirmation: "<< "Large Pages" << " set to " << value << sync_endl;
-    }
-#endif
     else if (name == "mo")
     {
     Options["Min Output"] = {value};
@@ -187,7 +181,6 @@ void set(istringstream& is) {
       sync_cout << "  'dpa' is the shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "  'g' is the shortcut for 'go'"  << sync_endl;
       sync_cout << "  'i' is the shortcut for 'infinite'"  << sync_endl;
-      sync_cout << "  'lp' is the shortcut for 'Large Pages'"  << sync_endl;
       sync_cout << "  'm' is the shortcut for 'Mate'"  << sync_endl;
       sync_cout << "  'mo' is the shortcut for 'Min Output'\n" << sync_endl;
       sync_cout << "  'mv' is the shortcut for 'MultiPV'"  << sync_endl;
@@ -292,8 +285,10 @@ void set(istringstream& is) {
                nodes += Threads.nodes_searched();
                lap_nodes = Threads.nodes_searched();
                lap_time_elapsed = now() - lap_time_elapsed + 1;
-               cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
-               //cerr << "k" << endl;
+               if (lap_nodes * 1000 / lap_time_elapsed < 10000000)
+                   cerr << "Nodes/Second: " << (lap_nodes * 1000) / lap_time_elapsed << endl;
+               else
+                   cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
             }
             else
                sync_cout << "\n" << Eval::trace(pos) << sync_endl;
@@ -310,10 +305,13 @@ void set(istringstream& is) {
 
     dbg_print(); // Just before exiting
 
-    cerr << "\n==========================="
+    cerr << "\n================================="
          << "\nTotal time (ms) : " << elapsed
-         << "\nNodes searched  : " << nodes
-         << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+         << "\nNodes searched  : " << nodes << endl;
+    if (nodes * 1000 / elapsed < 10000000)
+         cerr << "\nNodes/second    : " << (nodes * 1000) / elapsed << endl;
+         else
+         cerr << "\nNodes/second    : " << nodes / elapsed << "k" << endl;
   }
 
 } // namespace
