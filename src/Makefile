@@ -184,6 +184,7 @@ else
 		material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
 		search.o thread.o timeman.o tt.o uci.o ucioption.o tune.o syzygy/tbprobe.o
 endif
+
 ### Establish the operating system name
 KERNEL = $(shell uname -s)
 ifeq ($(KERNEL),Linux)
