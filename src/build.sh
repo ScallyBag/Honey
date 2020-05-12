@@ -31,7 +31,7 @@ BUILD="profile-build"
 
 #make function
 function mke() {
-make -j $BUILD $ARCH $COMP "$@"
+make -j30 $BUILD $ARCH $COMP "$@"
 }
 
 mke NOIR=yes && wait

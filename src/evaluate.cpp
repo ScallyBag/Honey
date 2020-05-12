@@ -79,7 +79,6 @@ namespace {
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
 #if defined (Sullivan) || (Blau)
-  //constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 77, 55, 44, 10 };
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 79, 53, 43, 10 };
 #else
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
@@ -143,7 +142,9 @@ namespace {
   // Assorted bonuses and penalties
 
   constexpr Score BishopPawns         = S(  3,  7);
+//#ifdef Stockfish
   constexpr Score BishopXRayPawns     = S(  4,  5);
+//#endif
   constexpr Score CorneredBishop      = S( 50, 50);
   constexpr Score FlankAttacks        = S(  8,  0);
   constexpr Score Hanging             = S( 69, 36);
@@ -352,8 +353,10 @@ namespace {
                 score -= BishopPawns * pos.pawns_on_same_color_squares(Us, s)
                                      * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles));
 
+//#ifdef Stockfish
                 // Penalty for all enemy pawns x-rayed
                 score -= BishopXRayPawns * popcount(PseudoAttacks[BISHOP][s] & pos.pieces(Them, PAWN));
+//#endif
 
                 // Bonus for bishop on a long diagonal which can "see" both center squares
                 if (more_than_one(attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & Center))
@@ -376,7 +379,8 @@ namespace {
 
         if (Pt == ROOK)
         {
-#if defined (Sullivan) || (Blau || (Noir))
+#if defined (Sullivan) || (Blau) || (Noir)
+ /* || (Fortress) */
             // Bonus for aligning rook with enemy pawns on the same rank/file
             if (relative_rank(Us, s) >= RANK_5)
                 score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
@@ -506,12 +510,8 @@ namespace {
                  -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
 #endif
                  -   6 * mg_value(score) / 8
-#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
-                 -   7;
-#else
                  -   4 * kingFlankDefense
                  +  37;
-#endif
 
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation

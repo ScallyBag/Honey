@@ -132,10 +132,11 @@ void init(OptionsMap& o) {
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
     o["Defensive"]                << Option(true);
     o["Pro Analysis"]             << Option(true);
+    o["Pro Value"]                << Option(4, 0, 63);
 #else
     o["Defensive"]                << Option(false);
     o["Pro Analysis"]             << Option(false);
-
+    o["Pro Value"]                << Option(0, 0, 63);
 #endif
     o["Deep Pro Analysis"]        << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);

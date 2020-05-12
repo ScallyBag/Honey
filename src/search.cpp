@@ -57,6 +57,7 @@ namespace Search {
   int benchKnps;
   int dct;
   int defensive;
+  int proValue;
   int profound_v;
   int profound_v1;
   int profound_v2;
@@ -401,20 +402,22 @@ skipLevels:
          }
 #endif
       if (!tactical)    {
+          proValue = (Options["Pro Value"]);
           profound = (Options["Pro Analysis"]);
           if ((profound) && (!tactical))
-               profound_v1 = 16 * (std::max(Time.optimum(),Limits.movetime) - 20);
+               profound_v1 = proValue * (std::max(Time.optimum(),Limits.movetime));
           else profound_v1 = 0;
           if (Options["Deep Pro Analysis"])
               {
-                profound_v2 = 14400000;
-                std::cerr << "\nPro Analysis value1: " << profound_v << "\n" << sync_endl; //debug
+                profound_v2 = proValue * 900000;
+                //std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
                 profound_v1 = 0;
               }
           else profound_v2 = 0;
           profound_v = std::max(profound_v1, profound_v2);
-          //std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
+          //std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
         }
+
       for (Thread* th : Threads)
       {
           th->bestMoveChanges = 0;
@@ -2638,57 +2641,34 @@ void MainThread::check_time() {
 
   TimePoint elapsed = Time.elapsed();
   TimePoint tock = Limits.startTime + elapsed;
-  if (elapsed < 60001)
+  Thread* bestThread = this;
+  if (elapsed <= 120100)
   {
-    if (tock - tick >= 5000 && minOutput)
+    if (tock - tick >= 10000 && minOutput)
     {
       tick = tock;
       sync_cout << "\ninfo " << elapsed/1000 << " seconds" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
       //dbg_print();
     }
   }
-  else if (elapsed < 180000)
-  {
-    if (tock - tick >= 15000 && minOutput)
-    {
-      tick = tock;
-      sync_cout << "\ninfo " << elapsed/1000 << " seconds" << sync_endl;
-      //dbg_print();
-    }
-  }
-  else if (elapsed < 600000)
+  else if (elapsed <= 600200)
   {
     if (tock - tick >= 60000 && minOutput)
     {
       tick = tock;
       sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
-      //dbg_print();
-    }
-  }
-  else if (elapsed < 1800000)
-  {
-    if (tock - tick >= 300000 && minOutput)
-    {
-      tick = tock;
-      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
-      //dbg_print();
-    }
-  }
-  else if (elapsed < 72000000)
-  {
-    if (tock - tick >= 600000 && minOutput)
-    {
-      tick = tock;
-      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
       //dbg_print();
     }
   }
   else
   {
-    if (tock - tick >= 1800000 && minOutput)
+    if (tock - tick >= 300000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\ninfo " << elapsed/60000 << " minutes?" << sync_endl;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
       //dbg_print();
     }
   }

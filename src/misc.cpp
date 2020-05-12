@@ -67,6 +67,7 @@ using namespace std;
 
 namespace {
 
+size_t memtest = 0; //lp mem test
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 
@@ -82,7 +83,7 @@ const string Suffix = "FD ";
 #else
 const string Suffix = "";
 #endif
-size_t test = 0; //mem debug - too costly to leave active
+
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
 /// can toggle the logging of std::cout and std:cin at runtime whilst preserving
@@ -422,33 +423,19 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 
 void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
-
   // try allocate large pages
-      mem = aligned_ttmem_alloc_large_pages(allocSize);
-      if (mem && test != allocSize )
+  mem = aligned_ttmem_alloc_large_pages(allocSize);
+  if (mem && memtest != allocSize)
       {
-           std::cerr << "info string Success, Large Pages set to  " << (allocSize >> 20)  << " Mb" << sync_endl;
-           test = allocSize;
+      sync_cout << "info string Hash Table: Windows Large Pages, " << (allocSize >> 20)  << " Mb" << sync_endl;
+      memtest = allocSize;
       }
-      else if (!mem)
+  else if (!mem && memtest != allocSize)
       {
-          mem = VirtualAlloc(NULL, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-          std::cerr << "info string Failed to allocate " << (allocSize >> 20)
-                << " Mb for Large Page memory for transposition table, switching to default" << std::endl;
-      }
-// MEMORY DEBUG Function - too costly to leave active
-  /*if (mem && test != allocSize)
-  {
-      std::cerr << "info string Success, Large Pages set to  " << (allocSize >> 20)  << " Mb" << sync_endl;
-      test = allocSize;
-  }
-  // fall back to regular allocation if necessary
-  else if (!mem)
-  {
       mem = VirtualAlloc(NULL, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-      std::cerr << "info string Failed to allocate " << (allocSize >> 20)
-                << " Mb for Large Page memory for transposition table, switching to default" << std::endl;
-   }*/
+      sync_cout << "info string Hash Table: Default, "  << (allocSize >> 20)  << " Mb" << sync_endl;
+      memtest = allocSize;
+      }
 
   // NOTE: VirtualAlloc returns memory at page boundary, so no need to align for
   // cachelines
