@@ -246,7 +246,7 @@ enum Value : int {
   #define QVE 100/100
 #endif
 
-PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
+PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
 KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
 BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
 RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
