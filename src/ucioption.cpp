@@ -111,7 +111,7 @@ void init(OptionsMap& o) {
     o["Analysis_Contempt"]        << Option("Both var Off var White var Black var Both", "Both");
 #endif
     o["Skill Level"]              << Option(40, 0, 40);
-    o["Move Overhead"]            << Option(30, 0, 5000);
+    o["Move Overhead"]            << Option(10, 0, 5000);
     o["Minimum Thinking Time"]    << Option( 0, 0, 5000);
     o["Threads"]                  << Option(1, 1, 512, on_threads);
     o["Hash"]                     << Option(256, 1, MaxHashMB, on_hash_size);
