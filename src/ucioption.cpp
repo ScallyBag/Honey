@@ -112,7 +112,7 @@ void init(OptionsMap& o) {
 #endif
     o["Skill Level"]              << Option(40, 0, 40);
     o["Move Overhead"]            << Option(30, 0, 5000);
-    o["Minimum Thinking Time"]    << Option(20, 0, 5000);
+    o["Minimum Thinking Time"]    << Option( 0, 0, 5000);
     o["Threads"]                  << Option(1, 1, 512, on_threads);
     o["Hash"]                     << Option(256, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                   << Option(false);
@@ -132,7 +132,7 @@ void init(OptionsMap& o) {
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
     o["Defensive"]                << Option(true);
     o["Pro Analysis"]             << Option(true);
-    o["Pro Value"]                << Option(4, 0, 63);
+    o["Pro Value"]                << Option(26, 0, 63);
 #else
     o["Defensive"]                << Option(false);
     o["Pro Analysis"]             << Option(false);
@@ -141,7 +141,6 @@ void init(OptionsMap& o) {
     o["Deep Pro Analysis"]        << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
-    o["Large_Pages"]              << Option(true);
 #ifdef Add_Features
     o["MultiPV"]                  << Option(1, 1, 256);
 #else
@@ -152,14 +151,8 @@ void init(OptionsMap& o) {
 #elif (defined Add_Features)
     o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
 #endif
-
 #ifdef Add_Features
     o["Tactical"]                 << Option(0, 0, 8);
-    o["Slow Mover"]               << Option(100, 10, 1000);
-#else
-    o["Slow Mover"]               << Option(84, 10, 1000);
-#endif
-#ifdef Add_Features
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
@@ -177,6 +170,7 @@ void init(OptionsMap& o) {
                                             "var Class_B var Class_C var Class_D var Boris "
                                             "var Novice var None", "None");
 #endif
+    o["Slow Mover"]               << Option(100, 10, 1000);
     o["Nodestime"]                << Option(0, 0, 10000);
     o["UCI_Chess960"]             << Option(false);
     o["UCI_AnalyseMode"]          << Option(false);

@@ -1,9 +1,9 @@
 ## The Honey Logo
-For use with the Stockfish derivative "Honey" located in the honey branch of this respository. 
+For use with the Stockfish derivative "Honey" located in the honey branch of this respository.
 
 ![test](https://github.com/MichaelB7/Stockfish/blob/honey/logo/Honey-X5.png?raw=true "Honey")
 
-The Honey logo is based on actual photo of the King from the Lewis Chess pieces hard-carved from a walrus tusk in approximately 1200 AD and discoverd in Scotland in 1830 or so. 
+The Honey logo is based on actual photo of the King from the Lewis Chess pieces hard-carved from a walrus tusk in approximately 1200 AD and discoverd in Scotland in 1830 or so.
 
 ## Overview
 
@@ -48,7 +48,7 @@ Currently, Stockfish has the following UCI options:
     this equal to the number of CPU cores available.
 
   * #### Hash
-    The size of the hash table in MB.
+    The size of the hash table in MB. It is recommended to set Hash after setting Threads.
 
   * #### Clear Hash
     Clear the hash table.
@@ -147,7 +147,7 @@ the 50-move rule.
 ## Large Pages
 
 Stockfish supports large pages on Linux and Windows. Large pages make
-the hash access more efficient improving the engine speed, especially
+the hash access more efficiently, improving the engine speed, especially
 on large hash sizes. Typical increases are 5..10% in terms of nps, but
 speed increases up to 30% have been measured. The support is
 automatic. Stockfish attempts to use large pages when available and
@@ -156,44 +156,18 @@ will fall back to regular memory allocation when this is not the case.
 ### Support on Linux
 
 Large page support on Linux is obtained by the Linux kernel
-transparent huge pages functionality. Often, transparent huge pages
+transparent huge pages functionality. Typically, transparent huge pages
 are already enabled and no configuration is needed.
-
-To verify the use of transparent huge pages, the following command may
-be used:
-
-```
-  grep AnonHugePages /proc/meminfo
-```
-
-After launching the engine, this number should increase roughly by the
-configured size of the hash.
-
-For troubleshooting, file `/sys/kernel/mm/transparent_hugepage/enabled`
-controls whether transparent huge pages are enabled. Setting
-`always` or `madvise` should suffice for Stockfish.
-
-File `/sys/kernel/mm/transparent_hugepage/defrag` controls whether
-memory is attempted to be defragmented to make room for large pages
-when necessary. Setting `always`, `defer+madvise`, or `madvise` is
-recommended.
 
 ### Support on Windows
 
 The use of large pages requires "Lock Pages in Memory" privilege. See
 [Enable the Lock Pages in Memory Option (Windows)](https://docs.microsoft.com/en-us/sql/database-engine/configure-windows/enable-the-lock-pages-in-memory-option-windows)
 on how to enable this privilege. Logout/login may be needed
-afterwards.
-
-To detect whether large pages are in use, tool [Sysinternals
-RamMap](https://docs.microsoft.com/en-us/sysinternals/downloads/rammap)
-may be used. After launching the engine, see the 'Large Page' row in
-tab 'Use Counts'. The number should match with the Stockfish hash
-size. Note that the tool does not refresh the contents periodically.
-
-Due to memory fragmentation, memory with large pages may not be always
-possible to allocate. When this is the case, reboot may be
-needed.
+afterwards. Due to memory fragmentation, it may not always be
+possible to allocate large pages even when enabled. A reboot
+might alleviate this problem. To determine whether large pages
+are in use, see the engine log.
 
 ## Compiling Stockfish yourself from the sources
 

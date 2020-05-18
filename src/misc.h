@@ -36,7 +36,7 @@ void prefetch(void* addr);
 void* large_page_alloc(size_t size);
 void start_logger(const std::string& fname);
 void* aligned_ttmem_alloc(size_t size, void*& mem);
-void aligned_ttmem_free(void* mem);
+void aligned_ttmem_free(void* mem); // nop if mem == nullptr
 
 void dbg_hit_on(bool b);
 void dbg_hit_on(bool c, bool b);

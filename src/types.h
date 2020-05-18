@@ -245,8 +245,11 @@ enum Value : int {
   #define QVM 100/100
   #define QVE 100/100
 #endif
-
+#ifdef Stockfish
 PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
+#else
+PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
+#endif
 KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
 BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
 RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,

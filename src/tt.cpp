@@ -73,33 +73,26 @@
 
 
  /// TranspositionTable::resize() sets the size of the transposition table,
- /// measured in megabytes. Transposition table consists of a power of 2 number
- /// of clusters and each cluster consists of ClusterSize number of TTEntry.
+/// measured in megabytes. Transposition table consists of a power of 2 number
+/// of clusters and each cluster consists of ClusterSize number of TTEntry.
 
- void TranspositionTable::resize(size_t mbSize) {
+void TranspositionTable::resize(size_t mbSize) {
 
-   Threads.main()->wait_for_search_finished();
+  Threads.main()->wait_for_search_finished();
 
-   if (mem)
-       aligned_ttmem_free(mem);
+  aligned_ttmem_free(mem);
 
-   if (!mbSize)
-   {
-       mem = nullptr;
-       return;
-   }
+  clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
+  table = static_cast<Cluster*>(aligned_ttmem_alloc(clusterCount * sizeof(Cluster), mem));
+  if (!mem)
+  {
+      std::cerr << "Failed to allocate " << mbSize
+                << "MB for transposition table." << std::endl;
+      exit(EXIT_FAILURE);
+  }
 
-   clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
-   table = static_cast<Cluster*>(aligned_ttmem_alloc(clusterCount * sizeof(Cluster), mem));
-   if (!mem)
-   {
-       std::cerr << "info string Failed to allocate " << mbSize
-                 << " Mb for transposition table" << std::endl;
-       exit(EXIT_FAILURE);
-   }
-
-   clear();
- }
+  clear();
+}
 
 
  /// TranspositionTable::clear() initializes the entire transposition table to zero,

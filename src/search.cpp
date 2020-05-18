@@ -705,12 +705,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           if (rootDepth >= 4)
           {
               Value prev = rootMoves[pvIdx].previousScore;
-
-#if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
-              delta = Value(20 + abs(prev) / 64);
-#else
               delta = Value(21);
-#endif
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
@@ -897,7 +892,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
 
 namespace {
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau)
   static TTEntry *probeTT(const Position &pos, Stack* ss, Key posKey,
                           bool &ttHit, Value &ttValue, Move &ttMove) {
 
@@ -1350,7 +1345,7 @@ namespace {
       if (gameCycle)
           ss->staticEval = eval = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 #endif
-#if defined Stockfish || (Weakfish) || (Fortress)
+
     // Step 7. Razoring (~0 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
 #ifdef Weakfish
@@ -1363,7 +1358,7 @@ namespace {
         &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-#endif
+
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
@@ -1514,7 +1509,7 @@ namespace {
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau) //|| (Fortress)
         tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
 #else
         tte = TT.probe(posKey, ttHit);
@@ -2239,7 +2234,7 @@ moves_loop: // When in check, search starts from here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau)
    tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
    int piecesCountqs = pos.count<ALL_PIECES>();
 #else
@@ -2251,7 +2246,7 @@ moves_loop: // When in check, search starts from here
 
     if (  !PvNode
         && ttHit
-#if defined (Sullivan) || (Blau) || (Fortress)
+#if defined (Sullivan) || (Blau)
         && (pos.rule50_count() < 92 || (piecesCountqs < 8  && TB::Cardinality ))
 #endif
 #if defined (Fortress) || (Noir)

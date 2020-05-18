@@ -142,9 +142,7 @@ namespace {
   // Assorted bonuses and penalties
 
   constexpr Score BishopPawns         = S(  3,  7);
-//#ifdef Stockfish
   constexpr Score BishopXRayPawns     = S(  4,  5);
-//#endif
   constexpr Score CorneredBishop      = S( 50, 50);
   constexpr Score FlankAttacks        = S(  8,  0);
   constexpr Score Hanging             = S( 69, 36);
@@ -353,10 +351,8 @@ namespace {
                 score -= BishopPawns * pos.pawns_on_same_color_squares(Us, s)
                                      * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles));
 
-//#ifdef Stockfish
                 // Penalty for all enemy pawns x-rayed
                 score -= BishopXRayPawns * popcount(PseudoAttacks[BISHOP][s] & pos.pieces(Them, PAWN));
-//#endif
 
                 // Bonus for bishop on a long diagonal which can "see" both center squares
                 if (more_than_one(attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & Center))
@@ -380,7 +376,6 @@ namespace {
         if (Pt == ROOK)
         {
 #if defined (Sullivan) || (Blau) || (Noir)
- /* || (Fortress) */
             // Bonus for aligning rook with enemy pawns on the same rank/file
             if (relative_rank(Us, s) >= RANK_5)
                 score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
@@ -810,12 +805,13 @@ namespace {
                     + 11 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
-#if defined (Sullivan) || (defined Blau) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
                     + 50 * (separation > 3) * (outflanking <= 0)
 #endif
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
                     - 43 * almostUnwinnable
+                    -  2 * pos.rule50_count()
                     -110 ;
 
 
@@ -854,7 +850,6 @@ namespace {
         else
             sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide));
 
-        sf = std::max(0, sf - (pos.rule50_count() - 12) / 4);
     }
 
     return ScaleFactor(sf);
@@ -938,8 +933,9 @@ namespace {
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
         Trace::add(TOTAL, score);
     }
+    // Side to move point of view
+    return (pos.side_to_move() == WHITE ? v : -v) + Tempo;
 
-    return  (pos.side_to_move() == WHITE ? v : -v) + Tempo; // Side to move point of view
   }
 
 } // namespace

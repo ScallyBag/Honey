@@ -384,7 +384,7 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
   void* mem = nullptr;
 
   const size_t largePageSize = GetLargePageMinimum();
-  if (!largePageSize || bool(!Options["Large_Pages"]))
+  if (!largePageSize)
       return nullptr;
 
   // We need SeLockMemoryPrivilege, so try to enable it for the process
@@ -459,9 +459,9 @@ void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 /// aligned_ttmem_free will free the previously allocated ttmem
 #if defined(_WIN64)
 
-void aligned_ttmem_free(void *mem) {
+void aligned_ttmem_free(void* mem) {
 
-  if (!VirtualFree(mem, 0, MEM_RELEASE))
+  if (mem && !VirtualFree(mem, 0, MEM_RELEASE))
   {
       DWORD err = GetLastError();
       std::cerr << "Failed to free transposition table. Error code: 0x" <<
