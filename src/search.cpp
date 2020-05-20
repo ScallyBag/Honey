@@ -705,7 +705,12 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           if (rootDepth >= 4)
           {
               Value prev = rootMoves[pvIdx].previousScore;
+
+#if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
+              delta = Value(20 + abs(prev) / 64);
+#else
               delta = Value(21);
+#endif
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
 #if defined (Sullivan) || (Blau) || (Fortress) || (Noir)
@@ -892,7 +897,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
 
 namespace {
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
   static TTEntry *probeTT(const Position &pos, Stack* ss, Key posKey,
                           bool &ttHit, Value &ttValue, Move &ttMove) {
 
@@ -1509,7 +1514,7 @@ namespace {
     {
         search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
 
-#if defined (Sullivan) || (Blau) //|| (Fortress)
+#if defined (Sullivan) || (Blau) || (Fortress)
         tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
 #else
         tte = TT.probe(posKey, ttHit);

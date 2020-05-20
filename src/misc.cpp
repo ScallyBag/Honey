@@ -424,19 +424,27 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
 
 void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
-  // try allocate large pages
+  static bool firstCall = true;
+
+  // try to allocate large pages
   mem = aligned_ttmem_alloc_large_pages(allocSize);
-  if (mem && memtest != allocSize)
-      {
-      sync_cout << "info string Hash Table: Windows Large Pages, " << (allocSize >> 20)  << " Mb" << sync_endl;
+
+  // Suppress info strings on the first call. The first call occurs before 'uci'
+  // is received and in that case this output confuses some GUIs.
+  if (!firstCall && memtest != allocSize )
+  {
+      if (mem)
+          sync_cout << "info string Hash Table: Windows Large Pages, " << (allocSize >> 20)  << " Mb" << sync_endl;
+      else
+          sync_cout << "info string Hash Table: Default, "  << (allocSize >> 20)  << " Mb" << sync_endl;
       memtest = allocSize;
-      }
-  else if (!mem && memtest != allocSize)
-      {
+  }
+  firstCall = false;
+
+  // fall back to regular, page aligned, allocation if necessary
+  if (!mem)
       mem = VirtualAlloc(NULL, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-      sync_cout << "info string Hash Table: Default, "  << (allocSize >> 20)  << " Mb" << sync_endl;
-      memtest = allocSize;
-      }
+
 
   // NOTE: VirtualAlloc returns memory at page boundary, so no need to align for
   // cachelines
