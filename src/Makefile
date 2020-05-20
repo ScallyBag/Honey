@@ -820,23 +820,23 @@ icc-profile-make:
 ### Based on commits through 05/20/2020:
 ### ======================================================
 ### Black-Diamond-dev-052020.exe.bench:Nodes searched  : 9235140
-### Black-Diamond-dev-052020.exe.bench:Nodes/second    : 2350506
+### Black-Diamond-dev-052020.exe.bench:Nodes/second    : 2323890
 ### Bluefish-dev-052020.exe.bench:Nodes searched  : 4650401
-### Bluefish-dev-052020.exe.bench:Nodes/second    : 2277375
+### Bluefish-dev-052020.exe.bench:Nodes/second    : 2266277
 ### Bluefish-FD-dev-052020.exe.bench:Nodes searched  : 10438034
-### Bluefish-FD-dev-052020.exe.bench:Nodes/second    : 2492367
+### Bluefish-FD-dev-052020.exe.bench:Nodes/second    : 2477577
 ### Blue-Honey-dev-052020.exe.bench:Nodes searched  : 4646587
-### Blue-Honey-dev-052020.exe.bench:Nodes/second    : 2244728
+### Blue-Honey-dev-052020.exe.bench:Nodes/second    : 2261112
 ### Blue-Honey-FD-dev-052020.exe.bench:Nodes searched  : 9821676
-### Blue-Honey-FD-dev-052020.exe.bench:Nodes/second    : 2410818
+### Blue-Honey-FD-dev-052020.exe.bench:Nodes/second    : 2408454
 ### Honey-dev-052020.exe.bench:Nodes searched  : 4354077
-### Honey-dev-052020.exe.bench:Nodes/second    : 2312308
+### Honey-dev-052020.exe.bench:Nodes/second    : 2298879
 ### Honey-FD-dev-052020.exe.bench:Nodes searched  : 9425404
-### Honey-FD-dev-052020.exe.bench:Nodes/second    : 2405667
+### Honey-FD-dev-052020.exe.bench:Nodes/second    : 2396492
 ### Stockfish-dev-052020.exe.bench:Nodes searched  : 4395562
-### Stockfish-dev-052020.exe.bench:Nodes/second    : 2477768
+### Stockfish-dev-052020.exe.bench:Nodes/second    : 2529092
 ### Stockfish-FD-dev-052020.exe.bench:Nodes searched  : 8942153
-### Stockfish-FD-dev-052020.exe.bench:Nodes/second    : 2374443
+### Stockfish-FD-dev-052020.exe.bench:Nodes/second    : 2392869
 ### Weakfish-dev-052020.exe.bench:Nodes searched  : 8778405
-### Weakfish-dev-052020.exe.bench:Nodes/second    : 3532557
+### Weakfish-dev-052020.exe.bench:Nodes/second    : 3659193
 ### ======================================================
