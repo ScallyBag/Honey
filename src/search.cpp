@@ -1350,7 +1350,7 @@ namespace {
       if (gameCycle)
           ss->staticEval = eval = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 #endif
-
+#if defined Stockfish || (Weakfish) || (Fortress)
     // Step 7. Razoring (~0 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
 #ifdef Weakfish
@@ -1363,7 +1363,7 @@ namespace {
         &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-
+#endif
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
@@ -2239,7 +2239,7 @@ moves_loop: // When in check, search starts from here
                                                   : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
    tte = probeTT(pos, ss, posKey, ttHit, ttValue, ttMove);
    int piecesCountqs = pos.count<ALL_PIECES>();
 #else
@@ -2251,7 +2251,7 @@ moves_loop: // When in check, search starts from here
 
     if (  !PvNode
         && ttHit
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Fortress)
         && (pos.rule50_count() < 92 || (piecesCountqs < 8  && TB::Cardinality ))
 #endif
 #if defined (Fortress) || (Noir)
