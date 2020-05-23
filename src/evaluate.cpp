@@ -101,8 +101,13 @@ namespace {
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
   // indexed by piece type and number of attacked squares in the mobility area.
   constexpr Score MobilityBonus[][32] = {
+#if defined (Sullivan) || (Blau) || (Noir)
+    { S(-62,-81), S(-53,-56), S(-12,-30), S( -4,-14), S(  3,  8), S( 13, 15), // Knight
+      S( 22, 23), S( 28, 27), S( 33, 33) },
+#else
     { S(-62,-81), S(-53,-56), S(-12,-31), S( -4,-16), S(  3,  5), S( 13, 11), // Knight
       S( 22, 17), S( 28, 20), S( 33, 25) },
+#endif
     { S(-48,-59), S(-20,-23), S( 16, -3), S( 26, 13), S( 38, 24), S( 51, 42), // Bishop
       S( 55, 54), S( 63, 57), S( 63, 65), S( 68, 73), S( 81, 78), S( 81, 86),
       S( 91, 88), S( 98, 97) },
@@ -142,7 +147,9 @@ namespace {
   // Assorted bonuses and penalties
 
   constexpr Score BishopPawns         = S(  3,  7);
+//#ifdef Stockfish
   constexpr Score BishopXRayPawns     = S(  4,  5);
+//#endif
   constexpr Score CorneredBishop      = S( 50, 50);
   constexpr Score FlankAttacks        = S(  8,  0);
   constexpr Score Hanging             = S( 69, 36);
@@ -351,8 +358,10 @@ namespace {
                 score -= BishopPawns * pos.pawns_on_same_color_squares(Us, s)
                                      * (!(attackedBy[Us][PAWN] & s) + popcount(blocked & CenterFiles));
 
+//#ifdef Stockfish
                 // Penalty for all enemy pawns x-rayed
                 score -= BishopXRayPawns * popcount(PseudoAttacks[BISHOP][s] & pos.pieces(Them, PAWN));
+//#endif
 
                 // Bonus for bishop on a long diagonal which can "see" both center squares
                 if (more_than_one(attacks_bb<BISHOP>(s, pos.pieces(PAWN)) & Center))
@@ -803,7 +812,7 @@ namespace {
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
-                    + 50 * (separation > 3) * (outflanking <= 0)
+                    + 25 * (separation > 3) * (outflanking <= 0)
 #endif
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
@@ -846,9 +855,9 @@ namespace {
         }
         else
             sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide));
-#ifndef Stockfish
+/*#ifndef Stockfish
         sf = std::max(0, sf - (pos.rule50_count() - 12) / 4);
-#endif
+#endif*/
     }
 
     return ScaleFactor(sf);
