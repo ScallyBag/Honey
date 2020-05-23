@@ -458,13 +458,13 @@ skipLevels:
 
   // Check if there are threads with a better score than main thread
 #if defined (Sullivan) || (Noir)  //joergoster 3240f204 - check all threads of rmate -in -x
-  if (   (Options["MultiPV"] == 1 || Limits.mate)
+  if (   (int(Options["MultiPV"]) == 1 || Limits.mate)
 #else
-  if (    Options["MultiPV"] == 1
+  if (    int(Options["MultiPV"]) == 1
 #endif
       && !Limits.depth
 #ifdef Add_Features
-      && !(Skill(Options["Skill Level"]).enabled() || Options["UCI_LimitStrength"] || limitStrength)
+      && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]) || limitStrength)
 #else
       && !(Skill(Options["Skill Level"]).enabled())
 #endif
@@ -580,9 +580,8 @@ void Thread::search() {
 #ifdef Add_Features
   TB::SevenManProbe = Options["7 Man Probing"];
 #endif
-#if defined (Stockfish) || (Weakfish)
+
   int iterIdx = 0;
-#endif
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
 
@@ -596,14 +595,17 @@ void Thread::search() {
   if (mainThread)
   {
       if (mainThread->bestPreviousScore == VALUE_INFINITE)
-          for (int i=0; i<4; ++i)
+          for (int i = 0; i < 4; ++i)
               mainThread->iterValue[i] = VALUE_ZERO;
       else
-          for (int i=0; i<4; ++i)
+          for (int i = 0; i < 4; ++i)
               mainThread->iterValue[i] = mainThread->bestPreviousScore;
   }
 #endif
-  size_t multiPV = Options["MultiPV"];
+  std::copy(&lowPlyHistory[2][0], &lowPlyHistory.back().back() + 1, &lowPlyHistory[0][0]);
+  std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
+
+  size_t multiPV = size_t(Options["MultiPV"]);
   PRNG rng(now());
 #ifndef Add_Features
   // Pick integer skill levels, but non-deterministically round up or down
@@ -840,12 +842,8 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           && !Threads.stop
           && !mainThread->stopOnPonderhit)
       {
-#if defined (Stockfish) || (Weakfish)
-          double fallingEval = (332 +  6 * (mainThread->bestPreviousScore - bestValue)
-                                    +  6 * (mainThread->iterValue[iterIdx]  - bestValue)) / 704.0;
-#else
-          double fallingEval = (354 + 10 * (mainThread->bestPreviousScore - bestValue)) / 692.0;
-#endif
+          double fallingEval = (332 + 6 * (mainThread->bestPreviousScore - bestValue)
+                                    + 6 * (mainThread->iterValue[iterIdx] - bestValue)) / 704.0;
           fallingEval = Utility::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
@@ -878,10 +876,10 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           else
                    Threads.increaseDepth = true;
       }
-#if defined (Stockfish) || (Weakfish)
+
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
-#endif
+
   }
 
   if (!mainThread)

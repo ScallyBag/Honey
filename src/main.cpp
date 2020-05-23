@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
    polybook3.init(Options["Book_File_3"]);
    polybook4.init(Options["Book_File_4"]);
 #endif
-  Threads.set(Options["Threads"]);
+  Threads.set(size_t(Options["Threads"]));
   Search::clear(); // After threads are up
 
   UCI::loop(argc, argv);

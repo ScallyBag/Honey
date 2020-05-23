@@ -111,6 +111,7 @@ namespace {
     e->kingSquares[Us] = SQ_NONE;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
 #endif
+    e->blockedCount += popcount(shift<Up>(ourPawns) & (theirPawns | doubleAttackThem));
 
     // Loop through all pawns of the current color and score each pawn
     while ((s = *pl++) != SQ_NONE)
@@ -133,10 +134,7 @@ namespace {
         phalanx    = neighbours & rank_bb(s);
         support    = neighbours & rank_bb(s - Up);
 
-        e->blockedCount += blocked || more_than_one(leverPush);
-
 #ifdef Sullivan
-
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance. Phalanx and isolated
         // pawns will be excluded when the pawn is scored.
@@ -261,7 +259,7 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) {
 #ifndef Stockfish
       File d = map_to_queenside(f);
 #else
-      File d = File(edge_distance(f));
+      int d = edge_distance(f);
 #endif
       bonus += make_score(ShelterStrength[d][ourRank], 0);
 

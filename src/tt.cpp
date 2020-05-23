@@ -110,26 +110,27 @@ void TranspositionTable::resize(size_t mbSize) {
            if (Options["Threads"] > 8)
                WinProcGroup::bindThisThread(idx);
 
-           // Each thread will zero its part of the hash table
-           const size_t stride = clusterCount / Options["Threads"],
-                        start  = stride * idx,
-                        len    = idx != Options["Threads"] - 1 ?
-                                 stride : clusterCount - start;
+          // Each thread will zero its part of the hash table
+          const size_t stride = size_t(clusterCount / Options["Threads"]),
+                       start  = size_t(stride * idx),
+                       len    = idx != Options["Threads"] - 1 ?
+                                stride : clusterCount - start;
 
            std::memset(&table[start], 0, len * sizeof(Cluster));
        });
    }
 
-   for (std::thread& th: threads)
-       th.join();
- }
+  for (std::thread& th : threads)
+      th.join();
+}
 
- /// TranspositionTable::probe() looks up the current position in the transposition
- /// table. It returns true and a pointer to the TTEntry if the position is found.
- /// Otherwise, it returns false and a pointer to an empty or least valuable TTEntry
- /// to be replaced later. The replace value of an entry is calculated as its depth
- /// minus 8 times its relative age. TTEntry t1 is considered more valuable than
- /// TTEntry t2 if its replace value is greater than that of t2.
+/// TranspositionTable::probe() looks up the current position in the transposition
+/// table. It returns true and a pointer to the TTEntry if the position is found.
+/// Otherwise, it returns false and a pointer to an empty or least valuable TTEntry
+/// to be replaced later. The replace value of an entry is calculated as its depth
+/// minus 8 times its relative age. TTEntry t1 is considered more valuable than
+/// TTEntry t2 if its replace value is greater than that of t2.
+
 
  TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 

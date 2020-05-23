@@ -350,7 +350,7 @@ namespace {
 
             if (Pt == BISHOP)
             {
-                // Penalty according to number of pawns on the same color square as the
+                // Penalty according to the number of our pawns on the same color square as the
                 // bishop, bigger when the center files are blocked with pawns and smaller
                 // when the bishop is outside the pawn chain.
                 Bitboard blocked = pos.pieces(Us, PAWN) & shift<Down>(pos.pieces());
@@ -855,9 +855,6 @@ namespace {
         }
         else
             sf = std::min(sf, 36 + 7 * pos.count<PAWN>(strongSide));
-/*#ifndef Stockfish
-        sf = std::max(0, sf - (pos.rule50_count() - 12) / 4);
-#endif*/
     }
 
     return ScaleFactor(sf);

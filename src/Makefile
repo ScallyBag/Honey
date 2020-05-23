@@ -817,26 +817,26 @@ icc-profile-make:
 ### Bluefish-FD-dev-050320.exe.bench:Nodes searched  : 9724222
 ### Bluefish-FD-dev-050320.exe.bench:Nodes/second    : 2308146
 ### Blue-Honey-dev-050320.exe.bench:Nodes searched  : 4515734
-### Based on commits through 05/22/2020:
+### Based on commits through 05/23/2020:
 ### ======================================================
-### Black-Diamond-dev-052220.exe.bench:Nodes searched  : 8506702
-### Black-Diamond-dev-052220.exe.bench:Nodes/second    : 2219332
-### Bluefish-dev-052220.exe.bench:Nodes searched  : 4899451
-### Bluefish-dev-052220.exe.bench:Nodes/second    : 2166939
-### Bluefish-FD-dev-052220.exe.bench:Nodes searched  : 10384233
-### Bluefish-FD-dev-052220.exe.bench:Nodes/second    : 2123130
-### Blue-Honey-dev-052220.exe.bench:Nodes searched  : 4486114
-### Blue-Honey-dev-052220.exe.bench:Nodes/second    : 2189416
-### Blue-Honey-FD-dev-052220.exe.bench:Nodes searched  : 10366767
-### Blue-Honey-FD-dev-052220.exe.bench:Nodes/second    : 2279913
-### Honey-dev-052220.exe.bench:Nodes searched  : 4952461
-### Honey-dev-052220.exe.bench:Nodes/second    : 2196213
-### Honey-FD-dev-052220.exe.bench:Nodes searched  : 9427327
-### Honey-FD-dev-052220.exe.bench:Nodes/second    : 2260749
-### Stockfish-dev-052220.exe.bench:Nodes searched  : 5148950
-### Stockfish-dev-052220.exe.bench:Nodes/second    : 2378267
-### Stockfish-FD-dev-052220.exe.bench:Nodes searched  : 10538084
-### Stockfish-FD-dev-052220.exe.bench:Nodes/second    : 2287903
-### Weakfish-dev-052220.exe.bench:Nodes searched  : 9016455
-### Weakfish-dev-052220.exe.bench:Nodes/second    : 3444024
+### Black-Diamond-dev-052320.exe.bench:Nodes searched  : 8506702
+### Black-Diamond-dev-052320.exe.bench:Nodes/second    : 2249260
+### Bluefish-dev-052320.exe.bench:Nodes searched  : 4899451
+### Bluefish-dev-052320.exe.bench:Nodes/second    : 2200022
+### Bluefish-FD-dev-052320.exe.bench:Nodes searched  : 10384233
+### Bluefish-FD-dev-052320.exe.bench:Nodes/second    : 2325175
+### Blue-Honey-dev-052320.exe.bench:Nodes searched  : 4486119
+### Blue-Honey-dev-052320.exe.bench:Nodes/second    : 2199077
+### Blue-Honey-FD-dev-052320.exe.bench:Nodes searched  : 10297134
+### Blue-Honey-FD-dev-052320.exe.bench:Nodes/second    : 2334951
+### Honey-dev-052320.exe.bench:Nodes searched  : 4952461
+### Honey-dev-052320.exe.bench:Nodes/second    : 2219839
+### Honey-FD-dev-052320.exe.bench:Nodes searched  : 9526244
+### Honey-FD-dev-052320.exe.bench:Nodes/second    : 2265995
+### Stockfish-dev-052320.exe.bench:Nodes searched  : 5148950
+### Stockfish-dev-052320.exe.bench:Nodes/second    : 2462434
+### Stockfish-FD-dev-052320.exe.bench:Nodes searched  : 10538084
+### Stockfish-FD-dev-052320.exe.bench:Nodes/second    : 2313012
+### Weakfish-dev-052320.exe.bench:Nodes searched  : 9016455
+### Weakfish-dev-052320.exe.bench:Nodes/second    : 3466534
 ### ======================================================
