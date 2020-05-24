@@ -271,10 +271,10 @@ template<typename T1 = Square> inline int distance(Square x, Square y);
 template<> inline int distance<File>(Square x, Square y) { return std::abs(file_of(x) - file_of(y)); }
 template<> inline int distance<Rank>(Square x, Square y) { return std::abs(rank_of(x) - rank_of(y)); }
 template<> inline int distance<Square>(Square x, Square y) { return SquareDistance[x][y]; }
-#ifdef Stockfish
+
 inline int edge_distance(File f) { return std::min(f, File(FILE_H - f)); }
 inline int edge_distance(Rank r) { return std::min(r, Rank(RANK_8 - r)); }
-#endif
+
 /// Return the target square bitboard if we do not step off the board, empty otherwise
 
 inline Bitboard safe_destination(Square s, int step)

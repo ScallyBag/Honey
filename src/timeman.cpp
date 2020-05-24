@@ -36,8 +36,6 @@ namespace {
   constexpr int MoveHorizon   = 50;   // Plan time management at most this many moves ahead
   constexpr double MaxRatio   = 7.3;  // When in trouble, we can step over reserved time with this ratio
   constexpr double StealRatio = 0.34; // However we must not steal time from remaining moves over this ratio
-
-
   // move_importance() is a skew-logistic function based on naive statistical
   // analysis of "how many games are still undecided after n half-moves". Game
   // is considered "undecided" as long as neither side has >275cp advantage.
@@ -87,7 +85,7 @@ void TimeManagement::init(Search::LimitsType& limits, Color us, int ply) {
   TimePoint minThinkingTime = Options["Minimum Thinking Time"];
   TimePoint moveOverhead    = Options["Move Overhead"];
   TimePoint slowMover       = Options["Slow Mover"];
-  TimePoint npmsec          = Options["nodestime"];
+  TimePoint npmsec          = Options["Nodestime"];
   TimePoint hypMyTime;
 
   // If we have to play in 'nodes as time' mode, then convert from time

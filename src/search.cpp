@@ -52,6 +52,8 @@ namespace Search {
 
   bool adaptive;
   bool ctempt;
+  bool dpa;
+  bool mpv;
   bool profound=false;
 
   int benchKnps;
@@ -59,9 +61,6 @@ namespace Search {
   int defensive;
   int proValue;
   int profound_v;
-  int profound_v1;
-  int profound_v2;
-  int dpl_factor;
 }
 
 namespace Tablebases {
@@ -282,6 +281,10 @@ void MainThread::search() {
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["Sleep"];
+    proValue            = Options["Pro Value"];
+    profound            = Options["Pro Analysis"];
+    dpa                 = Options["Deep Pro Analysis"];
+    mpv                 =Options["MultiPV"];
 
 
 #endif
@@ -401,21 +404,17 @@ skipLevels:
              uci_elo =  ccrlELo - shallow_adjust;
          }
 #endif
-      if (!tactical)    {
-          proValue = (Options["Pro Value"]);
-          profound = (Options["Pro Analysis"]);
-          if ((profound) && (!tactical))
-               profound_v1 = proValue * (std::max(Time.optimum(),Limits.movetime));
-          else profound_v1 = 0;
-          if (Options["Deep Pro Analysis"])
+      if (!tactical && profound)
+      {
+
+          if (proValue && !dpa)
+               profound_v = proValue * (std::max(Time.optimum(),Limits.movetime));
+          else if (dpa)
               {
-                profound_v2 = proValue * 900000;
+                profound_v = proValue * 900000;
                 //std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
-                profound_v1 = 0;
               }
-          else profound_v2 = 0;
-          profound_v = std::max(profound_v1, profound_v2);
-          //std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
+          std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
         }
 
       for (Thread* th : Threads)
@@ -677,7 +676,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
   profound_test = false;
   //std::cerr << "\nPro Analysis value test 2: " << profound_v << "\n" << sync_endl;//debug
   if ((profound) && (!tactical)){
-    if (Options["MultiPV"] == 1 && profound_v > 0){
+    if ( mpv == 1 && profound_v ){
         if (Threads.nodes_searched() <= (uint64_t)profound_v)
           {
             profound_test = true;
@@ -757,9 +756,9 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                 // When failing high/low give some update (without cluttering
                 // the UI) before a re-search.
                 if (
-/*#ifdef Add_Features
+
                     !minOutput &&
-#endif*/
+
                     mainThread
                     && multiPV == 1
                     && (bestValue <= alpha || bestValue >= beta)
@@ -2640,22 +2639,22 @@ void MainThread::check_time() {
   TimePoint elapsed = Time.elapsed();
   TimePoint tock = Limits.startTime + elapsed;
   Thread* bestThread = this;
-  if (elapsed <= 120100)
+  if (elapsed <= 120050)
   {
     if (tock - tick >= 10000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\ninfo " << elapsed/1000 << " seconds" << sync_endl;
+      sync_cout << "info " << elapsed/1000 << " seconds" << sync_endl;
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
       //dbg_print();
     }
   }
-  else if (elapsed <= 600200)
+  else if (elapsed <= 600100)
   {
     if (tock - tick >= 60000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << "info " << elapsed/60000 << " minutes" << sync_endl;
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
       //dbg_print();
     }
@@ -2665,7 +2664,7 @@ void MainThread::check_time() {
     if (tock - tick >= 300000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << "info " << elapsed/60000 << " minutes" << sync_endl;
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
       //dbg_print();
     }

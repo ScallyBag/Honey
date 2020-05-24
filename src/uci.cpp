@@ -164,6 +164,11 @@ void set(istringstream& is) {
     Options["Score Output"] = {value};
     sync_cout << "Confirmation: "<< "Score Output" << " set to " << value << sync_endl;
     }
+    else if (name == "ta")
+    {
+    Options["Tactical"] = {value};
+    sync_cout << "Confirmation: "<< "Tactical" << " set to " << value << sync_endl;
+    }
     else if (name == "z")
     {
       Tablebases::init(value);
