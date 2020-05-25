@@ -199,6 +199,7 @@ void set(istringstream& is) {
       sync_cout << "        last option on the command line!\n"  << sync_endl;
       sync_cout << "  'so' is the shortcut for 'Score Output'\n" << sync_endl;
       sync_cout << "  't' is the shortcut for 'Threads'"  << sync_endl;
+      sync_cout << "  'ta' is the shortcut for 'Tactical'"  << sync_endl;
       sync_cout << "  'q' is the shortcut for 'quit'"  << sync_endl;
       sync_cout << "  'z' is the shortcut for 'SyzygyPath'"  << sync_endl;
       sync_cout << "  '?' is the shortcut for 'stop'\n"  << sync_endl;

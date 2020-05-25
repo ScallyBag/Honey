@@ -2644,8 +2644,8 @@ void MainThread::check_time() {
     if (tock - tick >= 10000 && minOutput)
     {
       tick = tock;
-      sync_cout << "info " << elapsed/1000 << " seconds" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
+      sync_cout << "\ninfo " << elapsed/1000 << " seconds" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
       //dbg_print();
     }
   }
@@ -2654,8 +2654,8 @@ void MainThread::check_time() {
     if (tock - tick >= 60000 && minOutput)
     {
       tick = tock;
-      sync_cout << "info " << elapsed/60000 << " minutes" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
       //dbg_print();
     }
   }
@@ -2664,8 +2664,8 @@ void MainThread::check_time() {
     if (tock - tick >= 300000 && minOutput)
     {
       tick = tock;
-      sync_cout << "info " << elapsed/60000 << " minutes" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\n" << sync_endl;
+      sync_cout << "\ninfo " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
       //dbg_print();
     }
   }
