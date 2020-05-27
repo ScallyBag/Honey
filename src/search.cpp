@@ -730,7 +730,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 #ifndef Noir
           int failedHighCnt = 0;
 #endif
-          while (true )
+          while (true)
           {
 #ifdef Noir
               bestValue = ::search<PV>(rootPos, ss, alpha, beta, rootDepth, false);
@@ -982,6 +982,7 @@ namespace {
     Color us = pos.side_to_move();
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
+
 #ifndef Noir
     maxValue = VALUE_INFINITE;
 #endif
@@ -1009,11 +1010,15 @@ namespace {
 #endif
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
+
     ttMove =  rootNode ? thisThread->rootMoves[thisThread->pvIdx].pv[0]
               : ttHit    ? tte->move() : MOVE_NONE;
     ttPv = PvNode || (ttHit && tte->is_pv());
     formerPv = ttPv && !PvNode;
-
+#ifdef Noir
+ if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
+    thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
+#endif
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
     thisThread->ttHitAverage =   (TtHitAverageWindow - 1) * thisThread->ttHitAverage / TtHitAverageWindow
     + TtHitAverageResolution * ttHit;
@@ -1305,8 +1310,8 @@ namespace {
   if (gameCycle)
         ss->staticEval = eval = ss->staticEval * std::max(0, (100 - pos.rule50_count())) / 100;
 
-    improving =   ss->staticEval >= (ss-2)->staticEval
-               || (ss-2)->staticEval == VALUE_NONE;
+    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
+              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
     // Begin early pruning.
     if (   !PvNode
@@ -1632,14 +1637,7 @@ moves_loop: // When in check, search starts from here
                   && lmrDepth < 1
                   && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
-/*
-              // Futility pruning for captures
-              if (   !givesCheck
-                  && lmrDepth < 6
-                  && !ss->inCheck
-                  && ss->staticEval + 270 + 384 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
-                  continue;
-*/
+
               // See based pruning
               if (!pos.see_ge(move, Value(-194) * depth)) // (~25 Elo)
                   continue;
@@ -2252,7 +2250,7 @@ moves_loop: // When in check, search starts from here
         && (pos.rule50_count() < 92 || (piecesCountqs < 8  && TB::Cardinality ))
 #endif
 #if defined (Fortress) || (Noir)
-        &&  !gameCycle
+        && !gameCycle
 #endif
         && tte->depth() >= ttDepth
         && ttValue != VALUE_NONE // Only in case of TT access race
@@ -2369,7 +2367,7 @@ moves_loop: // When in check, search starts from here
                     && !(givesCheck && pos.is_discovery_check_on_king(~pos.side_to_move(), move))
                     && !pos.see_ge(move))
 #else
-      if (  !ss->inCheck && !pos.see_ge(move))
+      if (!ss->inCheck && !pos.see_ge(move))
 #endif
           continue;
 #ifdef Noir

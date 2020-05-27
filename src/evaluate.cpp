@@ -779,9 +779,6 @@ namespace {
   template<Tracing T>
   Score Evaluation<T>::initiative(Score score) const {
 
-
-    Value mg = mg_value(score);
-    Value eg = eg_value(score);
 #if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
     int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 #endif
@@ -811,7 +808,8 @@ namespace {
                     - 43 * almostUnwinnable
                     -  2 * pos.rule50_count()
                     -110 ;
-
+    Value mg = mg_value(score);
+    Value eg = eg_value(score);
 
     // Now apply the bonus: note that we find the attacking side by extracting the
     // sign of the midgame or endgame values, and that we carefully cap the bonus
