@@ -116,10 +116,6 @@ public:
 
 private:
   friend struct TTEntry;
-#ifdef LargePages
-  int64_t  mbSize_last_used;
-  bool large_pages_used;
-#endif
   size_t clusterCount;
   Cluster* table;
   void* mem;
