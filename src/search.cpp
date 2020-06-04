@@ -1661,8 +1661,8 @@ moves_loop: // When in check, search starts from here
 #endif
 #ifdef Stockfish
 #else
-// source:  https://github.com/joergoster/Stockfish/commit/9c93a4c3787e35fd7baf905c85c3e176e30b70de
-      && thisThread->rootDepth > 2
+// Below by by https://github.com/joergoster https://github.com/joergoster/Stockfish/commit/6d92435ffd0a5c3cb7d080125cb0524d642b44de
+      && thisThread->rootDepth > 4
 #endif
 			&& pos.non_pawn_material(us)
 			&& bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
