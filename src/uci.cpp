@@ -260,14 +260,26 @@ void UCI::loop(int argc, char* argv[]) {
 /// mate <y>  Mate in y moves, not plies. If the engine is getting mated
 ///           use negative values for y.
 
-string UCI::value(Value v) {
+string UCI::value(Value v, Value v2) {
 
   assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
 
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
-      ss << "cp " << v * 100 / PawnValueEg;
+  {
+
+      if (   abs(v) < 10 * PawnValueEg
+          && abs(v - v2) < 3 * PawnValueEg
+          && Options["SmoothEval"] == 1)
+      {
+        v = (v + v2) / 2;
+
+        ss << "cp " << v * 100 / PawnValueEg;
+      }
+      else
+        ss << "cp " << v * 100 / PawnValueEg;
+  }
   else
       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 

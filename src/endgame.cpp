@@ -430,7 +430,7 @@ ScaleFactor Endgame<KQKRPs>::operator()(const Position& pos) const {
 
   knight_file = FileBBB | FileGBB;
 
-  defended_pawns = pos.pieces(weakSide, PAWN) & pos.attacks_from<KING>(kingSq) & (safe_rank | knight_file) & ~(FileABB | FileHBB);
+  defended_pawns = pos.pieces(weakSide, PAWN) & attacks_bb<KING>(kingSq) & (safe_rank | knight_file) & ~(FileABB | FileHBB);
 
   if (defended_pawns)
       return SCALE_FACTOR_DRAW;

@@ -1167,7 +1167,7 @@ bool Position::king_danger() const {
 
     kingRing = kingAttackers = legalKing = 0;
 
-    kingRing = attacks_from(KING, ksq);
+    kingRing = attacks_bb<KING>(ksq);
 
     while (kingRing)
     {

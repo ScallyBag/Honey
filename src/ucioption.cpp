@@ -61,6 +61,7 @@ void init(OptionsMap& o) {
 
   o["Debug Log File"]        << Option("", on_logger);
   o["Contempt"]              << Option(0, -100, 100);
+  o["SmoothEval"]            << Option(false);
   o["Dynamic Contempt"]      << Option(false);
   o["Analysis Contempt"]     << Option("Off var Off var White var Black var Both", "Off");
   o["Threads"]               << Option(1, 1, 512, on_threads);
