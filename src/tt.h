@@ -81,8 +81,8 @@ class TranspositionTable {
 #ifdef Noir
   static constexpr int ClusterSize = 2;
 #else
-
   static constexpr int ClusterSize = 3;
+  static constexpr int ClustersPerSuperCluster = 256;
 #endif
 
   struct Cluster {
@@ -104,19 +104,30 @@ public:
   int hashfull() const;
   void resize(size_t mbSize);
   void clear();
-
-  // The 32 lowest order bits of the key are used to get the index of the cluster
+// The 32 lowest order bits of the key are used to get the index of the cluster
   TTEntry* first_entry(const Key key) const {
 #ifdef Noir
     return &table[key & (clusterCount - 1)].entry[0];
 #else
-    return &table[(uint32_t(key) * uint64_t(clusterCount)) >> 32].entry[0];
+
+    // The index is computed from
+    // Idx = (K48 * SCC) / 2^40, with K48 the 48 lowest bits swizzled.
+
+    const uint64_t firstTerm =  uint32_t(key) * uint64_t(superClusterCount);
+    const uint64_t secondTerm = (uint16_t(key >> 32) * uint64_t(superClusterCount)) >> 16;
+
+    return &table[(firstTerm + secondTerm) >> 24].entry[0];
 #endif
   }
 
 private:
   friend struct TTEntry;
+
+#ifdef Noir
   size_t clusterCount;
+#else
+  size_t superClusterCount;
+#endif
   Cluster* table;
   void* mem;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8

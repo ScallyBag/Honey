@@ -73,8 +73,14 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 
 /// init() initializes the UCI options to their hard-coded default values
 void init(OptionsMap& o) {
+
+#ifdef Noir
     // at most 2^32 clusters.
     constexpr int MaxHashMB = Is64Bit ? 131072 : 2048;
+#else
+    // At most 2^32 superclusters. Supercluster = 8 kB
+    constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
+#endif
     o["Debug Log File"]           << Option("", on_logger);
 #ifdef Add_Features
     o["Use_Book_1"] 	            << Option(false);
@@ -138,7 +144,7 @@ void init(OptionsMap& o) {
     o["Pro Analysis"]             << Option(false);
     o["Pro Value"]                << Option( 0, 0, 63);
 #endif
-    o["Defensive"]                << Option(false);    
+    o["Defensive"]                << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
 #ifdef Add_Features
