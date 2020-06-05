@@ -820,23 +820,23 @@ icc-profile-make:
 ### Based on commits through 06/04/2020:
 ### ======================================================
 ### Black-Diamond-XI-r2.exe.bench:Nodes searched  : 10324839
-### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2405600
+### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2445485
 ### Bluefish-FD-XI-r2.exe.bench:Nodes searched  : 36969201
-### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2674857
+### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2634447
 ### Bluefish-XI-r2.exe.bench:Nodes searched  : 17558515
-### Bluefish-XI-r2.exe.bench:Nodes/second    : 2647544
+### Bluefish-XI-r2.exe.bench:Nodes/second    : 2624983
 ### Blue-Honey-FD-XI-r2.exe.bench:Nodes searched  : 36832951
-### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2669634
+### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2653670
 ### Blue-Honey-XI-r2.exe.bench:Nodes searched  : 17023694
-### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2615006
+### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2553809
 ### Honey-FD-XI-r2.exe.bench:Nodes searched  : 8577058
-### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2548145
+### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2530105
 ### Honey-XI-r2.exe.bench:Nodes searched  : 4807715
-### Honey-XI-r2.exe.bench:Nodes/second    : 2500111
+### Honey-XI-r2.exe.bench:Nodes/second    : 2488465
 ### Stockfish-FD-XI-r2.exe.bench:Nodes searched  : 11489844
-### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2440493
+### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2452474
 ### Stockfish-XI-r2.exe.bench:Nodes searched  : 4860021
-### Stockfish-XI-r2.exe.bench:Nodes/second    : 2488490
+### Stockfish-XI-r2.exe.bench:Nodes/second    : 2502585
 ### Weakfish-XI-r2.exe.bench:Nodes searched  : 7134572
-### Weakfish-XI-r2.exe.bench:Nodes/second    : 3381313
+### Weakfish-XI-r2.exe.bench:Nodes/second    : 3379711
 ### ======================================================
