@@ -129,16 +129,15 @@ void init(OptionsMap& o) {
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
 #endif
-#if defined (Sullivan)
-    o["Defensive"]                << Option(false);
-    o["Pro Analysis"]             << Option(false);
-    o["Pro Value"]                << Option(0, 0, 63);
+#if defined (Blau)
+    o["Deep Pro Analysis"]        << Option(true);
+    o["Pro Value"]                << Option(26, 0, 63);
 #else
-    o["Defensive"]                << Option(false);
-    o["Pro Analysis"]             << Option(false);
+    o["Deep Pro Analysis"]        << Option(false);
     o["Pro Value"]                << Option(0, 0, 63);
 #endif
-    o["Deep Pro Analysis"]        << Option(false);
+    o["Defensive"]                << Option(false);
+    o["Pro Analysis"]             << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
 #ifdef Add_Features
@@ -152,12 +151,7 @@ void init(OptionsMap& o) {
     o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
 #endif
 #ifdef Add_Features
-#ifdef Blau
-    o["Tactical"]                 << Option(2, 0, 8);
-#else
     o["Tactical"]                 << Option(0, 0, 8);
-#endif
-
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play

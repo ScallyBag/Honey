@@ -456,7 +456,7 @@ skipLevels:
   Thread* bestThread = this;
 
   // Check if there are threads with a better score than main thread
-#if defined (Sullivan) || (Noir)  //joergoster 3240f204 - check all threads of rmate -in -x
+#if defined (Sullivan) || (Noir) || (Blau)  //joergoster 3240f204 - check all threads for mate-in-x
   if (   (int(Options["MultiPV"]) == 1 || Limits.mate)
 #else
   if (    int(Options["MultiPV"]) == 1
@@ -860,7 +860,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           double totalTime = rootMoves.size() == 1 ? 0 :
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
-          // Stop the search if the optimal time is exceeded
+          // Stop the search if we have exceeded the totalTime, at least 1ms search.
           if (Time.elapsed() > totalTime)
           {
               // If we are allowed to ponder do not stop the search now but
@@ -973,7 +973,7 @@ namespace {
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
     Value bestValue, value, ttValue, eval, maxValue;
 #endif
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning,  ttCapture, singularQuietLMR;
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
 
@@ -1541,7 +1541,7 @@ moves_loop: // When in check, search starts from here
                                       contHist,
                                       countermove,
                                       ss->killers,
-                                      depth > 12 ? ss->ply : MAX_PLY);
+                                      ss->ply);
 
     value = bestValue;
     singularQuietLMR = moveCountPruning = false;
