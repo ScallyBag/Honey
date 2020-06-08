@@ -240,9 +240,10 @@ const std::string Bitboards::pretty(Bitboard b) {
   {
       for (File f = FILE_A; f <= FILE_H; ++f)
           s += b & make_square(f, r) ? "| X " : "|   ";
-
-      s += "|\n+---+---+---+---+---+---+---+---+\n";
+// rank and file notation by nguyenpham https://github.com/official-stockfish/Stockfish/pull/2723
+      s += "| " + std::to_string(1 + r) + "\n+---+---+---+---+---+---+---+---+\n";
   }
+  s += "  a   b   c   d   e   f   g   h\n";
 
   return s;
 }
