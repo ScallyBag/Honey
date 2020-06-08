@@ -129,9 +129,9 @@ void init(OptionsMap& o) {
 #ifdef Weakfish
     o["WeakFish"]                 << Option(true);
 #endif
-#if defined (Blau)
+#if defined (Sullivan) || (Blau)
     o["Deep Pro Analysis"]        << Option(true);
-    o["Pro Value"]                << Option(26, 0, 63);
+    o["Pro Value"]                << Option(32, 0, 63);
 #else
     o["Deep Pro Analysis"]        << Option(false);
     o["Pro Value"]                << Option(0, 0, 63);

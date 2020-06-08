@@ -154,10 +154,15 @@ void set(istringstream& is) {
       Options["MultiPV"] = {value};
       sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value << sync_endl;
     }
-    else if (name == "pro")
+    else if (name == "proa")
     {
       Options["Pro Analysis"] = {value};
       sync_cout << "Confirmation: "<< "Pro Analysis" << " set to " << value << sync_endl;
+    }
+    else if (name == "prov")
+    {
+      Options["Pro Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Pro Value" << " set to " << value << sync_endl;
     }
     else if (name == "so")
     {
@@ -193,7 +198,8 @@ void set(istringstream& is) {
       sync_cout << " Note: 'mt' is in seconds, while" << sync_endl;
       sync_cout << "       'Movetime' is in milliseconds\n"  << sync_endl;
       sync_cout << "  'p f' is the shortcut for 'position fen'"  << sync_endl;
-      sync_cout << "  'pro' is the shortcut for 'Pro Analysis'"  << sync_endl;
+      sync_cout << "  'proa' is the shortcut for 'Pro Analysis'"  << sync_endl;
+      sync_cout << "  'prov' is the shortcut for 'Pro Value'"  << sync_endl;
       sync_cout << "  'sm' is the shortcut for 'SearchMoves'\n" << sync_endl;
       sync_cout << " Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
       sync_cout << "        last option on the command line!\n"  << sync_endl;

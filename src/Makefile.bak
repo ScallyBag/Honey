@@ -817,26 +817,26 @@ icc-profile-make:
 ### Bluefish-FD-dev-050320.exe.bench:Nodes searched  : 9724222
 ### Bluefish-FD-dev-050320.exe.bench:Nodes/second    : 2308146
 ### Blue-Honey-dev-050320.exe.bench:Nodes searched  : 4515734
-### Based on commits through 06/07/2020:
+### Based on commits through 06/08/2020:
 ### ======================================================
 ### Black-Diamond-XI-r2.exe.bench:Nodes searched  : 9423812
-### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2440137
+### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2340738
 ### Bluefish-FD-XI-r2.exe.bench:Nodes searched  : 9750552
-### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2475387
+### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2444972
 ### Bluefish-XI-r2.exe.bench:Nodes searched  : 5056003
-### Bluefish-XI-r2.exe.bench:Nodes/second    : 2426105
+### Bluefish-XI-r2.exe.bench:Nodes/second    : 2391675
 ### Blue-Honey-FD-XI-r2.exe.bench:Nodes searched  : 11242357
-### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2538924
+### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2557987
 ### Blue-Honey-XI-r2.exe.bench:Nodes searched  : 4297035
-### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2383269
+### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2431825
 ### Honey-FD-XI-r2.exe.bench:Nodes searched  : 9639894
-### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2467339
+### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2507776
 ### Honey-XI-r2.exe.bench:Nodes searched  : 4661118
-### Honey-XI-r2.exe.bench:Nodes/second    : 2488584
+### Honey-XI-r2.exe.bench:Nodes/second    : 2460991
 ### Stockfish-FD-XI-r2.exe.bench:Nodes searched  : 13771708
-### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2344918
+### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2331027
 ### Stockfish-XI-r2.exe.bench:Nodes searched  : 4582693
-### Stockfish-XI-r2.exe.bench:Nodes/second    : 2450637
+### Stockfish-XI-r2.exe.bench:Nodes/second    : 2459845
 ### Weakfish-XI-r2.exe.bench:Nodes searched  : 7134572
-### Weakfish-XI-r2.exe.bench:Nodes/second    : 3363777
+### Weakfish-XI-r2.exe.bench:Nodes/second    : 3306103
 ### ======================================================
