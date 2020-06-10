@@ -154,13 +154,13 @@ namespace {
   constexpr Score PawnlessFlank       = S( 17, 95);
   constexpr Score RestrictedPiece     = S(  7,  7);
 #ifdef Blau
-  constexpr Score RookOnPawn         = S( 10, 32);
+  constexpr Score RookOnPawn          = S( 10, 32);
   constexpr Score RookOnKingRing      = S( 16,  0);
-  constexpr Score RookOnQueenFile    = S( 11,  4);
+  constexpr Score RookOnQueenFile     = S( 11,  4);
 #elif defined (Sullivan) || (Noir)
-  constexpr Score RookOnPawn         = S( 10, 22);
+  constexpr Score RookOnPawn          = S( 10, 22);
   constexpr Score RookOnKingRing      = S( 16,  0);
-  constexpr Score RookOnQueenFile    = S( 9,  6);
+  constexpr Score RookOnQueenFile     = S( 9,  6);
 #else
   constexpr Score RookOnKingRing      = S( 16,  0);
   constexpr Score RookOnQueenFile     = S(  5,  9);
@@ -172,7 +172,7 @@ namespace {
 #if defined (Stockfish) || (Weakfish)
   constexpr Score TrappedRook         = S( 55, 13);
 #else
-  constexpr Score TrappedRook        = S( 47,  4);
+  constexpr Score TrappedRook         = S( 47,  4);
 #endif
 #if defined (Sullivan) || (Blau)|| (Noir)
   constexpr Score WeakQueen          = S( 49, 15);

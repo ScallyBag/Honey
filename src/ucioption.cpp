@@ -130,14 +130,15 @@ void init(OptionsMap& o) {
     o["WeakFish"]                 << Option(true);
 #endif
 #if defined (Sullivan) || (Blau)
-    o["Deep Pro Analysis"]        << Option(true);
-    o["Pro Value"]                << Option(32, 0, 63);
+    o["Deep Pro Analysis"]        << Option(false);
+    o["Pro Analysis"]             << Option(true);
+    o["Pro Value"]                << Option(26, 0, 63);
 #else
     o["Deep Pro Analysis"]        << Option(false);
-    o["Pro Value"]                << Option(0, 0, 63);
-#endif
-    o["Defensive"]                << Option(false);
     o["Pro Analysis"]             << Option(false);
+    o["Pro Value"]                << Option( 0, 0, 63);
+#endif
+    o["Defensive"]                << Option(false);    
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
 #ifdef Add_Features
