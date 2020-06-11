@@ -214,8 +214,8 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   for (Thread* th : *this)
   {
 #ifdef Noir
-      th->nodes = th->tbHits = th->bestMoveChanges = th->nmpGuard = 0;
-#elif Stockfish
+      th->nodes = th->tbHits = th->nmpGuard  = th->bestMoveChanges = 0;
+#else
       th->nodes = th->tbHits = th->nmpMinPly = th->bestMoveChanges = 0;
 #endif
 #if defined (Sullivan) || (Blau) || (Fortress)

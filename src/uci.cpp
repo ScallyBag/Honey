@@ -183,32 +183,33 @@ void set(istringstream& is) {
     {
       sync_cout << ""  << sync_endl;
       sync_cout << " Shortcut Commands:\n"  << sync_endl;
-      sync_cout << "  setoption name 'option name'  value 'value'"  << sync_endl;
+      sync_cout << "    setoption name 'option name'  value 'value'"  << sync_endl;
       sync_cout << "  is replaced  by:"  << sync_endl;
-      sync_cout << "  set (or 's'), 'option name' or 'option shortcut' 'value'\n"  << sync_endl;
-      sync_cout << " Note: set (or 's'), without an 'option' entered displays the shortcuts\n"  << sync_endl;
-      sync_cout << "  'd' is the shortcut for 'depth'"  << sync_endl;
-      sync_cout << "  'dpa' is the shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
-      sync_cout << "  'g' is the shortcut for 'go'"  << sync_endl;
-      sync_cout << "  'i' is the shortcut for 'infinite'"  << sync_endl;
-      sync_cout << "  'm' is the shortcut for 'Mate'"  << sync_endl;
-      sync_cout << "  'mo' is the shortcut for 'Min Output'\n" << sync_endl;
-      sync_cout << "  'mv' is the shortcut for 'MultiPV'"  << sync_endl;
-      sync_cout << "  'mt' is the shortcut for 'Movetime'->\n " << sync_endl;
-      sync_cout << " Note: 'mt' is in seconds, while" << sync_endl;
-      sync_cout << "       'Movetime' is in milliseconds\n"  << sync_endl;
-      sync_cout << "  'p f' is the shortcut for 'position fen'"  << sync_endl;
-      sync_cout << "  'proa' is the shortcut for 'Pro Analysis'"  << sync_endl;
-      sync_cout << "  'prov' is the shortcut for 'Pro Value'"  << sync_endl;
-      sync_cout << "  'sm' is the shortcut for 'SearchMoves'\n" << sync_endl;
-      sync_cout << " Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
-      sync_cout << "        last option on the command line!\n"  << sync_endl;
-      sync_cout << "  'so' is the shortcut for 'Score Output'\n" << sync_endl;
-      sync_cout << "  't' is the shortcut for 'Threads'"  << sync_endl;
-      sync_cout << "  'ta' is the shortcut for 'Tactical'"  << sync_endl;
-      sync_cout << "  'q' is the shortcut for 'quit'"  << sync_endl;
-      sync_cout << "  'z' is the shortcut for 'SyzygyPath'"  << sync_endl;
-      sync_cout << "  '?' is the shortcut for 'stop'\n"  << sync_endl;
+      sync_cout << "    set (or 's'), 'option name' or 'option shortcut' 'value'\n"  << sync_endl;
+      sync_cout << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts\n\n"  << sync_endl;
+      sync_cout << " Shortcuts:"  << sync_endl;
+      sync_cout << "    'd'   -> shortcut for 'depth'"  << sync_endl;
+      sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
+      sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
+      sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
+      sync_cout << "    'm'   -> shortcut for 'Mate'"  << sync_endl;
+      sync_cout << "    'mo'  -> shortcut for 'Min Output'" << sync_endl;
+      sync_cout << "    'mv'  -> shortcut for 'MultiPV'"  << sync_endl;
+      sync_cout << "    'mt'  -> shortcut for 'Movetime'->\n " << sync_endl;
+      sync_cout << "  Note: 'mt' is in seconds, while" << sync_endl;
+      sync_cout << "    'Movetime' is in milliseconds\n"  << sync_endl;
+      sync_cout << "    'p f' -> shortcut for 'position fen'"  << sync_endl;
+      sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
+      sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
+      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'\n" << sync_endl;
+      sync_cout << "  Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
+      sync_cout << "    last option on the command line!\n"  << sync_endl;
+      sync_cout << "    'so'  -> shortcut for 'Score Output'" << sync_endl;
+      sync_cout << "    't'   -> shortcut for 'Threads'"  << sync_endl;
+      sync_cout << "    'ta'  -> shortcut for 'Tactical'"  << sync_endl;
+      sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
+      sync_cout << "    'z'   -> shortcut for 'SyzygyPath'"  << sync_endl;
+      sync_cout << "    '?'   -> shortcut for 'stop'\n"  << sync_endl;
 
 
     }

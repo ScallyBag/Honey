@@ -40,7 +40,9 @@ namespace PSQT {
 }
 
 int main(int argc, char* argv[]) {
-
+#ifdef Sullivan
+  std::cout << splash() << std::endl;
+#endif
   std::cout << engine_info() << std::endl;
 
   UCI::init(Options);

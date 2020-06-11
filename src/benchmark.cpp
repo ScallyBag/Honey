@@ -134,8 +134,8 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string threads   = (is >> token) ? token : "1";
 #ifdef Weakfish
   string limit     = (is >> token) ? token : "7";
-#elif defined (Noir)
-  string limit     = (is >> token) ? token : "12";
+#elif Noir
+  string limit     = (is >> token) ? token : "10";
 #else
   string limit     = (is >> token) ? token : "13";
 #endif

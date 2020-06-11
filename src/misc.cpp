@@ -30,7 +30,11 @@
 #endif
 
 #include <windows.h>
-
+#include <stdio.h>
+#define GREENF "\x1b[32m"
+#define RESET "\x1B[0m"
+#define BLACKB "\x1b[40m"
+#define BOLD "\x1b[1m"
 
 // The needed Windows API for processor groups could be missed from old Windows
 // versions, so instead of calling them directly (forcing the linker to resolve
@@ -84,6 +88,9 @@ const string Suffix = "FD ";
 const string Suffix = "";
 #endif
 
+//#ifdef Sullivan
+//const string Name = "Honey ";
+//#endif
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
 /// can toggle the logging of std::cout and std:cin at runtime whilst preserving
@@ -149,6 +156,22 @@ public:
 
 } // namespace
 
+#ifdef Sullivan
+const std::string splash() {
+
+     stringstream sp;
+     sp <<  GREENF BOLD BLACKB "\n\n    #     #                               #     # ###            #####     \n";
+     sp <<  "    #     #  ####  #    # ###### #   #     #   #   #     #####  #     #    \n";
+     sp <<  "    #     # #    # ##   # #       # #       # #    #     #    #       #    \n";
+     sp <<  "    ####### #    # # #  # #####    #         #     #     #    #  #####     \n";
+     sp <<  "    #     # #    # #  # # #        #        # #    #     #####  #         \n";
+     sp <<  "    #     # #    # #   ## #        #       #   #   #     #   #  #         \n";
+     sp <<  "    #     #  ####  #    # ######   #      #     # ###    #    # #######    \n\n\n" RESET;
+
+  return sp.str();
+}
+
+#endif
 /// engine_info() returns the full name of the current Honey version. This
 /// will be either "Honey <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
 /// the program was compiled) or "Honey <Version>", depending on whether
@@ -159,20 +182,19 @@ const string engine_info(bool to_uci) {
     const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
     string month, day, year;
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
-
 #ifdef Sullivan
 #ifdef Blau
     ss << "Blue Honey " << Version << Suffix << setfill('0');
 #else
     ss << "Honey " << Version << Suffix << setfill('0');
 #endif
-#elif defined (Blau)
+#elif Blau
     ss << "Bluefish " << Version << Suffix << setfill('0');
-#elif defined (Weakfish)
-	ss << "Weakfish " << Version << Suffix << setfill('0');
-#elif defined (Noir)
-	ss << "Black Diamond " << Version << Suffix << setfill('0');
-#else
+#elif Weakfish
+	  ss << "Weakfish " << Version << Suffix << setfill('0');
+#elif Noir
+	  ss << "Black Diamond " << Version << Suffix << setfill('0');
+#elif Stockfish
     ss << "Stockfish " << Version << Suffix << setfill('0');
 #endif
 #if (defined Sullivan && defined Test)
@@ -186,20 +208,19 @@ const string engine_info(bool to_uci) {
     if (Version.empty())
     {
         date >> month >> day >> year;
-		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
+        ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
 #endif
 #if defined (Sullivan) || (Weakfish)
-    ss	<< (to_uci  ? "\nid author ": " by ")
-            << "M. Byrne and scores of others...";
+      ss	<< (to_uci  ? "\nid author ": "qby ") << "M. Byrne and scores of others...";
 #else
 //     ss << (Is64Bit ? " 64" : "") // 95% of systems are 64 bit
 //     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may disrupt some GUIs due to length
 	   ss << (to_uci  ? "\nid author ": " by ")
-       << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
+        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
 #endif
 #ifdef Pi
-	ss << (to_uci  ? "":"\nCompiled for Picochess by Scally");
+	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally");
 #endif
   return ss.str();
 }

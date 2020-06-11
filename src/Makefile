@@ -167,13 +167,8 @@ PREFIX = /opt/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-ifeq ($(WEAKFISH),yes)
-	PGOBENCH = ./$(EXE) bench 16 1 5
-	PGOBENCH2 = ./$(EXE) bench 16 2 3
-else
-	PGOBENCH = ./$(EXE) bench 16 1 10
-	PGOBENCH2 = ./$(EXE) bench 16 2 8
-endif
+	PGOBENCH = ./$(EXE) bench
+  PGOBENCH2 = ./$(EXE) bench 16 2 8
 ### Object files
 ifeq ($(FILES),with_c_book)
 	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
@@ -670,9 +665,6 @@ $(directory):
 build: config-sanity
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	@$(STRIP) $(EXE)
-#	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
-#	@$(EXE) bench >/dev/null
-#	@wait
 	@rm -f *.o syzygy/*.o
 
 profile-build: config-sanity objclean profileclean
@@ -681,8 +673,8 @@ profile-build: config-sanity objclean profileclean
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	@$(PGOBENCH) &> /dev/null && wait
-	@$(PGOBENCH2) &> /dev/null && wait
+	@$(PGOBENCH)  >/dev/null  && wait
+	@$(PGOBENCH2) >/dev/null  && wait
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -692,7 +684,7 @@ profile-build: config-sanity objclean profileclean
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
 	strip $(EXE)
 #	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
-	$(EXE) bench > /dev/null 2> $(EXE).bench && wait
+	$(EXE) bench >/dev/null 2> $(EXE).bench && wait
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
@@ -805,38 +797,46 @@ icc-profile-make:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
 
 -include .depend
-
-
-
-### Based on commits through 05/03/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 06/12/2020:
 ### ======================================================
-### Black-Diamond-dev-050320.exe.bench:Nodes searched  : 8227763
-### Black-Diamond-dev-050320.exe.bench:Nodes/second    : 2283586
-### Bluefish-dev-050320.exe.bench:Nodes searched  : 4900564
-### Bluefish-dev-050320.exe.bench:Nodes/second    : 2246934
-### Bluefish-FD-dev-050320.exe.bench:Nodes searched  : 9724222
-### Bluefish-FD-dev-050320.exe.bench:Nodes/second    : 2308146
-### Blue-Honey-dev-050320.exe.bench:Nodes searched  : 4515734
-### Based on commits through 06/09/2020:
-### ======================================================
-### Black-Diamond-XI-r2.exe.bench:Nodes searched  : 9423812
-### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2402807
-### Bluefish-FD-XI-r2.exe.bench:Nodes searched  : 11284073
-### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2414738
-### Bluefish-XI-r2.exe.bench:Nodes searched  : 5580152
-### Bluefish-XI-r2.exe.bench:Nodes/second    : 2444219
-### Blue-Honey-FD-XI-r2.exe.bench:Nodes searched  : 9938076
-### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2419200
-### Blue-Honey-XI-r2.exe.bench:Nodes searched  : 4698343
-### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2440697
-### Honey-FD-XI-r2.exe.bench:Nodes searched  : 10119289
-### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2489369
-### Honey-XI-r2.exe.bench:Nodes searched  : 4835771
-### Honey-XI-r2.exe.bench:Nodes/second    : 2421517
-### Stockfish-FD-XI-r2.exe.bench:Nodes searched  : 13771708
-### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2348117
-### Stockfish-XI-r2.exe.bench:Nodes searched  : 4582693
-### Stockfish-XI-r2.exe.bench:Nodes/second    : 2461167
-### Weakfish-XI-r2.exe.bench:Nodes searched  : 7134572
-### Weakfish-XI-r2.exe.bench:Nodes/second    : 3313781
+### Black-Diamond-XI-r2.exe.bench:Nodes searched  : 3314750
+### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2464498
+### Bluefish-FD-XI-r2.exe.bench:Nodes searched  : 11067264
+### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2469820
+### Bluefish-XI-r2.exe.bench:Nodes searched  : 5491437
+### Bluefish-XI-r2.exe.bench:Nodes/second    : 2441723
+### Blue-Honey-FD-XI-r2.exe.bench:Nodes searched  : 10875554
+### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2487546
+### Blue-Honey-XI-r2.exe.bench:Nodes searched  : 4957368
+### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2456574
+### Honey-FD-XI-r2.exe.bench:Nodes searched  : 10534363
+### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2550693
+### Honey-XI-r2.exe.bench:Nodes searched  : 4917083
+### Honey-XI-r2.exe.bench:Nodes/second    : 2445093
+### Stockfish-FD-XI-r2.exe.bench:Nodes searched  : 11663009
+### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2577460
+### Stockfish-XI-r2.exe.bench:Nodes searched  : 4757174
+### Stockfish-XI-r2.exe.bench:Nodes/second    : 2452151
+### Weakfish-XI-r2.exe.bench:Nodes searched  : 8328904
+### Weakfish-XI-r2.exe.bench:Nodes/second    : 3355722
 ### ======================================================

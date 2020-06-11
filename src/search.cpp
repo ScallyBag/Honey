@@ -414,15 +414,8 @@ skipLevels:
                 profound_v = proValue * 900000;
                 //std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
               }
-          std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
+          //std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
         }
-
-      for (Thread* th : Threads)
-      {
-          th->bestMoveChanges = 0;
-          if (th != this)
-              th->start_searching();
-      }
       Threads.start_searching(); // start non-main threads
       Thread::search();          // main thread start searching
 #ifdef Add_Features

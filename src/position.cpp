@@ -67,7 +67,6 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 
       os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
   }
-// rank and file notation by nguyenpham https://github.com/official-stockfish/Stockfish/pull/2723
   os << "   a   b   c   d   e   f   g   h\n"
      << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
      << std::setfill('0') << std::setw(16) << pos.key()

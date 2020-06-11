@@ -82,8 +82,8 @@ void TranspositionTable::resize(size_t mbSize) {
 
   aligned_ttmem_free(mem);
 #ifdef Noir
- clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
- table = static_cast<Cluster*>(aligned_ttmem_alloc(clusterCount * sizeof(Cluster), mem));
+  clusterCount = mbSize * 1024 * 1024 / sizeof(Cluster);
+  table = static_cast<Cluster*>(aligned_ttmem_alloc(clusterCount * sizeof(Cluster), mem));
 #else
   superClusterCount = mbSize * 1024 * 1024 / (sizeof(Cluster) * ClustersPerSuperCluster);
 
