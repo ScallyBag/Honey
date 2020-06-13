@@ -30,11 +30,6 @@
 #endif
 
 #include <windows.h>
-#include <stdio.h>
-#define GREENF "\x1b[32m"
-#define RESET "\x1B[0m"
-#define BLACKB "\x1b[40m"
-#define BOLD "\x1b[1m"
 
 // The needed Windows API for processor groups could be missed from old Windows
 // versions, so instead of calling them directly (forcing the linker to resolve
@@ -157,20 +152,21 @@ public:
 } // namespace
 
 #ifdef Sullivan
+#ifndef Fortress
 const std::string splash() {
 
      stringstream sp;
-     sp <<  GREENF BOLD BLACKB "\n\n    #     #                               #     # ###            #####     \n";
-     sp <<  "    #     #  ####  #    # ###### #   #     #   #   #     #####  #     #    \n";
-     sp <<  "    #     # #    # ##   # #       # #       # #    #     #    #       #    \n";
-     sp <<  "    ####### #    # # #  # #####    #         #     #     #    #  #####     \n";
-     sp <<  "    #     # #    # #  # # #        #        # #    #     #####  #         \n";
-     sp <<  "    #     # #    # #   ## #        #       #   #   #     #   #  #         \n";
-     sp <<  "    #     #  ####  #    # ######   #      #     # ###    #    # #######    \n\n\n" RESET;
+     sp << "\033[1;40m\033[1;32m" << "\n\n    #     #                               #     # ###            #####     \n";
+     sp << "    #     #  ####  #    # ###### #   #     #   #   #     #####  #     #    \n";
+     sp << "    #     # #    # ##   # #       # #       # #    #     #    #       #    \n";
+     sp << "    ####### #    # # #  # #####    #         #     # ### #    #  #####     \n";
+     sp << "    #     # #    # #  # # #        #        # #    #     #####  #         \n";
+     sp << "    #     # #    # #   ## #        #       #   #   #     #   #  #         \n";
+     sp << "    #     #  ####  #    # ######   #      #     # ###    #    # #######    \n\n\n";
 
   return sp.str();
 }
-
+#endif
 #endif
 /// engine_info() returns the full name of the current Honey version. This
 /// will be either "Honey <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
@@ -188,9 +184,14 @@ const string engine_info(bool to_uci) {
 #else
     ss << "Honey " << Version << Suffix << setfill('0');
 #endif
-#elif Blau
+#endif
+
+#ifdef Blau
+#ifndef Sullivan
     ss << "Bluefish " << Version << Suffix << setfill('0');
-#elif Weakfish
+#endif
+#endif
+#ifdef Weakfish
 	  ss << "Weakfish " << Version << Suffix << setfill('0');
 #elif Noir
 	  ss << "Black Diamond " << Version << Suffix << setfill('0');
@@ -211,8 +212,8 @@ const string engine_info(bool to_uci) {
         ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << "";
     }
 #endif
-#if defined (Sullivan) || (Weakfish)
-      ss	<< (to_uci  ? "\nid author ": "qby ") << "M. Byrne and scores of others...";
+#ifdef Sullivan
+      ss	<< (to_uci  ? "\nid author ": "by ") << "M. Byrne and scores of others..." << "\033[0m";
 #else
 //     ss << (Is64Bit ? " 64" : "") // 95% of systems are 64 bit
 //     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may disrupt some GUIs due to length

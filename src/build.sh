@@ -35,14 +35,14 @@ make -j30 $BUILD $ARCH $COMP "$@"
 }
 
 mke NOIR=yes && wait
-mke BLUEFISH=yes FORTRESS_DETECT=yes && wait
+mke BLUEFISH=yes FORT=yes && wait
 mke BLUEFISH=yes && wait
-mke HONEY=yes BLUEFISH=yes FORTRESS_DETECT=yes && wait
+mke HONEY=yes BLUEFISH=yes FORT=yes && wait
 mke HONEY=yes BLUEFISH=yes && wait
-mke HONEY=yes FORTRESS_DETECT=yes && wait
+mke HONEY=yes FORT=yes && wait
 mke HONEY=yes && wait
 mke WEAKFISH=yes && wait
-mke FORTRESS_DETECT=yes && wait
+mke FORT=yes && wait
 mke
 
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
@@ -56,8 +56,8 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '820,942d' ../src/Makefile
-sed '819r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '850,972d' ../src/Makefile
+sed '849r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 
 

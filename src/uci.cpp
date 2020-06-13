@@ -129,92 +129,92 @@ void set(istringstream& is) {
     // provide user confirmation
     if (Options.count(name)) {
         Options[name] = value;
-        sync_cout << "Confirmation: "<< name << " set to " << value << sync_endl;
+        sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< name << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "dpa")
     {
       Options["Deep Pro Analysis"] = {value};
-      sync_cout << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "t")  {
       Threads.set(stoi(value));
-      sync_cout << "Confirmation: "<< "Threads" << " set to " << value << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Threads" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "h")  {
       TT.resize(stoi(value));
-      sync_cout << "Confirmation: "<< "Hash" << " set to " << value << " Mb" << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Hash" << " set to " << value << " Mb" << "\033[0m" << sync_endl;
     }
     else if (name == "mo")
     {
     Options["Min Output"] = {value};
-    sync_cout << "Confirmation: "<< "Min Output" << " set to " << value << sync_endl;
+    sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Min Output" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "mv")
     {
       Options["MultiPV"] = {value};
-      sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "MultiPV" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "proa")
     {
       Options["Pro Analysis"] = {value};
-      sync_cout << "Confirmation: "<< "Pro Analysis" << " set to " << value << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Pro Analysis" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "prov")
     {
       Options["Pro Analysis"] = {value};
-      sync_cout << "Confirmation: "<< "Pro Value" << " set to " << value << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Pro Value" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "so")
     {
     Options["Score Output"] = {value};
-    sync_cout << "Confirmation: "<< "Score Output" << " set to " << value << sync_endl;
+    sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Score Output" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "ta")
     {
     Options["Tactical"] = {value};
-    sync_cout << "Confirmation: "<< "Tactical" << " set to " << value << sync_endl;
+    sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Tactical" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "z")
     {
       Tablebases::init(value);
-      sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "SyzygyPath" << " set to " << value << "\033[0m" << sync_endl;
     }
     else if (name == "" || name == "option" )
     {
       sync_cout << ""  << sync_endl;
-      sync_cout << " Shortcut Commands:\n"  << sync_endl;
-      sync_cout << "    setoption name 'option name'  value 'value'"  << sync_endl;
-      sync_cout << "  is replaced  by:"  << sync_endl;
-      sync_cout << "    set (or 's'), 'option name' or 'option shortcut' 'value'\n"  << sync_endl;
-      sync_cout << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts\n\n"  << sync_endl;
-      sync_cout << " Shortcuts:"  << sync_endl;
-      sync_cout << "    'd'   -> shortcut for 'depth'"  << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << " Shortcut Commands:"  << sync_endl;
+      sync_cout << "  Note: setoption name 'option name'  value 'value'"  << sync_endl;
+      sync_cout << "  is replaced  by:"  << "\033[0m" << sync_endl;
+      sync_cout << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
+      sync_cout << "\n Shortcuts:"  << "\033[0m" << sync_endl;
+      sync_cout << "    'd'   -> shortcut for 'depth'"  << "\033[1;40m\033[1;32m" << sync_endl;
       sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
       sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
       sync_cout << "    'm'   -> shortcut for 'Mate'"  << sync_endl;
       sync_cout << "    'mo'  -> shortcut for 'Min Output'" << sync_endl;
       sync_cout << "    'mv'  -> shortcut for 'MultiPV'"  << sync_endl;
-      sync_cout << "    'mt'  -> shortcut for 'Movetime'->\n " << sync_endl;
+      sync_cout << "    'mt'  -> shortcut for 'Movetime'-> " << "\033[0m" << sync_endl;
       sync_cout << "  Note: 'mt' is in seconds, while" << sync_endl;
-      sync_cout << "    'Movetime' is in milliseconds\n"  << sync_endl;
-      sync_cout << "    'p f' -> shortcut for 'position fen'"  << sync_endl;
+      sync_cout << "  movetime is in milliseconds"  << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "    'p f' -> shortcut for 'position fen'" << "\033[1;40m\033[1;32m" << sync_endl;
       sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
       sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
-      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'\n" << sync_endl;
+      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" << "\033[0m" << sync_endl;
       sync_cout << "  Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
-      sync_cout << "    last option on the command line!\n"  << sync_endl;
-      sync_cout << "    'so'  -> shortcut for 'Score Output'" << sync_endl;
+      sync_cout << "  last option on the command line!"  << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "    'so'  -> shortcut for 'Score Output'" << "\033[1;40m\033[1;32m" << sync_endl;
       sync_cout << "    't'   -> shortcut for 'Threads'"  << sync_endl;
       sync_cout << "    'ta'  -> shortcut for 'Tactical'"  << sync_endl;
       sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
       sync_cout << "    'z'   -> shortcut for 'SyzygyPath'"  << sync_endl;
-      sync_cout << "    '?'   -> shortcut for 'stop'\n"  << sync_endl;
+      sync_cout << "    '?'   -> shortcut for 'stop'"  << "\033[0m" << sync_endl;
 
 
     }
     else
-      sync_cout << "No such option: " << name << sync_endl;
+      sync_cout << "\033[1;40m\033[1;32m" << "No such option: " << name << "\033[0m"<< sync_endl;
 
 }
 
@@ -425,7 +425,7 @@ void UCI::loop(int argc, char* argv[]) {
         else if (token == "c++") sync_cout << compiler_info() << sync_endl;
 #endif
         else
-            sync_cout << "Unknown command: " << cmd << sync_endl;
+            sync_cout << "\033[1;40m\033[1;32m" << "Unknown command: " << cmd << "\033[0m" << sync_endl;
 #ifdef Add_Features
     } while (token != "quit" && token != "q" && argc == 1); // Command line args are one-shot
 #else
@@ -472,7 +472,7 @@ string UCI::value(Value v) {
   ss << "cp " << v * 100 / PawnValueEg;
 #endif
   else
-    ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+    ss << "\033[1;40m\033[1;32m" << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
   return ss.str();
 }
 

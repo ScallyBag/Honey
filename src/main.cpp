@@ -41,7 +41,9 @@ namespace PSQT {
 
 int main(int argc, char* argv[]) {
 #ifdef Sullivan
+#ifndef Fortress
   std::cout << splash() << std::endl;
+#endif
 #endif
   std::cout << engine_info() << std::endl;
 

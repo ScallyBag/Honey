@@ -33,7 +33,9 @@
 const std::string engine_info(bool to_uci = false);
 const std::string compiler_info();
 #ifdef Sullivan
+#ifndef Fortress
 const std::string splash();
+#endif
 #endif
 void prefetch(void* addr);
 void* large_page_alloc(size_t size);

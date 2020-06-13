@@ -31,7 +31,7 @@ DATE2=$(shell date +"%m%d")
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
 ### https://github.com/jhellis3/Stockfish/tree/game_cycle
-###	FORTRESS_DETECT = yes
+###	FORT = yes
 
 ### HONEY=yes
 
@@ -79,7 +79,7 @@ endif
 ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
-ifeq ($(FORTRESS_DETECT),yes)
+ifeq ($(FORT),yes)
     CXXFLAGS += -DFortress
 	SUF=-FD
 endif
@@ -131,6 +131,7 @@ ifneq ($(HONEY),yes)
 			PRE=Weak
 		else
 			PRE=Stock
+			STOCKFISH = yes
 			CXXFLAGS += -DStockfish
 		endif
 	NAME=$(PRE)fish$(SUF)
@@ -167,8 +168,30 @@ PREFIX = /opt/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-	PGOBENCH = ./$(EXE) bench
-  PGOBENCH2 = ./$(EXE) bench 16 2 8
+ifeq  ($(WEAKFISH),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 8
+endif
+ifeq  ($(NOIR),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 2 5
+endif
+ifeq  ($(STOCKFISH),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 14
+PGOBENCH2 = ./$(EXE) bench 16 2 7
+endif
+ifeq  ($(HONEY),yes)
+PGOBENCH  = ./$(EXE) bench 32 1 18
+PGOBENCH2 = ./$(EXE) bench 16 2 10
+endif
+ifeq  ($(BLUEFISH),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 14
+PGOBENCH2 = ./$(EXE) bench 16 2 7
+endif
+ifeq  ($(FORT),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH2 =
+endif
+
 ### Object files
 ifeq ($(FILES),with_c_book)
 	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
@@ -682,7 +705,12 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+ifeq ($(COMP),mingw)
 	strip $(EXE)
+else
+	strip $(EXE)
+endif
+
 #	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
 	$(EXE) bench >/dev/null 2> $(EXE).bench && wait
 	rm -f *.o syzygy/*.o llvm-profdata
@@ -817,26 +845,28 @@ icc-profile-make:
 #
 #
 #
-### Based on commits through 06/12/2020:
+#
+#
+### Based on commits through 06/13/2020:
 ### ======================================================
 ### Black-Diamond-XI-r2.exe.bench:Nodes searched  : 3314750
-### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2464498
+### Black-Diamond-XI-r2.exe.bench:Nodes/second    : 2471849
 ### Bluefish-FD-XI-r2.exe.bench:Nodes searched  : 11067264
-### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2469820
+### Bluefish-FD-XI-r2.exe.bench:Nodes/second    : 2497689
 ### Bluefish-XI-r2.exe.bench:Nodes searched  : 5491437
-### Bluefish-XI-r2.exe.bench:Nodes/second    : 2441723
-### Blue-Honey-FD-XI-r2.exe.bench:Nodes searched  : 10875554
-### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2487546
-### Blue-Honey-XI-r2.exe.bench:Nodes searched  : 4957368
-### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2456574
-### Honey-FD-XI-r2.exe.bench:Nodes searched  : 10534363
-### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2550693
-### Honey-XI-r2.exe.bench:Nodes searched  : 4917083
-### Honey-XI-r2.exe.bench:Nodes/second    : 2445093
+### Bluefish-XI-r2.exe.bench:Nodes/second    : 2424475
+### Blue-Honey-FD-XI-r2.exe.bench:Nodes searched  : 9809476
+### Blue-Honey-FD-XI-r2.exe.bench:Nodes/second    : 2488451
+### Blue-Honey-XI-r2.exe.bench:Nodes searched  : 4692394
+### Blue-Honey-XI-r2.exe.bench:Nodes/second    : 2400201
+### Honey-FD-XI-r2.exe.bench:Nodes searched  : 9222368
+### Honey-FD-XI-r2.exe.bench:Nodes/second    : 2532226
+### Honey-XI-r2.exe.bench:Nodes searched  : 5111194
+### Honey-XI-r2.exe.bench:Nodes/second    : 2407533
 ### Stockfish-FD-XI-r2.exe.bench:Nodes searched  : 11663009
-### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2577460
+### Stockfish-FD-XI-r2.exe.bench:Nodes/second    : 2566683
 ### Stockfish-XI-r2.exe.bench:Nodes searched  : 4757174
-### Stockfish-XI-r2.exe.bench:Nodes/second    : 2452151
+### Stockfish-XI-r2.exe.bench:Nodes/second    : 2530411
 ### Weakfish-XI-r2.exe.bench:Nodes searched  : 8328904
-### Weakfish-XI-r2.exe.bench:Nodes/second    : 3355722
+### Weakfish-XI-r2.exe.bench:Nodes/second    : 3340916
 ### ======================================================
