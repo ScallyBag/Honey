@@ -129,92 +129,92 @@ void set(istringstream& is) {
     // provide user confirmation
     if (Options.count(name)) {
         Options[name] = value;
-        sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< name << " set to " << value << "\033[0m" << sync_endl;
+        sync_cout << FontColor::green << "Confirmation: "<< name << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "dpa")
     {
       Options["Deep Pro Analysis"] = {value};
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "t")  {
       Threads.set(stoi(value));
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Threads" << " set to " << value << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "Threads" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "h")  {
       TT.resize(stoi(value));
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Hash" << " set to " << value << " Mb" << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "Hash" << " set to " << value << " Mb" << FontColor::reset << sync_endl;
     }
     else if (name == "mo")
     {
     Options["Min Output"] = {value};
-    sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Min Output" << " set to " << value << "\033[0m" << sync_endl;
+    sync_cout << FontColor::green << "Confirmation: "<< "Min Output" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "mv")
     {
       Options["MultiPV"] = {value};
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "MultiPV" << " set to " << value << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "MultiPV" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "proa")
     {
       Options["Pro Analysis"] = {value};
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Pro Analysis" << " set to " << value << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "Pro Analysis" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "prov")
     {
       Options["Pro Analysis"] = {value};
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Pro Value" << " set to " << value << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "Pro Value" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "so")
     {
     Options["Score Output"] = {value};
-    sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Score Output" << " set to " << value << "\033[0m" << sync_endl;
+    sync_cout << FontColor::green << "Confirmation: "<< "Score Output" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "ta")
     {
     Options["Tactical"] = {value};
-    sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "Tactical" << " set to " << value << "\033[0m" << sync_endl;
+    sync_cout << FontColor::green << "Confirmation: "<< "Tactical" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "z")
     {
       Tablebases::init(value);
-      sync_cout << "\033[1;40m\033[1;32m" << "Confirmation: "<< "SyzygyPath" << " set to " << value << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "Confirmation: "<< "SyzygyPath" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "" || name == "option" )
     {
       sync_cout << ""  << sync_endl;
-      sync_cout << "\033[1;40m\033[1;32m" << " Shortcut Commands:"  << sync_endl;
+      sync_cout <<  " Shortcut Commands:"  << sync_endl;
       sync_cout << "  Note: setoption name 'option name'  value 'value'"  << sync_endl;
-      sync_cout << "  is replaced  by:"  << "\033[0m" << sync_endl;
-      sync_cout << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
-      sync_cout << "\033[1;40m\033[1;32m" << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
-      sync_cout << "\n Shortcuts:"  << "\033[0m" << sync_endl;
-      sync_cout << "    'd'   -> shortcut for 'depth'"  << "\033[1;40m\033[1;32m" << sync_endl;
+      sync_cout << "  is replaced  by:"  <<  sync_endl;
+      sync_cout << FontColor::green << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
+      sync_cout << FontColor::reset << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
+      sync_cout << "\n Shortcuts:"  << sync_endl;
+      sync_cout << FontColor::green << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
       sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
       sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
       sync_cout << "    'm'   -> shortcut for 'Mate'"  << sync_endl;
       sync_cout << "    'mo'  -> shortcut for 'Min Output'" << sync_endl;
       sync_cout << "    'mv'  -> shortcut for 'MultiPV'"  << sync_endl;
-      sync_cout << "    'mt'  -> shortcut for 'Movetime'-> " << "\033[0m" << sync_endl;
-      sync_cout << "  Note: 'mt' is in seconds, while" << sync_endl;
+      sync_cout << "    'mt'  -> shortcut for 'Movetime'-> " << FontColor::reset << sync_endl;
+      sync_cout << FontColor::reset << "  Note: 'mt' is in seconds, while" << sync_endl;
       sync_cout << "  movetime is in milliseconds"  << sync_endl;
-      sync_cout << "\033[1;40m\033[1;32m" << "    'p f' -> shortcut for 'position fen'" << "\033[1;40m\033[1;32m" << sync_endl;
+      sync_cout << FontColor::green << "    'p f' -> shortcut for 'position fen'" << sync_endl;
       sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
       sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
-      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" << "\033[0m" << sync_endl;
+      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" << FontColor::reset << sync_endl;
       sync_cout << "  Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
       sync_cout << "  last option on the command line!"  << sync_endl;
-      sync_cout << "\033[1;40m\033[1;32m" << "    'so'  -> shortcut for 'Score Output'" << "\033[1;40m\033[1;32m" << sync_endl;
+      sync_cout << FontColor::green << "    'so'  -> shortcut for 'Score Output'" << FontColor::green << sync_endl;
       sync_cout << "    't'   -> shortcut for 'Threads'"  << sync_endl;
       sync_cout << "    'ta'  -> shortcut for 'Tactical'"  << sync_endl;
       sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
       sync_cout << "    'z'   -> shortcut for 'SyzygyPath'"  << sync_endl;
-      sync_cout << "    '?'   -> shortcut for 'stop'"  << "\033[0m" << sync_endl;
+      sync_cout << "    '?'   -> shortcut for 'stop'"  << FontColor::reset << sync_endl;
 
 
     }
     else
-      sync_cout << "\033[1;40m\033[1;32m" << "No such option: " << name << "\033[0m"<< sync_endl;
+      sync_cout << FontColor::green << "No such option: " << name << FontColor::reset<< sync_endl;
 
 }
 
@@ -425,7 +425,7 @@ void UCI::loop(int argc, char* argv[]) {
         else if (token == "c++") sync_cout << compiler_info() << sync_endl;
 #endif
         else
-            sync_cout << "\033[1;40m\033[1;32m" << "Unknown command: " << cmd << "\033[0m" << sync_endl;
+            sync_cout << FontColor::green << "Unknown command: " << cmd << FontColor::reset << sync_endl;
 #ifdef Add_Features
     } while (token != "quit" && token != "q" && argc == 1); // Command line args are one-shot
 #else
@@ -451,29 +451,33 @@ string UCI::value(Value v) {
   const float vs = (float)v;
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
-#endif
+
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
-#ifdef Add_Features
-  // Score percentage evalaution output, similair to Lc0 output.
-  // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
-  if ( Options["Score Output"] == "ScorPct-GUI")
-       ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
-	  / (pow(sf,(sf * vs /1000)) + 1);
+    {
+      // Score percentage evalaution output, similair to Lc0 output.
+      // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
+      if ( Options["Score Output"] == "ScorPct-GUI")
+          ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
+	            / (pow(sf,(sf * vs /1000)) + 1);
 
-  // Centipawn scoring, value times centipawn factor
-  // SF values the raw score of pawns much higher than 100, see types.h
-  // The higher raw score allows for greater precison in many evaluation functions
-  else if (Options["Score Output"] == "Centipawn")
-	  ss << fixed << setprecision(0) << "cp " << (vs * vf);
-
-  else ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
-                                / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
+      // Centipawn scoring, value times centipawn factor
+      // SF values the raw score of pawns much higher than 100, see types.h
+      // The higher raw score allows for greater precison in many evaluation functions
+       else if (Options["Score Output"] == "Centipawn")
+	         ss << fixed << setprecision(0) << "cp " << (vs * vf);
+       else
+            ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
+                        / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
+    }
+   else
+       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 #else
-  ss << "cp " << v * 100 / PawnValueEg;
+   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
+       ss << "cp " << v * 100 / PawnValueEg;
+   else
+       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 #endif
-  else
-    ss << "\033[1;40m\033[1;32m" << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
-  return ss.str();
+   return ss.str();
 }
 
 

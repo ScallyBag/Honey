@@ -476,7 +476,7 @@ skipLevels:
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore)
           ++i;
           bestPreviousScore = bestThread->rootMoves[i].score;
-          sync_cout << "\033[1;40m\033[1;32m " << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\033[0m" << sync_endl;
+          sync_cout << FontColor::green << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
 	  }
       else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 7 )
@@ -496,7 +496,7 @@ skipLevels:
 
           }
           bestPreviousScore = bestThread->rootMoves[i].score;
-          sync_cout << "\033[1;40m\033[1;32m " << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\033[0m" << sync_endl;
+          sync_cout << FontColor::green << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
       }
       else
@@ -2607,8 +2607,8 @@ void MainThread::check_time() {
     if (tock - tick >= 10000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\033[1;40m\033[1;32m " << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
       //dbg_print();
     }
   }
@@ -2617,8 +2617,8 @@ void MainThread::check_time() {
     if (tock - tick >= 60000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\033[1;40m\033[1;32m " << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << FontColor::reset << sync_endl;
       //dbg_print();
     }
   }
@@ -2627,8 +2627,8 @@ void MainThread::check_time() {
     if (tock - tick >= 300000 && minOutput)
     {
       tick = tock;
-      sync_cout << "\033[1;40m\033[1;32m " << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << "\033[0m" << sync_endl;
+      sync_cout << FontColor::green << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
+      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << FontColor::reset << sync_endl;
       //dbg_print();
     }
   }
@@ -2680,12 +2680,14 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
       if (ss.rdbuf()->in_avail()) // Not at first line
           ss << "\n";
       if (v >= VALUE_MATE_IN_MAX_PLY)
-          ss << "\033[1;40m\033[1;32m "
-             << "info"
+      {
+          ss << FontColor::green << "\n";
+          ss << "info"
              << " depth "    << d
              << " seldepth " << rootMoves[i].selDepth
              << " multipv "  << i + 1
              << " score "    << UCI::value(v);
+           }
       else
           ss << "info"
              << " depth "    << d

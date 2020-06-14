@@ -132,4 +132,24 @@ namespace WinProcGroup {
   void bindThisThread(size_t idx);
 }
 
+namespace FontColor {
+
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & green( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[1;40m\033[1;32m";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & reset( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[0m";
+  }
+
+} // FontColor
+
+
 #endif // #ifndef MISC_H_INCLUDED
