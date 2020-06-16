@@ -268,17 +268,11 @@ string UCI::value(Value v, Value v2) {
 
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
   {
+      if (   abs(v) < 95 * PawnValueEg
+          && abs(v - v2) < PawnValueEg)
+          v = (v + v2) / 2;
 
-      if (   abs(v) < 10 * PawnValueEg
-          && abs(v - v2) < 3 * PawnValueEg
-          && Options["SmoothEval"] == 1)
-      {
-        v = (v + v2) / 2;
-
-        ss << "cp " << v * 100 / PawnValueEg;
-      }
-      else
-        ss << "cp " << v * 100 / PawnValueEg;
+      ss << "cp " << v * 100 / PawnValueEg;
   }
   else
       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
