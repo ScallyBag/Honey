@@ -188,7 +188,7 @@ PGOBENCH  = ./$(EXE) bench 16 1 14
 PGOBENCH2 = ./$(EXE) bench 16 2 7
 endif
 ifeq  ($(FORT),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH  = ./$(EXE) bench 16 1 8
 PGOBENCH2 =
 endif
 
@@ -850,23 +850,23 @@ icc-profile-make:
 ### Based on commits through 06/16/2020:
 ### ======================================================
 ### Black-Diamond-dev-061620.exe.bench:Nodes searched  : 4172738
-### Black-Diamond-dev-061620.exe.bench:Nodes/second    : 2501641
+### Black-Diamond-dev-061620.exe.bench:Nodes/second    : 1644752
 ### Bluefish-dev-061620.exe.bench:Nodes searched  : 5284483
-### Bluefish-dev-061620.exe.bench:Nodes/second    : 2027036
+### Bluefish-dev-061620.exe.bench:Nodes/second    : 1499569
 ### Bluefish-FD-dev-061620.exe.bench:Nodes searched  : 10413143
-### Bluefish-FD-dev-061620.exe.bench:Nodes/second    : 2511006
+### Bluefish-FD-dev-061620.exe.bench:Nodes/second    : 1572507
 ### Blue-Honey-dev-061620.exe.bench:Nodes searched  : 4990858
-### Blue-Honey-dev-061620.exe.bench:Nodes/second    : 2489205
+### Blue-Honey-dev-061620.exe.bench:Nodes/second    : 1661957
 ### Blue-Honey-FD-dev-061620.exe.bench:Nodes searched  : 10067560
-### Blue-Honey-FD-dev-061620.exe.bench:Nodes/second    : 2493822
+### Blue-Honey-FD-dev-061620.exe.bench:Nodes/second    : 1568644
 ### Honey-dev-061620.exe.bench:Nodes searched  : 5548787
-### Honey-dev-061620.exe.bench:Nodes/second    : 2440099
+### Honey-dev-061620.exe.bench:Nodes/second    : 1528591
 ### Honey-FD-dev-061620.exe.bench:Nodes searched  : 10190826
-### Honey-FD-dev-061620.exe.bench:Nodes/second    : 2469306
+### Honey-FD-dev-061620.exe.bench:Nodes/second    : 1552296
 ### Stockfish-dev-061620.exe.bench:Nodes searched  : 4957812
-### Stockfish-dev-061620.exe.bench:Nodes/second    : 2505210
+### Stockfish-dev-061620.exe.bench:Nodes/second    : 1615448
 ### Stockfish-FD-dev-061620.exe.bench:Nodes searched  : 69688285
-### Stockfish-FD-dev-061620.exe.bench:Nodes/second    : 1953585
+### Stockfish-FD-dev-061620.exe.bench:Nodes/second    : 1178421
 ### Weakfish-dev-061620.exe.bench:Nodes searched  : 7900753
-### Weakfish-dev-061620.exe.bench:Nodes/second    : 3342112
+### Weakfish-dev-061620.exe.bench:Nodes/second    : 1982623
 ### ======================================================
