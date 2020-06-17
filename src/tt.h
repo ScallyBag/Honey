@@ -24,9 +24,9 @@
 #include "misc.h"
 #include "types.h"
 
-/// TTEntry struct is the 10 bytes transposition table entry, defined as below:
+/// TTEntry struct is the 16 bytes transposition table entry, defined as below:
 ///
-/// key        16 bit
+/// key        64 bit
 /// move       16 bit
 /// value      16 bit
 /// eval value 16 bit
@@ -40,15 +40,16 @@ struct TTEntry {
   Move  move()  const { return (Move )move16; }
   Value value() const { return (Value)value16; }
   Value eval()  const { return (Value)eval16; }
-  Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
-  bool is_pv()  const { return (bool)(genBound8 & 0x4); }
+  Depth depth() const { return (Depth)depth8 + DEPTH_NONE; }
+  bool  is_pv() const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
+
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
 
-  uint16_t key16;
+  uint64_t key;
   uint16_t move16;
   int16_t  value16;
   int16_t  eval16;
@@ -65,12 +66,10 @@ private:
 
 class TranspositionTable {
 
-  static constexpr int ClusterSize = 3;
-  static constexpr int ClustersPerSuperCluster = 256;
+  static constexpr int ClusterSize = 2;
 
   struct Cluster {
     TTEntry entry[ClusterSize];
-    char padding[2]; // Pad to 32 bytes
   };
 
   static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
@@ -83,21 +82,15 @@ public:
   void resize(size_t mbSize);
   void clear();
 
+  // The key is used to get the index of the cluster
   TTEntry* first_entry(const Key key) const {
-
-    // The index is computed from
-    // Idx = (K48 * SCC) / 2^40, with K48 the 48 lowest bits swizzled.
-
-    const uint64_t firstTerm =  uint32_t(key) * uint64_t(superClusterCount);
-    const uint64_t secondTerm = (uint16_t(key >> 32) * uint64_t(superClusterCount)) >> 16;
-
-    return &table[(firstTerm + secondTerm) >> 24].entry[0];
+    return &table[key & (clusterCount - 1)].entry[0];
   }
 
 private:
   friend struct TTEntry;
 
-  size_t superClusterCount;
+  size_t clusterCount;
   Cluster* table;
   void* mem;
   uint8_t generation8; // Size must be not bigger than TTEntry::genBound8
