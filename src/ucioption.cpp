@@ -149,7 +149,10 @@ void init(OptionsMap& o) {
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
     o["UCI_LimitStrength"]        << Option(false);
-    o["Sleep"]                    << Option(false);
+    o["Slow_Play"]                << Option(false);
+#ifdef Weak
+    o["Weakfish"]                     << Option(true);
+#endif
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
     o["Engine_Elo"]                  << Option(1750, 1000, 2900);
     o["FIDE_Ratings"]             << Option(true);

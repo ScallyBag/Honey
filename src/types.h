@@ -103,9 +103,7 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 constexpr int MAX_MOVES = 256;
-
 constexpr int MAX_PLY   = 246;
-
 
 /// A move needs 16 bits to be stored
 ///
@@ -141,11 +139,13 @@ enum CastlingRights {
   WHITE_OOO = WHITE_OO << 1,
   BLACK_OO  = WHITE_OO << 2,
   BLACK_OOO = WHITE_OO << 3,
+
   KING_SIDE      = WHITE_OO  | BLACK_OO,
   QUEEN_SIDE     = WHITE_OOO | BLACK_OOO,
   WHITE_CASTLING = WHITE_OO  | WHITE_OOO,
   BLACK_CASTLING = BLACK_OO  | BLACK_OOO,
   ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,
+
   CASTLING_RIGHT_NB = 16
 };
 

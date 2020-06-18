@@ -71,6 +71,7 @@ namespace Trace {
 }
 
 using namespace Trace;
+
 namespace {
 
   // Threshold for lazy and space evaluation
@@ -102,21 +103,22 @@ namespace {
   // indexed by piece type and number of attacked squares in the mobility area.
   constexpr Score MobilityBonus[][32] = {
     { S(-62,-81), S(-53,-56), S(-12,-31), S( -4,-16), S(  3,  5), S( 13, 11), // Knight
-     S( 22, 17), S( 28, 20), S( 33, 25) },
-   { S(-48,-59), S(-20,-23), S( 16, -3), S( 26, 13), S( 38, 24), S( 51, 42), // Bishop
-     S( 55, 54), S( 63, 57), S( 63, 65), S( 68, 73), S( 81, 78), S( 81, 86),
-     S( 91, 88), S( 98, 97) },
-   { S(-60,-78), S(-20,-17), S(  2, 23), S(  3, 39), S(  3, 70), S( 11, 99), // Rook
-     S( 22,103), S( 31,121), S( 40,134), S( 40,139), S( 41,158), S( 48,164),
-     S( 57,168), S( 57,169), S( 62,172) },
-   { S(-30,-48), S(-12,-30), S( -8, -7), S( -9, 19), S( 20, 40), S( 23, 55), // Queen
-     S( 23, 59), S( 35, 75), S( 38, 78), S( 53, 96), S( 64, 96), S( 65,100),
-     S( 65,121), S( 66,127), S( 67,131), S( 67,133), S( 72,136), S( 72,141),
-     S( 77,147), S( 79,150), S( 93,151), S(108,168), S(108,168), S(108,171),
-     S(110,182), S(114,182), S(114,192), S(116,219) }
+      S( 22, 17), S( 28, 20), S( 33, 25) },
+    { S(-48,-59), S(-20,-23), S( 16, -3), S( 26, 13), S( 38, 24), S( 51, 42), // Bishop
+      S( 55, 54), S( 63, 57), S( 63, 65), S( 68, 73), S( 81, 78), S( 81, 86),
+      S( 91, 88), S( 98, 97) },
+    { S(-60,-78), S(-20,-17), S(  2, 23), S(  3, 39), S(  3, 70), S( 11, 99), // Rook
+      S( 22,103), S( 31,121), S( 40,134), S( 40,139), S( 41,158), S( 48,164),
+      S( 57,168), S( 57,169), S( 62,172) },
+    { S(-30,-48), S(-12,-30), S( -8, -7), S( -9, 19), S( 20, 40), S( 23, 55), // Queen
+      S( 23, 59), S( 35, 75), S( 38, 78), S( 53, 96), S( 64, 96), S( 65,100),
+      S( 65,121), S( 66,127), S( 67,131), S( 67,133), S( 72,136), S( 72,141),
+      S( 77,147), S( 79,150), S( 93,151), S(108,168), S(108,168), S(108,171),
+      S(110,182), S(114,182), S(114,192), S(116,219) }
   };
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is
+  // no (friendly) pawn on the rook file.
   constexpr Score RookOnFile[] = { S(19, 7), S(48, 29) };
 
   // ThreatByMinor/ByRook[attacked PieceType] contains bonuses according to
@@ -134,8 +136,8 @@ namespace {
   constexpr Score PassedRank[RANK_NB] = {
     S(0, 0), S(10, 28), S(17, 33), S(15, 41), S(62, 72), S(168, 177), S(276, 260)
   };
-  // Assorted bonuses and penalties
 
+  // Assorted bonuses and penalties
   constexpr Score BishopPawns         = S(  3,  7);
   constexpr Score BishopOnKingRing    = S( 24,  0);
   constexpr Score BishopXRayPawns     = S(  4,  5);
@@ -179,7 +181,7 @@ namespace {
   constexpr Score WeakQueenProtection = S( 14,  0);
 #else
   constexpr Score WeakQueen           = S( 51, 14);
-  constexpr Score WeakQueenProtection = S( 15, 0);
+  constexpr Score WeakQueenProtection = S( 15,  0);
 #endif
 
 #undef S
@@ -402,7 +404,6 @@ namespace {
                 File kf = file_of(pos.square<KING>(Us));
                 if ((kf < FILE_E) == (file_of(s) < kf))
                     score -= TrappedRook * (1 + !pos.castling_rights(Us));
-
             }
         }
 
@@ -436,6 +437,7 @@ namespace {
 
     // Init the score with king shelter and enemy pawns storm
     Score score = pe->king_safety<Us>(pos);
+
     // Attacked squares defended at most once by our queen or king
     weak =  attackedBy[Them][ALL_PIECES]
           & ~attackedBy2[Us]
@@ -501,18 +503,18 @@ namespace {
                  + 148 * popcount(unsafeChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))
                  +  69 * kingAttacksCount[Them]
-#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir)
                  +   4 * (kingFlankAttack - kingFlankDefense)
 #endif
                  +   3 * kingFlankAttack * kingFlankAttack / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
-#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir)
                  -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
 #endif
                  -   6 * mg_value(score) / 8
-#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir)
                  -   7;
 #else
                  -   4 * kingFlankDefense
@@ -525,7 +527,7 @@ namespace {
 #ifdef Blau
     if (kingDanger > 100)
         score -= make_score(kingDanger * kingDanger / 3200, kingDanger / 10);
-#elif (defined Sullivan)
+#elif Sullivan
     if (kingDanger > 88)
         score -= make_score(kingDanger * kingDanger / 3584, kingDanger / 14);
 #else
@@ -542,6 +544,7 @@ namespace {
 
     if (T)
         Trace::add(KING, Us, score);
+
     return score;
   }
 
@@ -557,6 +560,7 @@ namespace {
 
     Bitboard b, weak, defended, nonPawnEnemies, stronglyProtected, safe;
     Score score = SCORE_ZERO;
+
     // Non-pawn enemies
     nonPawnEnemies = pos.pieces(Them) & ~pos.pieces(PAWN);
 
@@ -636,6 +640,7 @@ namespace {
 
     if (T)
         Trace::add(THREAT, Us, score);
+
     return score;
   }
 
@@ -655,6 +660,7 @@ namespace {
 
     Bitboard b, bb, squaresToQueen, unsafeSquares, blockedPassers, helpers;
     Score score = SCORE_ZERO;
+
     b = pe->passed_pawns(Us);
 
     blockedPassers = b & shift<Down>(pos.pieces(Them, PAWN));
@@ -686,11 +692,7 @@ namespace {
             Square blockSq = s + Up;
 
             // Adjust bonus based on the king's proximity
-#if defined (Stockfish) || (Weakfish)
             bonus += make_score(0, (  (king_proximity(Them, blockSq) * 19) / 4
-#else
-            bonus += make_score(0, (  king_proximity(Them, blockSq) * 5
-#endif
                                      - king_proximity(Us,   blockSq) *  2) * w);
 
             // If blockSq is not the queening square then consider also a second push
@@ -729,6 +731,7 @@ namespace {
 
     if (T)
         Trace::add(PASSED, Us, score);
+
     return score;
   }
 
@@ -780,7 +783,7 @@ namespace {
   template<Tracing T>
   Value Evaluation<T>::winnable(Score score) const {
 
-#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir)
     int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
 #endif
 
@@ -801,13 +804,14 @@ namespace {
                     + 12 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
-#if defined (Sullivan) || (Blau) || (Noir) || (Fortress)
+#if defined (Sullivan) || (Blau) || (Noir)
                     + 50 * (separation > 3) * (outflanking <= 0)
 #endif
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
                     - 43 * almostUnwinnable
                     -110 ;
+
     Value mg = mg_value(score);
     Value eg = eg_value(score);
 

@@ -155,7 +155,7 @@ public:
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::blue << "    ######                                                #     # ###            #####     \n";
+     sp << FontColor::blue << "\n\n\n    ######                                                #     # ###            #####     \n";
      sp << FontColor::blue << "    #     # #      #    # ###### ###### #  ####  #    #    #   #   #     #####  #     #    \n";
      sp << FontColor::blue << "    #     # #      #    # #      #      # #      #    #     # #    #     #    #       #    \n";
      sp << FontColor::blue << "    ######  #      #    # #####  #####  #  ####  ######      #     # ### #    #  #####     \n";
@@ -171,7 +171,7 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::black << "    ######                                ######                                         #     # ###            #####     \n";
+     sp << FontColor::black << "\n\n\n    ######                                ######                                         #     # ###            #####     \n";
      sp << FontColor::black << "    #     # #        ##    ####  #    #   #     # #   ##   #    #  ####  #    # #####     #   #   #     #####  #     #     \n";
      sp << FontColor::black << "    #     # #       #  #  #    # #   #    #     # #  #  #  ##  ## #    # ##   # #    #     # #    #     #    #       #     \n";
      sp << FontColor::black << "    ######  #      #    # #      ####     #     # # #    # # ## # #    # # #  # #    #      #     # ### #    #  #####      \n";
@@ -188,7 +188,7 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::red   << "     #####                                                      #     # ###             #####     \n";
+     sp << FontColor::red   << "\n\n\n     #####                                                      #     # ###             #####     \n";
      sp << FontColor::red   << "    #     # #####  ####   ####  #    # ###### #  ####  #    #    #   #   #      #####  #     #    \n";
      sp << FontColor::red   << "    #         #   #    # #    # #   #  #      # #      #    #     # #    #      #    #       #    \n";
      sp << FontColor::white << "     #####    #   #    # #      ####   #####  #  ####  ######      #     #  ### #    #  #####     \n";
@@ -205,7 +205,7 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::yellow << "    #     #                              #     # ###             #####     \n";
+     sp << FontColor::yellow << "\n\n\n    #     #                              #     # ###             #####     \n";
      sp << FontColor::yellow << "    #     #  ####  #    # ###### #   #    #   #   #      #####  #     #    \n";
      sp << FontColor::yellow << "    #     # #    # ##   # #       # #      # #    #      #    #       #    \n";
      sp << FontColor::yellow << "    ####### #    # # #  # #####    #        #     #  ### #    #  #####     \n";
@@ -221,7 +221,7 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::cyan << "    #     #                                               #     # ###             #####     \n";
+     sp << FontColor::cyan << "\n\n\n    #     #                                               #     # ###             #####     \n";
      sp << FontColor::cyan << "    #  #  # ######   ##   #    # ###### #  ####  #    #    #   #   #      #####  #     #    \n";
      sp << FontColor::cyan << "    #  #  # #       #  #  #   #  #      # #      #    #     # #    #      #    #       #    \n";
      sp << FontColor::cyan << "    #  #  # #####  #    # ####   #####  #  ####  ######      #     #  ### #    #  #####     \n";
@@ -246,16 +246,15 @@ const string engine_info(bool to_uci) {
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
 #ifdef Blau
-    ss << FontColor::blue << "Bluefish " << Version << Suffix << setfill('0');
+    ss << FontColor::blue    << "    Bluefish " << Version << Suffix << setfill('0');
 #elif Honey
-q
-    ss << FontColor::yellow << "Honey " << Version << Suffix << setfill('0') ;
+    ss << FontColor::yellow  << "    Honey " << Version << Suffix << setfill('0') ;
 #elif Noir
-	  ss << FontColor::black << "Black Diamond " << Version << Suffix << setfill('0');
-#elif Stock
-    ss << FontColor::white << "Stockfish " << Version << Suffix << setfill('0');
+	  ss << FontColor::black   << "    Black Diamond " << Version << Suffix << setfill('0');
+#elif Stockfish
+    ss << FontColor::red     << "    Stockfish " << Version << Suffix << setfill('0');
 #elif Weak
-    ss << FontColor::cyan << "Weakfish " << Version << Suffix << setfill('0');
+    ss << FontColor::cyan    << "    Weakfish " << Version << Suffix << setfill('0');
 #endif
 #if (defined Sullivan && defined Test)
 	if (Version.empty())
@@ -272,15 +271,13 @@ q
     }
 #endif
 #ifdef Sullivan
-      ss	<< (to_uci  ? "\nid author ": "by ") << "M. Byrne and scores of others..." << FontColor::reset ;
+      ss	<< (to_uci  ? "\nid author ": "by ") << "M. Byrne and scores of others...\n" << FontColor::reset ;
 #else
-//     ss << (Is64Bit ? " 64" : "") // 95% of systems are 64 bit
-//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may disrupt some GUIs due to length
-	   ss << (to_uci  ? "\nid author ": " by ")
-        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott" << FontColor::reset ;
+       ss << (to_uci  ? "\nid author ": " by ")
+          << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott\n" << FontColor::reset ;
 #endif
 #ifdef Pi
-	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally") << FontColor::reset ;
+	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally\n") << FontColor::reset ;
 #endif
   return ss.str();
 }

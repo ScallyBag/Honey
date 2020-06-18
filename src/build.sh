@@ -38,7 +38,7 @@ mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
 mke WEAK=yes && wait
-mke STOCK
+mke 
 
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.

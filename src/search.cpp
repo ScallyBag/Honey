@@ -278,7 +278,7 @@ void MainThread::search() {
     minOutput           = Options["Min Output"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
-    uci_sleep           = Options["Sleep"];
+    uci_sleep           = Options["Slow Play"];
     proValue            = Options["Pro Value"];
     profound            = Options["Pro Analysis"];
     dpa                 = Options["Deep Pro Analysis"];
@@ -401,6 +401,7 @@ skipLevels:
                  std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
              uci_elo =  ccrlELo - shallow_adjust;
          }
+
 
       if (!tactical && profound)
       {
@@ -561,7 +562,7 @@ void Thread::search() {
   size_t multiPV = size_t(Options["MultiPV"]);
   PRNG rng(now());
 
-	Skill skill(intLevel);
+  Skill skill(intLevel);
 
 
     if (tactical) {
@@ -649,11 +650,11 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
           {
               Value prev = rootMoves[pvIdx].previousScore;
 
-/*#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Noir)
               delta = Value(19 + abs(prev) / 64);
-#else*/
+#else
               delta = Value(19);
-//#endif
+#endif
               alpha = std::max(prev - delta,-VALUE_INFINITE);
               beta  = std::min(prev + delta, VALUE_INFINITE);
 
@@ -661,8 +662,8 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
               dct = ctempt * (ct + (110 - ct / 2) * prev / (abs(prev) + 140)) + defensive;
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
-                       : -make_score(dct, dct / 2));
-       }
+                                      : -make_score(dct, dct / 2));
+          }
 
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
@@ -690,9 +691,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                 // When failing high/low give some update (without cluttering
                 // the UI) before a re-search.
                 if (
-
                     !minOutput &&
-
                     mainThread
                     && multiPV == 1
                     && (bestValue <= alpha || bestValue >= beta)
@@ -701,7 +700,6 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
-
               if (bestValue <= alpha)
               {
                   beta = (alpha + beta) / 2;
@@ -709,7 +707,6 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
                   failedHighCnt = 0;
                   if (mainThread)
-
                       mainThread->stopOnPonderhit = false;
               }
               else if (bestValue >= beta)
@@ -750,8 +747,8 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
              && VALUE_MATE - bestValue <= 2 * Limits.mate)
          Threads.stop = true;
 
-	  if (!mainThread)
-		  continue;
+      if (!mainThread)
+          continue;
 
         if (Options["FastPlay"])
         {
@@ -856,23 +853,16 @@ namespace {
 
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
-#if defined (Sullivan) || (Blau)
-    if (   pos.rule50_count() >= 5
-#else
     if (   pos.rule50_count() >= 3
-#endif
         && alpha < VALUE_DRAW
         && !rootNode
         && pos.has_game_cycle(ss->ply))
     {
-/*#if defined (Sullivan)
-        alpha = value_draw(depth, pos.this_thread());
-#else*/
         alpha = value_draw(pos.this_thread());
-//#endif
         if (alpha >= beta)
             return alpha;
     }
+
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
         return qsearch<NT>(pos, ss, alpha, beta);
@@ -969,15 +959,12 @@ namespace {
     thisThread->ttHitAverage =   (TtHitAverageWindow - 1) * thisThread->ttHitAverage / TtHitAverageWindow
                                 + TtHitAverageResolution * ttHit;
 
-
-    int piecesCount = pos.count<ALL_PIECES>();
-
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-#if defined (Sullivan) || (Blau)
+/*#if defined (Sullivan) || (Blau)
     && (pos.rule50_count() < 92 || (piecesCount < 8  && TB::Cardinality ))
-#endif
+#endif*/
 
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
@@ -1012,8 +999,7 @@ namespace {
     // Step 5. Tablebases probe
     if (!rootNode && TB::Cardinality)
     {
-
-        piecesCount = pos.count<ALL_PIECES>();
+        int piecesCount = pos.count<ALL_PIECES>();
 
         if (    piecesCount <= TB::Cardinality
             && (piecesCount <  TB::Cardinality || depth >= TB::ProbeDepth)
@@ -1126,7 +1112,7 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
-#if defined (Sullivan) || (Blau)   //authored by Jörg Oster originally, in corchess by Ivan Ilvec
+#if defined (Sullivan) || (Blau) || (Noir)   //authored by J Oster originally, in corchess by Ivan Ilvec
         && thisThread->selDepth + 3 > thisThread->rootDepth
 #endif
         &&  pos.non_pawn_material(us)
@@ -1686,12 +1672,7 @@ moves_loop: // When in check, search starts from here
         tte->save(posKey, value_to_tt(bestValue, ss->ply), ttPv,
                   bestValue >= beta ? BOUND_LOWER :
                   PvNode && bestMove ? BOUND_EXACT : BOUND_UPPER,
-/*#if defined (Sullivan) || (Blau)
-                  std::min(depth + 6 * int(pos.rule50_count() > 90), MAX_PLY - 1),
-                       bestMove, ss->staticEval); // joergoster patch
-#else*/
                   depth, bestMove, ss->staticEval);
-//#endif
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -2175,6 +2156,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
       Depth d = updated ? depth : depth - 1;
       Value v = updated ? rootMoves[i].score : rootMoves[i].previousScore;
+
       bool tb = TB::RootInTB && abs(v) < VALUE_MATE_IN_MAX_PLY;
       v = tb ? rootMoves[i].tbScore : v;
 

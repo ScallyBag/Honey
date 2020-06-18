@@ -101,7 +101,7 @@ namespace {
             v +=  QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
                 + QuadraticTheirs[pt1][pt2] * pieceCount[Them][pt2];
 
-#ifdef Bluef
+#ifdef Blue
         bonus += pieceCount[Us][pt1] * (100 * v / 128);
 #elif (defined Sullivan)
         bonus += pieceCount[Us][pt1] * (100 * v / 116);

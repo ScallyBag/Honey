@@ -849,22 +849,14 @@ icc-profile-make:
 ### Bluefish-FD-dev-061620.exe.bench:Nodes/second    : 1572507
 ### Based on commits through 06/18/2020:
 ### ======================================================
-### Black-Diamond-dev-061720.exe.bench:Nodes searched  : 6450272
-### Black-Diamond-dev-061720.exe.bench:Nodes/second    : 2524568
-### Black-Diamond-dev-061820.exe.bench:Nodes searched  : 6450272
-### Black-Diamond-dev-061820.exe.bench:Nodes/second    : 2523580
-### Bluefish-dev-061720.exe.bench:Nodes searched  : 6632905
-### Bluefish-dev-061720.exe.bench:Nodes/second    : 2514368
-### Bluefish-dev-061820.exe.bench:Nodes searched  : 6632905
-### Bluefish-dev-061820.exe.bench:Nodes/second    : 2529712
-### Honey-dev-061720.exe.bench:Nodes searched  : 6377966
-### Honey-dev-061720.exe.bench:Nodes/second    : 2492366
-### Honey-dev-061820.exe.bench:Nodes searched  : 6377966
-### Honey-dev-061820.exe.bench:Nodes/second    : 2465390
-### Stockfish-dev-061720.exe.bench:Nodes searched  : 6387635
-### Stockfish-dev-061720.exe.bench:Nodes/second    : 2542848
-### Weakfish-dev-061720.exe.bench:Nodes searched  : 6621439
-### Weakfish-dev-061720.exe.bench:Nodes/second    : 2594607
+### Black-Diamond-dev-061820.exe.bench:Nodes searched  : 6168296
+### Black-Diamond-dev-061820.exe.bench:Nodes/second    : 2454554
+### Bluefish-dev-061820.exe.bench:Nodes searched  : 6690854
+### Bluefish-dev-061820.exe.bench:Nodes/second    : 2491938
+### Honey-dev-061820.exe.bench:Nodes searched  : 6079438
+### Honey-dev-061820.exe.bench:Nodes/second    : 2460314
+### Stockfish-dev-061820.exe.bench:Nodes searched  : 6387635
+### Stockfish-dev-061820.exe.bench:Nodes/second    : 2513827
 ### Weakfish-dev-061820.exe.bench:Nodes searched  : 6621439
-### Weakfish-dev-061820.exe.bench:Nodes/second    : 2571432
+### Weakfish-dev-061820.exe.bench:Nodes/second    : 2586499
 ### ======================================================

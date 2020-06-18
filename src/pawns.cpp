@@ -159,9 +159,9 @@ namespace {
                 || (   !(stoppers ^ leverPush)
                     && popcount(phalanx) >= popcount(leverPush))
 #ifdef Sullivan
-               || (   stoppers == square_bb(s + Up) && r >= RANK_5
+                || (   stoppers == square_bb(s + Up) && r >= RANK_5
 #else
-               || (   stoppers == blocked && r >= RANK_5
+                || (   stoppers == blocked && r >= RANK_5
 #endif
                     && (shift<Up>(support) & ~(theirPawns | doubleAttackThem)));
 
@@ -177,11 +177,11 @@ namespace {
         {
 #ifdef Sullivan
             int v =  Connected[r] * (2 + bool(phalanx) - (opposed)) / (1 + bool(blocked))
-            //int v =  Connected[r] * (2 + bool(phalanx) - opposed)
 #else
             int v =  Connected[r] * (4 + 2 * bool(phalanx) - 2 * bool(opposed) - bool(blocked)) / 2
 #endif
-            + 21 * popcount(support);
+                   + 21 * popcount(support);
+
             score += make_score(v, v * (r - 2) / 4);
         }
 

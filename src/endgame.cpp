@@ -326,11 +326,11 @@ Value Endgame<KQKR>::operator()(const Position& pos) const {
 
   Value result =  QueenValueEg
                 - RookValueEg
-  #ifndef Stockfish
+#ifndef Stockfish
                 + PushToEdges[loserKSq]
-  #else
+#else
                 + push_to_edge(loserKSq)
-  #endif
+#endif
                 + push_close(winnerKSq, loserKSq);
 
   return strongSide == pos.side_to_move() ? result : -result;

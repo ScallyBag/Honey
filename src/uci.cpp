@@ -108,7 +108,7 @@ namespace {
     else
         sync_cout << "No such option: " << name << sync_endl;
 }
-#ifdef Add_Features
+
 // set() is called by typing "s" from the terminal when the user wants to use abbreviated
 // non-UCI comamnds and avoid the uci option protocol "setoption name (option name) value (xxx) ",
 // e.g., instead of typing "setoption name threads value 8" to set cores to 8 at the terminal,
@@ -218,7 +218,6 @@ void set(istringstream& is) {
 
 }
 
-#endif
   // go() is called when engine receives the "go" UCI command. The function sets
   // the thinking time and other parameters from the input string, then starts
   // the search.
@@ -367,10 +366,8 @@ void UCI::loop(int argc, char* argv[]) {
         // 'ponderhit' to stop the search, for instance if max search depth is reached.
         if (    token == "quit"
                 ||  token == "stop"
-#ifdef Add_Features
                 ||  token == "q"
                 ||  token == "?"
-#endif
             )
             Threads.stop = true;
 
@@ -388,7 +385,6 @@ void UCI::loop(int argc, char* argv[]) {
 
         else if (token == "setoption")  setoption(is);
         else if (token == "go")         go(pos, is, states);
-#ifdef Add_Features
         else if (token == "b")     bench(pos, is, states);
         else if (token == "so")         setoption(is);
         else if (token == "set")        set(is);
@@ -408,30 +404,22 @@ void UCI::loop(int argc, char* argv[]) {
             if (Options["Clean_Search"])
                 Search::clear();
         }
-#else
-        else if (token == "position")   position(pos, is, states);
-#endif
         else if (token == "ucinewgame") Search::clear();
         else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 
-		// Additional custom non-UCI commands, mainly for debugging.
-		// Do not use these commands during a search!
-        else if (token == "flip")  pos.flip();
-        else if (token == "bench") bench(pos, is, states);
-        else if (token == "d")     sync_cout << pos << sync_endl;
-        else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
-        else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
-#ifdef Add_Features
-        else if (token == "c++") sync_cout << compiler_info() << sync_endl;
-#endif
-        else
-            sync_cout << FontColor::green << "Unknown command: " << cmd << FontColor::reset << sync_endl;
-#ifdef Add_Features
-    } while (token != "quit" && token != "q" && argc == 1); // Command line args are one-shot
-#else
-    }
-    while (token != "quit" && argc == 1); // Command line args are one-shot
-#endif
+      // Additional custom non-UCI commands, mainly for debugging.
+      // Do not use these commands during a search!
+      else if (token == "flip")  pos.flip();
+      else if (token == "bench") bench(pos, is, states);
+      else if (token == "d")     sync_cout << pos << sync_endl;
+      else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
+      else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
+       else if (token == "c++") sync_cout << compiler_info() << sync_endl;
+       else
+          sync_cout << FontColor::green << "Unknown command: " << cmd << FontColor::reset << sync_endl;
+
+  } while (token != "quit" && token != "q" && argc == 1); 
+    // Command line args are one-shot
 }
 
 
@@ -447,7 +435,7 @@ string UCI::value(Value v) {
   assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
-#ifdef Add_Features
+
   const float vs = (float)v;
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
@@ -471,13 +459,8 @@ string UCI::value(Value v) {
     }
    else
        ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
-#else
-   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
-       ss << "cp " << v * 100 / PawnValueEg;
-   else
-       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
-#endif
-   return ss.str();
+
+  return ss.str();
 }
 
 
