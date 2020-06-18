@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cassert>
 #include <vector>
@@ -112,7 +113,7 @@ namespace {
     if (   distance(ksq[WHITE], ksq[BLACK]) <= 1
         || ksq[WHITE] == psq
         || ksq[BLACK] == psq
-        || (stm == WHITE && (pawn_attacks_bb(WHITE, psq) & ksq[BLACK])))
+        || (stm == WHITE && (PawnAttacks[WHITE][psq] & ksq[BLACK])))
         result = INVALID;
 
     // Immediate win if a pawn can be promoted without getting captured
@@ -120,13 +121,13 @@ namespace {
              && rank_of(psq) == RANK_7
              && ksq[stm] != psq + NORTH
              && (    distance(ksq[~stm], psq + NORTH) > 1
-                 || (attacks_bb<KING>(ksq[stm]) & (psq + NORTH))))
+                 || (PseudoAttacks[KING][ksq[stm]] & (psq + NORTH))))
         result = WIN;
 
     // Immediate draw if it is a stalemate or a king captures undefended pawn
     else if (   stm == BLACK
-             && (  !(attacks_bb<KING>(ksq[stm]) & ~(attacks_bb<KING>(ksq[~stm]) | pawn_attacks_bb(~stm, psq)))
-                 || (attacks_bb<KING>(ksq[stm]) & psq & ~attacks_bb<KING>(ksq[~stm]))))
+             && (  !(PseudoAttacks[KING][ksq[stm]] & ~(PseudoAttacks[KING][ksq[~stm]] | PawnAttacks[~stm][psq]))
+                 || (PseudoAttacks[KING][ksq[stm]] & psq & ~PseudoAttacks[KING][ksq[~stm]])))
         result = DRAW;
 
     // Position will be classified later
@@ -149,7 +150,7 @@ namespace {
     const Result Bad  = (stm == WHITE ? DRAW  : WIN);
 
     Result r = INVALID;
-    Bitboard b = attacks_bb<KING>(ksq[stm]);
+    Bitboard b = PseudoAttacks[KING][ksq[stm]];
 
     while (b)
         r |= stm == WHITE ? db[index(BLACK, ksq[BLACK] , pop_lsb(&b), psq)]

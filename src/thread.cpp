@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cassert>
 
@@ -56,10 +57,10 @@ Thread::~Thread() {
 
 int Thread::best_move_count(Move move) const {
 
-  auto rm = std::find(rootMoves.begin() + pvIdx,
-                      rootMoves.begin() + pvLast, move);
+    auto rm = std::find(rootMoves.begin() + pvIdx,
+                        rootMoves.begin() + pvLast, move);
 
-  return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
+    return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
 }
 
 /// Thread::clear() reset histories, usually before a new game
@@ -168,8 +169,12 @@ void ThreadPool::clear() {
   main()->callsCnt = 0;
   main()->bestPreviousScore = VALUE_INFINITE;
   main()->previousTimeReduction = 1.0;
-}
 
+#ifndef Stockfish
+  for (int i = 0; i < 4; ++i)
+      main()->iterValue[i] = VALUE_ZERO;
+#endif
+}
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
 
@@ -209,6 +214,7 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
   for (Thread* th : *this)
   {
       th->nodes = th->tbHits = th->nmpMinPly = th->bestMoveChanges = 0;
+
       th->rootDepth = th->completedDepth = 0;
       th->rootMoves = rootMoves;
       th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);

@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef TYPES_H_INCLUDED
 #define TYPES_H_INCLUDED
@@ -102,7 +103,9 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 constexpr int MAX_MOVES = 256;
+
 constexpr int MAX_PLY   = 246;
+
 
 /// A move needs 16 bits to be stored
 ///
@@ -138,13 +141,11 @@ enum CastlingRights {
   WHITE_OOO = WHITE_OO << 1,
   BLACK_OO  = WHITE_OO << 2,
   BLACK_OOO = WHITE_OO << 3,
-
   KING_SIDE      = WHITE_OO  | BLACK_OO,
   QUEEN_SIDE     = WHITE_OOO | BLACK_OOO,
   WHITE_CASTLING = WHITE_OO  | WHITE_OOO,
   BLACK_CASTLING = BLACK_OO  | BLACK_OOO,
   ANY_CASTLING   = WHITE_CASTLING | BLACK_CASTLING,
-
   CASTLING_RIGHT_NB = 16
 };
 
@@ -181,14 +182,80 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
-  PawnValueMg   = 124,   PawnValueEg   = 206,
-  KnightValueMg = 781,   KnightValueEg = 854,
-  BishopValueMg = 825,   BishopValueEg = 915,
-  RookValueMg   = 1276,  RookValueEg   = 1380,
-  QueenValueMg  = 2538,  QueenValueEg  = 2682,
-  Tempo = 28,
+//Code idea below by Ed Schröder
+#if defined (Weakfish)
+  #define PVM 82/100
+  #define PVE 82/100
+  #define NVM 78/100
+  #define NVE 78/100
+  #define BVM 78/100
+  #define BVE 78/100
+  #define RVM 78/100
+  #define RVE 78/100
+  #define QVM 78/100
+  #define QVE 78/100
 
-  MidgameLimit  = 15258, EndgameLimit  = 3915
+#elif defined (Sullivan) && (defined Blau)
+  #define PVM 87/100
+  #define PVE 87/100
+  #define NVM 87/100
+  #define NVE 87/100
+  #define BVM 87/100
+  #define BVE 87/100
+  #define RVM 87/100
+  #define RVE 87/100
+  #define QVM 87/100
+  #define QVE 87/100
+
+#elif (defined Blau)
+  #define PVM 78/100
+  #define PVE 78/100
+  #define NVM 78/100
+  #define NVE 78/100
+  #define BVM 78/100
+  #define BVE 78/100
+  #define RVM 78/100
+  #define RVE 78/100
+  #define QVM 78/100
+  #define QVE 78/100
+
+#elif (defined Sullivan)
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+
+#else
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+#endif
+#ifdef Stockfish
+PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
+#else
+PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
+#endif
+KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
+BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
+RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
+QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
+Tempo = 28,
+
+MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
+
 };
 
 enum PieceType {
@@ -358,18 +425,18 @@ constexpr Color operator~(Color c) {
   return Color(c ^ BLACK); // Toggle color
 }
 
-constexpr Square flip_rank(Square s) {
-  return Square(s ^ SQ_A8);
-}
-
-constexpr Square flip_file(Square s) {
-  return Square(s ^ SQ_H1);
+constexpr Square operator~(Square s) {
+  return Square(s ^ SQ_A8); // Vertical flip SQ_A1 -> SQ_A8
 }
 
 constexpr Piece operator~(Piece pc) {
   return Piece(pc ^ 8); // Swap color of piece B_KNIGHT -> W_KNIGHT
 }
-
+#ifndef Stockfish
+inline File map_to_queenside(File f) {
+  return std::min(f, File(FILE_H - f)); // Map files ABCDEFGH to files ABCDDCBA
+}
+#endif
 constexpr CastlingRights operator&(Color c, CastlingRights cr) {
   return CastlingRights((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
 }

@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifdef _WIN32
 #if _WIN32_WINNT < 0x0601
@@ -29,6 +30,7 @@
 #endif
 
 #include <windows.h>
+
 // The needed Windows API for processor groups could be missed from old Windows
 // versions, so instead of calling them directly (forcing the linker to resolve
 // the calls at compile time), try to load them at runtime. To do this we need
@@ -54,15 +56,36 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 
 #include "misc.h"
 #include "thread.h"
+#include "uci.h"
+
+#ifdef USE_MADVISE_HUGEPAGE
+  #include <sys/mman.h>
+#endif
 
 using namespace std;
 
 namespace {
 
+size_t memtest = 0; //lp mem test
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-const string Version = "";
 
+#if (defined Add_Features && ReleaseVer)
+const string Version = "XI-r2 ";
+#else
+const string Version = "";
+#endif
+
+
+#ifdef Fortress
+const string Suffix = "FD ";
+#else
+const string Suffix = "";
+#endif
+
+//#ifdef Sullivan
+//const string Name = "Honey ";
+//#endif
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
 /// can toggle the logging of std::cout and std:cin at runtime whilst preserving
@@ -128,30 +151,137 @@ public:
 
 } // namespace
 
-/// engine_info() returns the full name of the current Stockfish version. This
-/// will be either "Stockfish <Tag> DD-MM-YY" (where DD-MM-YY is the date when
-/// the program was compiled) or "Stockfish <Version>", depending on whether
+#ifdef Blau
+const std::string splash() {
+
+     stringstream sp;
+     sp << FontColor::blue << "    ######                                                #     # ###            #####     \n";
+     sp << FontColor::blue << "    #     # #      #    # ###### ###### #  ####  #    #    #   #   #     #####  #     #    \n";
+     sp << FontColor::blue << "    #     # #      #    # #      #      # #      #    #     # #    #     #    #       #    \n";
+     sp << FontColor::blue << "    ######  #      #    # #####  #####  #  ####  ######      #     # ### #    #  #####     \n";
+     sp << FontColor::blue << "    #     # #      #    # #      #      #      # #    #     # #    #     #####        #    \n";
+     sp << FontColor::blue << "    #     # #      #    # #      #      # #    # #    #    #   #   #     #   #  #     #    \n";
+     sp << FontColor::blue << "    ######  ######  ####  ###### #      #  ####  #    #   #     # ###    #    #  #####     \n\n";
+
+  return sp.str();
+}
+#endif
+
+#ifdef Noir
+const std::string splash() {
+
+     stringstream sp;
+     sp << FontColor::black << "    ######                                ######                                         #     # ###            #####     \n";
+     sp << FontColor::black << "    #     # #        ##    ####  #    #   #     # #   ##   #    #  ####  #    # #####     #   #   #     #####  #     #     \n";
+     sp << FontColor::black << "    #     # #       #  #  #    # #   #    #     # #  #  #  ##  ## #    # ##   # #    #     # #    #     #    #       #     \n";
+     sp << FontColor::black << "    ######  #      #    # #      ####     #     # # #    # # ## # #    # # #  # #    #      #     # ### #    #  #####      \n";
+     sp << FontColor::black << "    #     # #      ###### #      #  #     #     # # ###### #    # #    # #  # # #    #     # #    #     #####        #    \n";
+     sp << FontColor::black << "    #     # #      #    # #    # #   #    #     # # #    # #    # #    # #   ## #    #    #   #   #     #   #  #     #    \n";
+     sp << FontColor::black << "    ######  ###### #    #  ####  #    #   ######  # #    # #    #  ####  #    # #####    #     # ###    q#    #  #####     \n\n";
+
+
+  return sp.str();
+}
+#endif
+
+#ifdef Stockfish
+const std::string splash() {
+
+     stringstream sp;
+     sp << FontColor::red   << "     #####                                                      #     # ###             #####     \n";
+     sp << FontColor::red   << "    #     # #####  ####   ####  #    # ###### #  ####  #    #    #   #   #      #####  #     #    \n";
+     sp << FontColor::red   << "    #         #   #    # #    # #   #  #      # #      #    #     # #    #      #    #       #    \n";
+     sp << FontColor::white << "     #####    #   #    # #      ####   #####  #  ####  ######      #     #  ### #    #  #####     \n";
+     sp << FontColor::white << "          #   #   #    # #      #  #   #      #      # #    #     # #    #      #####        #    \n";
+     sp << FontColor::blue  << "    #     #   #   #    # #    # #   #  #      # #    # #    #    #   #   #      #   #  #     #    \n";
+     sp << FontColor::blue  << "     #####    #    ####   ####  #    # #      #  ####  #    #   #     # ###     #    #  #####     \n\n";
+
+  return sp.str();
+}
+#endif
+
+#ifdef Sullivan
+
+const std::string splash() {
+
+     stringstream sp;
+     sp << FontColor::yellow << "    #     #                              #     # ###             #####     \n";
+     sp << FontColor::yellow << "    #     #  ####  #    # ###### #   #    #   #   #      #####  #     #    \n";
+     sp << FontColor::yellow << "    #     # #    # ##   # #       # #      # #    #      #    #       #    \n";
+     sp << FontColor::yellow << "    ####### #    # # #  # #####    #        #     #  ### #    #  #####     \n";
+     sp << FontColor::yellow << "    #     # #    # #  # # #        #       # #    #      #####        #    \n";
+     sp << FontColor::yellow << "    #     # #    # #   ## #        #      #   #   #      #   #  #     #    \n";
+     sp << FontColor::yellow << "    #     #  ####  #    # ######   #     #     # ###     #    #  #####     \n\n";
+
+  return sp.str();
+}
+#endif
+#ifdef Weakfish
+
+const std::string splash() {
+
+     stringstream sp;
+     sp << FontColor::cyan << "    #     #                                               #     # ###             #####     \n";
+     sp << FontColor::cyan << "    #  #  # ######   ##   #    # ###### #  ####  #    #    #   #   #      #####  #     #    \n";
+     sp << FontColor::cyan << "    #  #  # #       #  #  #   #  #      # #      #    #     # #    #      #    #       #    \n";
+     sp << FontColor::cyan << "    #  #  # #####  #    # ####   #####  #  ####  ######      #     #  ### #    #  #####     \n";
+     sp << FontColor::cyan << "    #  #  # #      ###### #  #   #      #      # #    #     # #    #      #####        #    \n";
+     sp << FontColor::cyan << "    #  #  # #      #    # #   #  #      # #    # #    #    #   #   #      #   #  #     #    \n";
+     sp << FontColor::cyan << "    ## ##   ###### #    # #    # #      #  ####  #    #   #     # ###     #    #  #####      \n\n";
+
+  return sp.str();
+}
+#endif
+
+
+/// engine_info() returns the full name of the current Honey version. This
+/// will be either "Honey <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
+/// the program was compiled) or "Honey <Version>", depending on whether
 /// Version is empty.
 
 const string engine_info(bool to_uci) {
 
-  const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
-  string month, day, year;
-  stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
+    const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
+    string month, day, year;
+    stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
-  ss << "Stockfish " << Version << setfill('0');
+#ifdef Blau
+    ss << FontColor::blue << "Bluefish " << Version << Suffix << setfill('0');
+#elif Honey
+q
+    ss << FontColor::yellow << "Honey " << Version << Suffix << setfill('0') ;
+#elif Noir
+	  ss << FontColor::black << "Black Diamond " << Version << Suffix << setfill('0');
+#elif Stock
+    ss << FontColor::white << "Stockfish " << Version << Suffix << setfill('0');
+#elif Weak
+    ss << FontColor::cyan << "Weakfish " << Version << Suffix << setfill('0');
+#endif
+#if (defined Sullivan && defined Test)
+	if (Version.empty())
+	{
+		date >> month >> day;
+		ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day  << "-" << " ";
+	}
 
-  if (Version.empty())
-  {
-      date >> month >> day >> year;
-      ss << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
-  }
-
-  ss << (Is64Bit ? " 64" : "")
-     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : ""))
-     << (to_uci  ? "\nid author ": " by ")
-     << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott";
-
+#else
+    if (Version.empty())
+    {
+        date >> month >> day >> year;
+        ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << " ";
+    }
+#endif
+#ifdef Sullivan
+      ss	<< (to_uci  ? "\nid author ": "by ") << "M. Byrne and scores of others..." << FontColor::reset ;
+#else
+//     ss << (Is64Bit ? " 64" : "") // 95% of systems are 64 bit
+//     << (HasPext ? " BMI2" : (HasPopCnt ? " POPCNT" : "")) // may disrupt some GUIs due to length
+	   ss << (to_uci  ? "\nid author ": " by ")
+        << "T. Romstad, M. Costalba, J. Kiiski, G. Linscott" << FontColor::reset ;
+#endif
+#ifdef Pi
+	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally") << FontColor::reset ;
+#endif
   return ss.str();
 }
 
@@ -172,7 +302,7 @@ const std::string compiler_info() {
 /// _WIN32             Building on Windows (any)
 /// _WIN64             Building on Windows 64 bit
 
-  std::string compiler = "\nCompiled by ";
+  std::string compiler = "\nCompiled with ";
 
   #ifdef __clang__
      compiler += "clang++ ";
@@ -196,7 +326,7 @@ const std::string compiler_info() {
   #endif
 
   #if defined(__APPLE__)
-     compiler += " on Apple";
+     compiler += " on macOS";
   #elif defined(__CYGWIN__)
      compiler += " on Cygwin";
   #elif defined(__MINGW64__)
@@ -223,9 +353,8 @@ const std::string compiler_info() {
   #endif
   compiler += "\n";
 
-  return compiler;
+	return compiler;
 }
-
 
 /// Debug functions used mainly to collect run-time statistics
 static std::atomic<int64_t> hits[2], means[2];
@@ -293,6 +422,24 @@ void prefetch(void* addr) {
 
 #endif
 
+
+/// large_page_alloc() is a version of malloc() which tries to return
+/// a block of memory aligned on large pages on systems which support
+/// them. On other systems this is just a normal malloc() call.
+
+void* large_page_alloc(size_t size) {
+
+#ifdef USE_MADVISE_HUGEPAGE
+    size_t alignment = 2 * 1024 * 1024;
+    void* addr = aligned_alloc(alignment, size);
+    if (addr)
+        madvise(addr, size, MADV_HUGEPAGE);
+    return addr ? addr : malloc(size);
+#else
+    return malloc(size);
+#endif
+
+}
 
 /// aligned_ttmem_alloc will return suitably aligned memory, and if possible use large pages.
 /// The returned pointer is the aligned one, while the mem argument is the one that needs to be passed to free.
@@ -365,12 +512,13 @@ void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
   // Suppress info strings on the first call. The first call occurs before 'uci'
   // is received and in that case this output confuses some GUIs.
-  if (!firstCall)
+  if (!firstCall && memtest != allocSize )
   {
       if (mem)
-          sync_cout << "info string Hash table allocation: Windows large pages used." << sync_endl;
+          sync_cout << "info string Hash Table: Windows Large Pages, " << (allocSize >> 20)  << " Mb" << sync_endl;
       else
-          sync_cout << "info string Hash table allocation: Windows large pages not used." << sync_endl;
+          sync_cout << "info string Hash Table: Default, "  << (allocSize >> 20)  << " Mb" << sync_endl;
+      memtest = allocSize;
   }
   firstCall = false;
 
@@ -378,6 +526,9 @@ void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
   if (!mem)
       mem = VirtualAlloc(NULL, allocSize, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
 
+
+  // NOTE: VirtualAlloc returns memory at page boundary, so no need to align for
+  // cachelines
   return mem;
 }
 

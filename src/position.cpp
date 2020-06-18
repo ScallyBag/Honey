@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <algorithm>
 #include <cassert>
@@ -66,7 +67,6 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
 
       os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
   }
-
   os << "   a   b   c   d   e   f   g   h\n"
      << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
      << std::setfill('0') << std::setw(16) << pos.key()
@@ -140,7 +140,7 @@ void Position::init() {
   for (Piece pc : Pieces)
       for (Square s1 = SQ_A1; s1 <= SQ_H8; ++s1)
           for (Square s2 = Square(s1 + 1); s2 <= SQ_H8; ++s2)
-              if ((type_of(pc) != PAWN) && (attacks_bb(type_of(pc), s1, 0) & s2))
+              if (PseudoAttacks[type_of(pc)][s1] & s2)
               {
                   Move move = make_move(s1, s2);
                   Key key = Zobrist::psq[pc][s1] ^ Zobrist::psq[pc][s2] ^ Zobrist::side;
@@ -320,10 +320,10 @@ void Position::set_check_info(StateInfo* si) const {
 
   Square ksq = square<KING>(~sideToMove);
 
-  si->checkSquares[PAWN]   = pawn_attacks_bb(~sideToMove, ksq);
-  si->checkSquares[KNIGHT] = attacks_bb<KNIGHT>(ksq);
-  si->checkSquares[BISHOP] = attacks_bb<BISHOP>(ksq, pieces());
-  si->checkSquares[ROOK]   = attacks_bb<ROOK>(ksq, pieces());
+  si->checkSquares[PAWN]   = attacks_from<PAWN>(ksq, ~sideToMove);
+  si->checkSquares[KNIGHT] = attacks_from<KNIGHT>(ksq);
+  si->checkSquares[BISHOP] = attacks_from<BISHOP>(ksq);
+  si->checkSquares[ROOK]   = attacks_from<ROOK>(ksq);
   si->checkSquares[QUEEN]  = si->checkSquares[BISHOP] | si->checkSquares[ROOK];
   si->checkSquares[KING]   = 0;
 }
@@ -456,8 +456,8 @@ Bitboard Position::slider_blockers(Bitboard sliders, Square s, Bitboard& pinners
   pinners = 0;
 
   // Snipers are sliders that attack 's' when a piece and other snipers are removed
-  Bitboard snipers = (  (attacks_bb<  ROOK>(s) & pieces(QUEEN, ROOK))
-                      | (attacks_bb<BISHOP>(s) & pieces(QUEEN, BISHOP))) & sliders;
+  Bitboard snipers = (  (PseudoAttacks[  ROOK][s] & pieces(QUEEN, ROOK))
+                      | (PseudoAttacks[BISHOP][s] & pieces(QUEEN, BISHOP))) & sliders;
   Bitboard occupancy = pieces() ^ snipers;
 
   while (snipers)
@@ -481,12 +481,12 @@ Bitboard Position::slider_blockers(Bitboard sliders, Square s, Bitboard& pinners
 
 Bitboard Position::attackers_to(Square s, Bitboard occupied) const {
 
-  return  (pawn_attacks_bb(BLACK, s)       & pieces(WHITE, PAWN))
-        | (pawn_attacks_bb(WHITE, s)       & pieces(BLACK, PAWN))
-        | (attacks_bb<KNIGHT>(s)           & pieces(KNIGHT))
+  return  (attacks_from<PAWN>(s, BLACK)    & pieces(WHITE, PAWN))
+        | (attacks_from<PAWN>(s, WHITE)    & pieces(BLACK, PAWN))
+        | (attacks_from<KNIGHT>(s)         & pieces(KNIGHT))
         | (attacks_bb<  ROOK>(s, occupied) & pieces(  ROOK, QUEEN))
         | (attacks_bb<BISHOP>(s, occupied) & pieces(BISHOP, QUEEN))
-        | (attacks_bb<KING>(s)             & pieces(KING));
+        | (attacks_from<KING>(s)           & pieces(KING));
 }
 
 
@@ -589,7 +589,7 @@ bool Position::pseudo_legal(const Move m) const {
       if ((Rank8BB | Rank1BB) & to)
           return false;
 
-      if (   !(pawn_attacks_bb(us, from) & pieces(~us) & to) // Not a capture
+      if (   !(attacks_from<PAWN>(from, us) & pieces(~us) & to) // Not a capture
           && !((from + pawn_push(us) == to) && empty(to))       // Not a single push
           && !(   (from + 2 * pawn_push(us) == to)              // Not a double push
                && (relative_rank(us, from) == RANK_2)
@@ -597,7 +597,7 @@ bool Position::pseudo_legal(const Move m) const {
                && empty(to - pawn_push(us))))
           return false;
   }
-  else if (!(attacks_bb(type_of(pc), from, pieces()) & to))
+  else if (!(attacks_from(type_of(pc), from) & to))
       return false;
 
   // Evasions generator already takes care to avoid some kind of illegal moves
@@ -671,7 +671,7 @@ bool Position::gives_check(Move m) const {
       Square kto = relative_square(sideToMove, rfrom > kfrom ? SQ_G1 : SQ_C1);
       Square rto = relative_square(sideToMove, rfrom > kfrom ? SQ_F1 : SQ_D1);
 
-      return   (attacks_bb<ROOK>(rto) & square<KING>(~sideToMove))
+      return   (PseudoAttacks[ROOK][rto] & square<KING>(~sideToMove))
             && (attacks_bb<ROOK>(rto, (pieces() ^ kfrom ^ rfrom) | rto | kto) & square<KING>(~sideToMove));
   }
   default:
@@ -795,7 +795,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   {
       // Set en-passant square if the moved pawn can be captured
       if (   (int(to) ^ int(from)) == 16
-          && (pawn_attacks_bb(us, to - pawn_push(us)) & pieces(them, PAWN)))
+          && (attacks_from<PAWN>(to - pawn_push(us), us) & pieces(them, PAWN)))
       {
           st->epSquare = to - pawn_push(us);
           k ^= Zobrist::enpassant[file_of(st->epSquare)];
@@ -1142,7 +1142,42 @@ bool Position::has_repeated() const {
     }
     return false;
 }
+#if defined (Sullivan) || (Blau) 
+bool Position::king_danger() const {
 
+    Square ksq = square<KING>(sideToMove);
+    Bitboard kingRing, kingAttackers, legalKing;
+
+    kingRing = kingAttackers = legalKing = 0;
+
+    kingRing = attacks_from(KING, ksq);
+
+    while (kingRing)
+    {
+      Square to = pop_lsb(&kingRing);
+      Bitboard enemyAttackers = pieces(~sideToMove) & attackers_to(to);
+      if (!enemyAttackers)
+      {
+          if ((pieces(sideToMove) & to) == 0)
+              legalKing |= to;
+      }
+
+      while (enemyAttackers)
+      {
+        Square currentEnemy = pop_lsb(&enemyAttackers);
+        if ((currentEnemy & ~kingRing) || (more_than_one(attackers_to(to) & pieces(~sideToMove))))
+            kingAttackers |= currentEnemy;
+      }
+    }
+    int kingAttackersCount = popcount(kingAttackers);
+    int legalKingCount = popcount(legalKing);
+
+    if (kingAttackersCount > 1 && legalKingCount < 2)
+        return true;
+
+    return false;
+}
+#endif
 
 /// Position::has_game_cycle() tests if the position has a move which draws by repetition,
 /// or an earlier position has a move that directly reaches the current position.
@@ -1167,6 +1202,7 @@ bool Position::has_game_cycle(int ply) const {
       if (   (j = H1(moveKey), cuckoo[j] == moveKey)
           || (j = H2(moveKey), cuckoo[j] == moveKey))
       {
+
           Move move = cuckooMove[j];
           Square s1 = from_sq(move);
           Square s2 = to_sq(move);

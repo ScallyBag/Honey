@@ -1,27 +1,30 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cassert>
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cmath>  // convert to winning %
+#include <iomanip> //set precision in winning %
 
 #include "evaluate.h"
 #include "movegen.h"
@@ -63,6 +66,11 @@ namespace {
     else if (token == "fen")
         while (is >> token && token != "moves")
             fen += token + " ";
+#ifdef Add_Features
+    else if (token == "f")
+        while (is >> token && token != "moves")
+            fen += token + " ";
+#endif
     else
         return;
 
@@ -99,9 +107,118 @@ namespace {
         Options[name] = value;
     else
         sync_cout << "No such option: " << name << sync_endl;
-  }
+}
+#ifdef Add_Features
+// set() is called by typing "s" from the terminal when the user wants to use abbreviated
+// non-UCI comamnds and avoid the uci option protocol "setoption name (option name) value (xxx) ",
+// e.g., instead of typing "setoption name threads value 8" to set cores to 8 at the terminal,
+// the user simply types "s threads 8" - restricted to option names that do not contain
+// any white spaces - see ucioption.cpp.  The argument can take white spaces e.g.,
+// "s syzygypath /endgame tablebases/syzygy" will work
+void set(istringstream& is) {
+    string token, name, value;
+
+    // Read option name (no white spaces in option name)
+    is >> token;
+    name = token;
+
+    // Read option value (can contain white spaces)
+    while (is >> token)
+        value += string(" ", value.empty() ? 0 : 1) + token;
+
+    // provide user confirmation
+    if (Options.count(name)) {
+        Options[name] = value;
+        sync_cout << FontColor::green << "Confirmation: "<< name << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "dpa")
+    {
+      Options["Deep Pro Analysis"] = {value};
+      sync_cout << FontColor::green << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "t")  {
+      Threads.set(stoi(value));
+      sync_cout << FontColor::green << "Confirmation: "<< "Threads" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "h")  {
+      TT.resize(stoi(value));
+      sync_cout << FontColor::green << "Confirmation: "<< "Hash" << " set to " << value << " Mb" << FontColor::reset << sync_endl;
+    }
+    else if (name == "mo")
+    {
+    Options["Min Output"] = {value};
+    sync_cout << FontColor::green << "Confirmation: "<< "Min Output" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "mv")
+    {
+      Options["MultiPV"] = {value};
+      sync_cout << FontColor::green << "Confirmation: "<< "MultiPV" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "proa")
+    {
+      Options["Pro Analysis"] = {value};
+      sync_cout << FontColor::green << "Confirmation: "<< "Pro Analysis" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "prov")
+    {
+      Options["Pro Analysis"] = {value};
+      sync_cout << FontColor::green << "Confirmation: "<< "Pro Value" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "so")
+    {
+    Options["Score Output"] = {value};
+    sync_cout << FontColor::green << "Confirmation: "<< "Score Output" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "ta")
+    {
+    Options["Tactical"] = {value};
+    sync_cout << FontColor::green << "Confirmation: "<< "Tactical" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "z")
+    {
+      Tablebases::init(value);
+      sync_cout << FontColor::green << "Confirmation: "<< "SyzygyPath" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "" || name == "option" )
+    {
+      sync_cout << ""  << sync_endl;
+      sync_cout <<  " Shortcut Commands:"  << sync_endl;
+      sync_cout << "  Note: setoption name 'option name'  value 'value'"  << sync_endl;
+      sync_cout << "  is replaced  by:"  <<  sync_endl;
+      sync_cout << FontColor::green << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
+      sync_cout << FontColor::reset << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
+      sync_cout << "\n Shortcuts:"  << sync_endl;
+      sync_cout << FontColor::green << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
+      sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
+      sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
+      sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
+      sync_cout << "    'm'   -> shortcut for 'Mate'"  << sync_endl;
+      sync_cout << "    'mo'  -> shortcut for 'Min Output'" << sync_endl;
+      sync_cout << "    'mv'  -> shortcut for 'MultiPV'"  << sync_endl;
+      sync_cout << "    'mt'  -> shortcut for 'Movetime'-> " << FontColor::reset << sync_endl;
+      sync_cout << FontColor::reset << "  Note: 'mt' is in seconds, while" << sync_endl;
+      sync_cout << "  movetime is in milliseconds"  << sync_endl;
+      sync_cout << FontColor::green << "    'p f' -> shortcut for 'position fen'" << sync_endl;
+      sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
+      sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
+      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" << FontColor::reset << sync_endl;
+      sync_cout << "  Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
+      sync_cout << "  last option on the command line!"  << sync_endl;
+      sync_cout << FontColor::green << "    'so'  -> shortcut for 'Score Output'" << FontColor::green << sync_endl;
+      sync_cout << "    't'   -> shortcut for 'Threads'"  << sync_endl;
+      sync_cout << "    'ta'  -> shortcut for 'Tactical'"  << sync_endl;
+      sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
+      sync_cout << "    'z'   -> shortcut for 'SyzygyPath'"  << sync_endl;
+      sync_cout << "    '?'   -> shortcut for 'stop'"  << FontColor::reset << sync_endl;
 
 
+    }
+    else
+      sync_cout << FontColor::green << "No such option: " << name << FontColor::reset<< sync_endl;
+
+}
+
+#endif
   // go() is called when engine receives the "go" UCI command. The function sets
   // the thinking time and other parameters from the input string, then starts
   // the search.
@@ -115,7 +232,11 @@ namespace {
     limits.startTime = now(); // As early as possible!
 
     while (is >> token)
-        if (token == "searchmoves") // Needs to be the last command on the line
+#ifdef Add_Features
+        if (token == "searchmoves" || token == "sm")  // Needs to be the last command on the line
+#else
+        if (token == "searchmoves")  // Needs to be the last command on the line
+#endif
             while (is >> token)
                 limits.searchmoves.push_back(UCI::to_move(pos, token));
 
@@ -131,6 +252,15 @@ namespace {
         else if (token == "perft")     is >> limits.perft;
         else if (token == "infinite")  limits.infinite = 1;
         else if (token == "ponder")    ponderMode = true;
+#ifdef Add_Features
+        else if (token == "d")         is >> limits.depth;
+        else if (token == "i")         limits.infinite = 1;
+        else if (token == "m")         is >> limits.mate;
+        else if (token == "mt")   {
+          is >> limits.movetime;
+          limits.movetime *= 1000;
+        }
+#endif
 
     Threads.start_thinking(pos, states, limits, ponderMode);
   }
@@ -143,12 +273,13 @@ namespace {
   void bench(Position& pos, istream& args, StateListPtr& states) {
 
     string token;
-    uint64_t num, nodes = 0, cnt = 1;
+    uint64_t num, lap_nodes = 0, nodes = 0, cnt = 1;
 
     vector<string> list = setup_bench(pos, args);
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
+    TimePoint lap_time_elapsed = elapsed;
 
     for (const auto& cmd : list)
     {
@@ -157,17 +288,28 @@ namespace {
 
         if (token == "go" || token == "eval")
         {
+
             cerr << "\nPosition: " << cnt++ << '/' << num << endl;
             if (token == "go")
             {
+               lap_time_elapsed = now();
                go(pos, is, states);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
+               lap_nodes = Threads.nodes_searched();
+               lap_time_elapsed = now() - lap_time_elapsed + 1;
+               if (lap_nodes * 1000 / lap_time_elapsed < 10000000)
+                   cerr << "Nodes/Second: " << (lap_nodes * 1000) / lap_time_elapsed << endl;
+               else
+                   cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
             }
             else
                sync_cout << "\n" << Eval::trace(pos) << sync_endl;
         }
         else if (token == "setoption")  setoption(is);
+#ifdef Add_Features
+        else if (token == "s")          set(is);
+#endif
         else if (token == "position")   position(pos, is, states);
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take some while
     }
@@ -176,10 +318,13 @@ namespace {
 
     dbg_print(); // Just before exiting
 
-    cerr << "\n==========================="
+    cerr << "\n================================="
          << "\nTotal time (ms) : " << elapsed
-         << "\nNodes searched  : " << nodes
-         << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+         << "\nNodes searched  : " << nodes << endl;
+    if (nodes * 1000 / elapsed < 10000000)
+         cerr << "\nNodes/second    : " << (nodes * 1000) / elapsed << endl;
+         else
+         cerr << "\nNodes/second    : " << nodes / elapsed << "k" << endl;
   }
 
 } // namespace
@@ -202,18 +347,32 @@ void UCI::loop(int argc, char* argv[]) {
   for (int i = 1; i < argc; ++i)
       cmd += std::string(argv[i]) + " ";
 
-  do {
-      if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
-          cmd = "quit";
+    do {
+        if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
+            cmd = "quit";
+#ifdef Add_Features
+        else if (token == "q")
+            cmd = "quit";
+#endif
 
       istringstream is(cmd);
 
       token.clear(); // Avoid a stale if getline() returns empty or blank line
       is >> skipws >> token;
 
-      if (    token == "quit"
-          ||  token == "stop")
-          Threads.stop = true;
+        // The GUI sends 'ponderhit' to tell us the user has played the expected move.
+        // So 'ponderhit' will be sent if we were told to ponder on the same move the
+        // user has played. We should continue searching but switch from pondering to
+        // normal search. In case Threads.stopOnPonderhit is set we are waiting for
+        // 'ponderhit' to stop the search, for instance if max search depth is reached.
+        if (    token == "quit"
+                ||  token == "stop"
+#ifdef Add_Features
+                ||  token == "q"
+                ||  token == "?"
+#endif
+            )
+            Threads.stop = true;
 
       // The GUI sends 'ponderhit' to tell us the user has played the expected move.
       // So 'ponderhit' will be sent if we were told to ponder on the same move the
@@ -227,23 +386,52 @@ void UCI::loop(int argc, char* argv[]) {
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
 
-      else if (token == "setoption")  setoption(is);
-      else if (token == "go")         go(pos, is, states);
-      else if (token == "position")   position(pos, is, states);
-      else if (token == "ucinewgame") Search::clear();
-      else if (token == "isready")    sync_cout << "readyok" << sync_endl;
+        else if (token == "setoption")  setoption(is);
+        else if (token == "go")         go(pos, is, states);
+#ifdef Add_Features
+        else if (token == "b")     bench(pos, is, states);
+        else if (token == "so")         setoption(is);
+        else if (token == "set")        set(is);
+        else if (token == "s")          set(is);
 
-      // Additional custom non-UCI commands, mainly for debugging.
-      // Do not use these commands during a search!
-      else if (token == "flip")     pos.flip();
-      else if (token == "bench")    bench(pos, is, states);
-      else if (token == "d")        sync_cout << pos << sync_endl;
-      else if (token == "eval")     sync_cout << Eval::trace(pos) << sync_endl;
-      else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
-      else
-          sync_cout << "Unknown command: " << cmd << sync_endl;
+        else if (token == "g")          go(pos, is, states);
+        else if (token == "q")          cmd = "quit";
+        else if (token == "position")
+        {
+            position(pos, is, states);
+            if (Options["Clean_Search"])
+                Search::clear();
+        }
+        else if (token == "p")
+        {
+            position(pos, is, states);
+            if (Options["Clean_Search"])
+                Search::clear();
+        }
+#else
+        else if (token == "position")   position(pos, is, states);
+#endif
+        else if (token == "ucinewgame") Search::clear();
+        else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 
-  } while (token != "quit" && argc == 1); // Command line args are one-shot
+		// Additional custom non-UCI commands, mainly for debugging.
+		// Do not use these commands during a search!
+        else if (token == "flip")  pos.flip();
+        else if (token == "bench") bench(pos, is, states);
+        else if (token == "d")     sync_cout << pos << sync_endl;
+        else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
+        else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
+#ifdef Add_Features
+        else if (token == "c++") sync_cout << compiler_info() << sync_endl;
+#endif
+        else
+            sync_cout << FontColor::green << "Unknown command: " << cmd << FontColor::reset << sync_endl;
+#ifdef Add_Features
+    } while (token != "quit" && token != "q" && argc == 1); // Command line args are one-shot
+#else
+    }
+    while (token != "quit" && argc == 1); // Command line args are one-shot
+#endif
 }
 
 
@@ -259,13 +447,37 @@ string UCI::value(Value v) {
   assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
+#ifdef Add_Features
+  const float vs = (float)v;
+  constexpr float sf = 2.15; // scoring percentage factor
+  constexpr float vf = 0.31492; // centipawn value factor
 
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
-      ss << "cp " << v * 100 / PawnValueEg;
-  else
-      ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+    {
+      // Score percentage evalaution output, similair to Lc0 output.
+      // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
+      if ( Options["Score Output"] == "ScorPct-GUI")
+          ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
+	            / (pow(sf,(sf * vs /1000)) + 1);
 
-  return ss.str();
+      // Centipawn scoring, value times centipawn factor
+      // SF values the raw score of pawns much higher than 100, see types.h
+      // The higher raw score allows for greater precison in many evaluation functions
+       else if (Options["Score Output"] == "Centipawn")
+	         ss << fixed << setprecision(0) << "cp " << (vs * vf);
+       else
+            ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
+                        / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
+    }
+   else
+       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+#else
+   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
+       ss << "cp " << v * 100 / PawnValueEg;
+   else
+       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+#endif
+   return ss.str();
 }
 
 

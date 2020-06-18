@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <cassert>
 
@@ -25,7 +26,7 @@
 #include "movegen.h"
 
 namespace {
-
+#ifdef Stockfish
   // Used to drive the king towards the edge of the board
   // in KX vs K and KQ vs KR endgames.
   inline int push_to_edge(Square s) {
@@ -37,7 +38,32 @@ namespace {
   inline int push_to_corner(Square s) {
       return abs(7 - rank_of(s) - file_of(s));
   }
-
+#else
+  // Table used to drive the king towards the edge of the board
+  // in KX vs K and KQ vs KR endgames.
+  constexpr int PushToEdges[SQUARE_NB] = {
+    100, 90, 80, 70, 70, 80, 90, 100,
+     90, 70, 60, 50, 50, 60, 70,  90,
+     80, 60, 40, 30, 30, 40, 60,  80,
+     70, 50, 30, 20, 20, 30, 50,  70,
+     70, 50, 30, 20, 20, 30, 50,  70,
+     80, 60, 40, 30, 30, 40, 60,  80,
+     90, 70, 60, 50, 50, 60, 70,  90,
+    100, 90, 80, 70, 70, 80, 90, 100
+  };
+  // Table used to drive the king towards a corner square of the
+  // right color in KBN vs K endgames.
+  constexpr int PushToCorners[SQUARE_NB] = {
+    6600, 6280, 5860, 5540, 5170, 4850, 4530, 4160,
+	  6280, 5760, 5490, 5120, 4800, 4280, 4160, 4530,
+	  5860, 5490, 4960, 4680, 4280, 4000, 4480, 4850,
+	  5540, 5120, 4680, 3840, 3520, 4480, 4800, 5170,
+	  5170, 4800, 4480, 3520, 3840, 4680, 5120, 5540,
+	  4850, 4480, 4000, 4280, 4680, 4960, 5490, 5860,
+	  4530, 4160, 4280, 4800, 5120, 5490, 5760, 6280,
+	  4160, 4530, 4850, 5170, 5540, 5860, 6280, 6600
+  };
+#endif
   // Drive a piece close to or away from another piece
   inline int push_close(Square s1, Square s2) { return 140 - 20 * distance(s1, s2); }
   inline int push_away(Square s1, Square s2) { return 120 - push_close(s1, s2); }
@@ -55,9 +81,9 @@ namespace {
     assert(pos.count<PAWN>(strongSide) == 1);
 
     if (file_of(pos.square<PAWN>(strongSide)) >= FILE_E)
-        sq = flip_file(sq);
+        sq = Square(int(sq) ^ 7); // Mirror SQ_H1 -> SQ_A1
 
-    return strongSide == WHITE ? sq : flip_rank(sq);
+    return strongSide == WHITE ? sq : ~sq;
   }
 
 } // namespace
@@ -78,7 +104,9 @@ namespace Endgames {
     add<KQKP>("KQKP");
     add<KQKR>("KQKR");
     add<KNNKP>("KNNKP");
-
+#if defined (Sullivan) || (Blau) || (Noir)
+    add<KNPK>("KNPK");
+#endif
     add<KRPKR>("KRPKR");
     add<KRPKB>("KRPKB");
     add<KBPKB>("KBPKB");
@@ -108,7 +136,11 @@ Value Endgame<KXK>::operator()(const Position& pos) const {
 
   Value result =  pos.non_pawn_material(strongSide)
                 + pos.count<PAWN>(strongSide) * PawnValueEg
+#ifndef Stockfish
+                + PushToEdges[loserKSq]
+#else
                 + push_to_edge(loserKSq)
+#endif
                 + push_close(winnerKSq, loserKSq);
 
   if (   pos.count<QUEEN>(strongSide)
@@ -136,10 +168,15 @@ Value Endgame<KBNK>::operator()(const Position& pos) const {
 
   // If our bishop does not attack A1/H8, we flip the enemy king square
   // to drive to opposite corners (A8/H1).
-
-  Value result =  (VALUE_KNOWN_WIN + 3520)
+#ifndef Stockfish
+  Value result =  VALUE_KNOWN_WIN
                 + push_close(winnerKSq, loserKSq)
-                + 420 * push_to_corner(opposite_colors(bishopSq, SQ_A1) ? flip_file(loserKSq) : loserKSq);
+                + PushToCorners[opposite_colors(bishopSq, SQ_A1) ? ~loserKSq : loserKSq];
+#else
+   Value result =  (VALUE_KNOWN_WIN + 3520)
+                + push_close(winnerKSq, loserKSq)
+                + 420 * push_to_corner(opposite_colors(bishopSq, SQ_A1) ? ~(loserKSq) : loserKSq);
+#endif
 
   assert(abs(result) < VALUE_TB_WIN_IN_MAX_PLY);
   return strongSide == pos.side_to_move() ? result : -result;
@@ -221,8 +258,11 @@ Value Endgame<KRKB>::operator()(const Position& pos) const {
 
   assert(verify_material(pos, strongSide, RookValueMg, 0));
   assert(verify_material(pos, weakSide, BishopValueMg, 0));
-
+#ifndef Stockfish
+  Value result = Value(PushToEdges[pos.square<KING>(weakSide)]);
+#else
   Value result = Value(push_to_edge(pos.square<KING>(weakSide)));
+#endif
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -237,7 +277,11 @@ Value Endgame<KRKN>::operator()(const Position& pos) const {
 
   Square bksq = pos.square<KING>(weakSide);
   Square bnsq = pos.square<KNIGHT>(weakSide);
+#ifndef Stockfish
+  Value result = Value(PushToEdges[bksq] + push_away(bksq, bnsq));
+#else
   Value result = Value(push_to_edge(bksq) + push_away(bksq, bnsq));
+#endif
   return strongSide == pos.side_to_move() ? result : -result;
 }
 
@@ -282,7 +326,11 @@ Value Endgame<KQKR>::operator()(const Position& pos) const {
 
   Value result =  QueenValueEg
                 - RookValueEg
+  #ifndef Stockfish
+                + PushToEdges[loserKSq]
+  #else
                 + push_to_edge(loserKSq)
+  #endif
                 + push_close(winnerKSq, loserKSq);
 
   return strongSide == pos.side_to_move() ? result : -result;
@@ -298,12 +346,15 @@ Value Endgame<KNNKP>::operator()(const Position& pos) const {
   assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
 
   Value result =      PawnValueEg
+#ifndef Stockfish
+               +  2 * PushToEdges[pos.square<KING>(weakSide)]
+#else
                +  2 * push_to_edge(pos.square<KING>(weakSide))
+#endif
                - 10 * relative_rank(weakSide, pos.square<PAWN>(weakSide));
 
   return strongSide == pos.side_to_move() ? result : -result;
 }
-
 
 /// Some cases of trivial draws
 template<> Value Endgame<KNNK>::operator()(const Position&) const { return VALUE_DRAW; }
@@ -391,8 +442,8 @@ ScaleFactor Endgame<KQKRPs>::operator()(const Position& pos) const {
       &&  relative_rank(weakSide, pos.square<KING>(strongSide)) >= RANK_4
       &&  relative_rank(weakSide, rsq) == RANK_3
       && (  pos.pieces(weakSide, PAWN)
-          & attacks_bb<KING>(kingSq)
-          & pawn_attacks_bb(strongSide, rsq)))
+          & pos.attacks_from<KING>(kingSq)
+          & pos.attacks_from<PAWN>(rsq, strongSide)))
           return SCALE_FACTOR_DRAW;
 
   return SCALE_FACTOR_NONE;
@@ -535,7 +586,7 @@ ScaleFactor Endgame<KRPKB>::operator()(const Position& pos) const {
       // the corner
       if (   rk == RANK_6
           && distance(psq + 2 * push, ksq) <= 1
-          && (attacks_bb<BISHOP>(bsq) & (psq + push))
+          && (PseudoAttacks[BISHOP][bsq] & (psq + push))
           && distance<File>(bsq, psq) >= 2)
           return ScaleFactor(8);
   }
@@ -670,14 +721,14 @@ ScaleFactor Endgame<KBPPKB>::operator()(const Position& pos) const {
     if (   ksq == blockSq1
         && opposite_colors(ksq, wbsq)
         && (   bbsq == blockSq2
-            || (attacks_bb<BISHOP>(blockSq2, pos.pieces()) & pos.pieces(weakSide, BISHOP))
+            || (pos.attacks_from<BISHOP>(blockSq2) & pos.pieces(weakSide, BISHOP))
             || distance<Rank>(psq1, psq2) >= 2))
         return SCALE_FACTOR_DRAW;
 
     else if (   ksq == blockSq2
              && opposite_colors(ksq, wbsq)
              && (   bbsq == blockSq1
-                 || (attacks_bb<BISHOP>(blockSq1, pos.pieces()) & pos.pieces(weakSide, BISHOP))))
+                 || (pos.attacks_from<BISHOP>(blockSq1) & pos.pieces(weakSide, BISHOP))))
         return SCALE_FACTOR_DRAW;
     else
         return SCALE_FACTOR_NONE;
@@ -711,6 +762,25 @@ ScaleFactor Endgame<KBPKN>::operator()(const Position& pos) const {
   return SCALE_FACTOR_NONE;
 }
 
+#if defined (Sullivan) || (Blau) || (Noir)
+/// KNP vs K. There is a single rule: if the pawn is a rook pawn on the 7th rank
+/// and the defending king prevents the pawn from advancing, the position is drawn.
+template<>
+ScaleFactor Endgame<KNPK>::operator()(const Position& pos) const {
+
+  assert(verify_material(pos, strongSide, KnightValueMg, 1));
+  assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
+
+  // Assume strongSide is white and the pawn is on files A-D
+  Square pawnSq     = normalize(pos, strongSide, pos.square<PAWN>(strongSide));
+  Square weakKingSq = normalize(pos, strongSide, pos.square<KING>(weakSide));
+
+  if (pawnSq == SQ_A7 && distance(SQ_A8, weakKingSq) <= 1)
+      return SCALE_FACTOR_DRAW;
+
+  return SCALE_FACTOR_NONE;
+}
+#endif
 
 /// KP vs KP. This is done by removing the weakest side's pawn and probing the
 /// KP vs K bitbase: If the weakest side has a draw without the pawn, it probably
