@@ -1,23 +1,23 @@
 /*
- Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
- Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
- Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
- Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
- Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
+  Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+  Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+  Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
- Honey is free software: you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation, either version 3 of the License, or
- (at your option) any later version.
+  Honey is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
- Honey is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
+  Honey is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 #include <algorithm>
 #include <cassert>
@@ -26,11 +26,8 @@
 #include <iostream>
 #include <sstream>
 
-
 #include <fstream>
 #include <unistd.h> //for sleep //MichaelB7
-
-
 #include "evaluate.h"
 #include "misc.h"
 #include "movegen.h"
@@ -42,8 +39,6 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-
-
 #include "polybook.h" // Cerebellum
 
 namespace Search {
@@ -69,7 +64,6 @@ namespace Tablebases {
   bool RootInTB;
   bool UseRule50;
   Depth ProbeDepth;
-
 }
 
 namespace TB = Tablebases;
@@ -110,18 +104,9 @@ namespace {
   }
 
   // Add a small random component to draw evaluations to avoid 3fold-blindness
-
-/*#if defined (Sullivan)
-  Value value_draw(Depth depth, Thread* thisThread) {
-    return depth < 4 ? VALUE_DRAW
-                   : VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
-  }
-#else*/
   Value value_draw(Thread* thisThread) {
     return VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
   }
-//#endif
-
 
   // Skill structure is used to implement strength limit
   struct Skill {
@@ -234,6 +219,8 @@ void Search::init() {
   for (int i = 1; i < MAX_MOVES; ++i)
       Reductions[i] = int((24.8 + std::log(Threads.size())) * std::log(i));
 }
+
+
 /// Search::clear() resets search state to its initial value
 
 void Search::clear() {
@@ -417,9 +404,7 @@ skipLevels:
         }
       Threads.start_searching(); // start non-main threads
       Thread::search();          // main thread start searching
-
-    }
-
+      }
   }
 
   // When we reach the maximum depth, we can arrive here without a raise of
@@ -449,7 +434,7 @@ skipLevels:
   if (int(Options["MultiPV"]) == 1
       && !Limits.depth
       && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]) || limitStrength)
-      &&  rootMoves[0].pv[0] != MOVE_NONE)
+      && rootMoves[0].pv[0] != MOVE_NONE)
       bestThread = Threads.get_best_thread();
 
   bestPreviousScore = bestThread->rootMoves[0].score;
@@ -467,18 +452,18 @@ skipLevels:
 
       size_t i = 0;
       if ( bestPreviousScore >= -PawnValueMg && bestPreviousScore <= PawnValueMg * 4 )
-	  {
+      {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore)
           ++i;
           bestPreviousScore = bestThread->rootMoves[i].score;
           sync_cout << FontColor::green << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
-	  }
+      }
       else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 7 )
       {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < bestPreviousScore
                 && bestPreviousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
-		  {
+          {
               ++i;
               break;
           }
@@ -536,9 +521,9 @@ void Thread::search() {
 
 
   int iterIdx = 0;
+
   std::memset(ss-7, 0, 10 * sizeof(Stack));
   for (int i = 7; i > 0; i--)
-
       (ss-i)->continuationHistory = &this->continuationHistory[0][0][NO_PIECE][0]; // Use as a sentinel
 
   ss->pv = pv;
@@ -578,7 +563,7 @@ void Thread::search() {
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
 
-int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // From centipawns
+  int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // From centipawns
   // In analysis mode, adjust contempt in accordance with user preference
   if (Limits.infinite || Options["UCI_AnalyseMode"])
       ct =  Options["Analysis_Contempt"] == "Off"  ? 0
@@ -592,7 +577,6 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                           : -make_score(ct, ct / 2));
 
   int searchAgainCounter = 0;
-
 
   // Iterative deepening loop until requested to stop or the target depth is reached
   while (   ++rootDepth < MAX_PLY
@@ -688,15 +672,14 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
               if (Threads.stop)
                   break;
 
-                // When failing high/low give some update (without cluttering
-                // the UI) before a re-search.
-                if (
-                    !minOutput &&
-                    mainThread
-                    && multiPV == 1
-                    && (bestValue <= alpha || bestValue >= beta)
-                    && Time.elapsed() > 5000)
-                    sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
+              // When failing high/low give some update (without cluttering
+              // the UI) before a re-search.
+              if (
+                  !minOutput &&  mainThread
+                  && multiPV == 1
+                  && (bestValue <= alpha || bestValue >= beta)
+                  && Time.elapsed() > 5000)
+                  sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
               // In case of failing low/high increase aspiration window and
               // re-search, otherwise exit the loop.
@@ -709,15 +692,20 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
+
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
+#ifdef Stockfish
+                  ++failedHighCnt;
+#endif
               }
               else
-			  {
+              {
                   ++rootMoves[pvIdx].bestMoveCount;
-				  break;
+                  break;
               }
+
               delta += delta / 4 + 5;
 
               assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
@@ -734,8 +722,9 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
               //sync_cout << "Contempt EG: " << dctcp/2  << "\n" << sync_endl;// for debug
       }
 
-        if (!Threads.stop)
+      if (!Threads.stop)
           completedDepth = rootDepth;
+
       if (rootMoves[0].pv[0] != lastBestMove) {
          lastBestMove = rootMoves[0].pv[0];
          lastBestMoveDepth = rootDepth;
@@ -743,18 +732,17 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
       // Have we found a "mate in x"?
       if (   Limits.mate
-             && bestValue >= VALUE_MATE_IN_MAX_PLY
-             && VALUE_MATE - bestValue <= 2 * Limits.mate)
-         Threads.stop = true;
+          && bestValue >= VALUE_MATE_IN_MAX_PLY
+          && VALUE_MATE - bestValue <= 2 * Limits.mate)
+          Threads.stop = true;
 
       if (!mainThread)
           continue;
 
-        if (Options["FastPlay"])
-        {
-            if ( Time.elapsed() > Time.optimum() / 256
-                 && ( abs(bestValue) > 12300 ||  abs(bestValue) >= VALUE_MATE_IN_MAX_PLY ))
-                 Threads.stop = true;
+      if (Options["FastPlay"])
+        {   if ( Time.elapsed() > Time.optimum() / 256
+          && ( abs(bestValue) > 12300 ||  abs(bestValue) >= VALUE_MATE_IN_MAX_PLY ))
+          Threads.stop = true;
         }
 
       // If skill level is enabled and time is up, pick a sub-optimal best move
@@ -805,7 +793,6 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
       mainThread->iterValue[iterIdx] = bestValue;
       iterIdx = (iterIdx + 1) & 3;
-
   }
 
   if (!mainThread)
@@ -821,28 +808,7 @@ int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // 
 
 
 namespace {
-/*#if defined (Sullivan) || (Blau) || (Fortress)
-  static TTEntry *probeTT(const Position &pos, Stack* ss, Key posKey,
-                          bool &ttHit, Value &ttValue, Move &ttMove) {
 
-    TTEntry *tte = TT.probe(posKey, ttHit);
-    ttValue = tte->value();
-    // Disregard TT hit if mate score is shorter than remaining 50 MR plies.
-    if (   ttHit
-        && ttValue != VALUE_NONE
-        && std::abs(ttValue) >= VALUE_MATE_IN_MAX_PLY
-        && VALUE_MATE - std::abs(ttValue) >= 100 - pos.rule50_count())
-        ttHit = false;
-    if (   ttHit
-        && ttValue != VALUE_NONE
-		&& std::abs(ttValue) >= VALUE_MATE_IN_MAX_PLY
-        && pos.count<ALL_PIECES>() < 8)
-        ttHit = true;
-    ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-    ttMove = ttHit ? tte->move() : MOVE_NONE;
-    return tte;
-  }
-#endif*/
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType NT>
@@ -952,7 +918,7 @@ namespace {
     ttPv = PvNode || (ttHit && tte->is_pv());
     formerPv = ttPv && !PvNode;
 
-    if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
+    if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !priorCapture && is_ok((ss-1)->currentMove))
         thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
@@ -962,10 +928,6 @@ namespace {
     // At non-PV nodes we check for an early TT cutoff
     if (  !PvNode
         && ttHit
-/*#if defined (Sullivan) || (Blau)
-    && (pos.rule50_count() < 92 || (piecesCount < 8  && TB::Cardinality ))
-#endif*/
-
         && tte->depth() >= depth
         && ttValue != VALUE_NONE // Possible in case of TT access race
         && (ttValue >= beta ? (tte->bound() & BOUND_LOWER)
@@ -1256,11 +1218,7 @@ moves_loop: // When in check, search starts from here
 
       ss->moveCount = ++moveCount;
 
-
-
-      if (!minOutput && rootNode && thisThread == Threads.main()
-           && Time.elapsed() > 5000)
-
+      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 5000)
           sync_cout << "info depth " << depth
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
@@ -1874,14 +1832,14 @@ moves_loop: // When in check, search starts from here
        }
     }
 
-	  if (!adaptive && jekyll && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
+        if (!adaptive && jekyll && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
         {
-			//int o_value = bestValue;// for debug
-			//sync_cout << "Value " << bestValue << sync_endl;// for debug
-			bestValue += (rand() % 64 * 2001/uci_elo + 1);
-			//sync_cout << "Random Value " << bestValue << sync_endl;// for debug
-			//sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
-	  }
+            //int o_value = bestValue;// for debug
+            //sync_cout << "Value " << bestValue << sync_endl;// for debug
+            bestValue += (rand() % 64 * 2001/uci_elo + 1);
+            //sync_cout << "Random Value " << bestValue << sync_endl;// for debug
+            //sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
+        }
 
     // All legal moves have been searched. A special case: If we're in check
     // and no legal moves were found, it is checkmate.
