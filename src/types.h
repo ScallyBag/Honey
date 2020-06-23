@@ -231,16 +231,17 @@ enum Value : int {
   #define QVM 100/100
   #define QVE 100/100
 #endif
-//#ifdef Stockfish
+
 PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
-//#else
-//PawnValueMg   = 128*PVM,   PawnValueEg   = 213*PVE,
-//#endif
 KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
 BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
 RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
 QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
 Tempo = 28,
+
+#ifdef Noir
+VALUE_TB_WIN    = 101 * PawnValueEg,
+#endif
 
 MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
 

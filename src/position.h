@@ -159,8 +159,11 @@ public:
   Thread* this_thread() const;
   bool is_draw(int ply) const;
   bool has_game_cycle(int ply) const;
-#if defined (Sullivan) || (Blau)
+#if defined (Sullivan) || (Blau) || (Noir)
   bool king_danger() const;
+#endif
+#ifdef Noir
+  bool is_scb(Color c) const;
 #endif
   bool has_repeated() const;
   int rule50_count() const;

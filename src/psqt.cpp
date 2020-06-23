@@ -22,9 +22,7 @@
 #include <algorithm>
 
 #include "types.h"
-//#ifdef Stockfish
 #include "bitboard.h"
-//#endif
 
 namespace PSQT {
 
@@ -37,28 +35,6 @@ namespace PSQT {
 constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
   { },
   { },
-/*#if ((defined Sullivan) || (defined Blau))
-  { // Knight
-   { S( -172, -100), S(-94,-70), S(-77,-47), S(-76,-20) },
-   { S(  -78,  -69), S(-40,-55), S(-26,-17), S(-12,  7) },
-   { S(  -63,  -39), S(-19,-27), S(  5, -7), S( 16, 17) },
-   { S(  -32,  -36), S(  7, -1), S( 41, 13), S( 48, 28) },
-   { S(  -32,  -43), S( 13,-18), S( 43, 11), S( 52, 37) },
-   { S(  -10,  -51), S( 25,-41), S( 61,-17), S( 54, 18) },
-   { S(  -67,  -67), S(-24,-48), S(  5,-44), S( 37, 14) },
-   { S( -201,  -99), S(-82,-89), S(-55,-55), S(-29,-17) }
-  },
-  { // Bishop
-    { S(-53,-57), S( -5,-30), S( -8,-37), S(-23,-12) },
-    { S(-15,-37), S( 19,-13), S( 19,-17), S(  4,  1) },
-    { S( -7,-16), S( 21, -1), S( -5, -2), S( 17, 10) },
-    { S( -5,-20), S( 11, -6), S( 25,  0), S( 39, 17) },
-    { S(-12,-17), S( 29, -1), S( 22,-14), S( 31, 15) },
-    { S(-16,-30), S(  6,  6), S(  1,  4), S( 11,  6) },
-    { S(-17,-31), S(-14,-20), S(  5, -1), S(  0,  1) },
-    { S(-48,-46), S(  1,-42), S(-14,-37), S(-23,-24) }
-  },
-#else*/
   { // Knight
    { S(-175, -96), S(-92,-65), S(-74,-49), S(-73,-21) },
    { S( -77, -67), S(-41,-54), S(-27,-18), S(-15,  8) },
@@ -79,7 +55,6 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S(-17,-31), S(-14,-20), S(  5, -1), S(  0,  1) },
    { S(-48,-46), S(  1,-42), S(-14,-37), S(-23,-24) }
   },
-//#endif
   { // Rook
    { S(-31, -9), S(-20,-13), S(-14,-10), S(-5, -9) },
    { S(-21,-12), S(-13, -9), S( -8, -1), S( 6, -2) },
@@ -140,11 +115,7 @@ void init() {
 
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
       {
-//#ifndef Stockfish
-//          File f = map_to_queenside(file_of(s));
-//#else
           File f = File(edge_distance(file_of(s)));
-//#endif
           psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
                                                       : Bonus[pc][rank_of(s)][f]);
           psq[~pc][~s] = -psq[pc][s];

@@ -171,13 +171,13 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::black << "\n\n\n    ######                                ######                                         #     # ###            #####     \n";
-     sp << FontColor::black << "    #     # #        ##    ####  #    #   #     # #   ##   #    #  ####  #    # #####     #   #   #     #####  #     #     \n";
-     sp << FontColor::black << "    #     # #       #  #  #    # #   #    #     # #  #  #  ##  ## #    # ##   # #    #     # #    #     #    #       #     \n";
-     sp << FontColor::black << "    ######  #      #    # #      ####     #     # # #    # # ## # #    # # #  # #    #      #     # ### #    #  #####      \n";
-     sp << FontColor::black << "    #     # #      ###### #      #  #     #     # # ###### #    # #    # #  # # #    #     # #    #     #####        #    \n";
-     sp << FontColor::black << "    #     # #      #    # #    # #   #    #     # # #    # #    # #    # #   ## #    #    #   #   #     #   #  #     #    \n";
-     sp << FontColor::black << "    ######  ###### #    #  ####  #    #   ######  # #    # #    #  ####  #    # #####    #     # ###    q#    #  #####     \n\n";
+     sp << FontColor::white << "\n\n\n       #     ######                                ######                                           #     #     # ###            #####     \n";
+     sp << FontColor::white << "      # #    #     # #        ##    ####  #    #   #     # #   ##   #    #  ####  #    # #####     # #     #   #   #     #####  #     #     \n";
+     sp << FontColor::white << "     #   #   #     # #       #  #  #    # #   #    #     # #  #  #  ##  ## #    # ##   # #    #   #   #     # #    #     #    #       #     \n";
+     sp << FontColor::white << "    #     #  ######  #      #    # #      ####     #     # # #    # # ## # #    # # #  # #    #  #     #     #     # ### #    #  #####      \n";
+     sp << FontColor::white << "     #   #   #     # #      ###### #      #  #     #     # # ###### #    # #    # #  # # #    #   #   #     # #    #     #####        #    \n";
+     sp << FontColor::white << "      # #    #     # #      #    # #    # #   #    #     # # #    # #    # #    # #   ## #    #    # #     #   #   #     #   #  #     #    \n";
+     sp << FontColor::white << "       #     ######  ###### #    #  ####  #    #   ######  # #    # #    #  ####  #    # #####      #     #     # ###    #    #  #####     \n\n";
 
 
   return sp.str();
@@ -250,7 +250,7 @@ const string engine_info(bool to_uci) {
 #elif Honey
     ss << FontColor::yellow  << "    Honey " << Version << Suffix << setfill('0') ;
 #elif Noir
-	  ss << FontColor::black   << "    Black Diamond " << Version << Suffix << setfill('0');
+	  ss << FontColor::white   << "    Black Diamond " << Version << Suffix << setfill('0');
 #elif Stockfish
     ss << FontColor::red     << "    Stockfish " << Version << Suffix << setfill('0');
 #elif Weak

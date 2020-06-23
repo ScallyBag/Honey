@@ -1114,7 +1114,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 
 /// Position::is_draw() tests whether the position is drawn by 50-move rule
 /// or by repetition. It does not detect stalemates.
-
+#ifndef Noir
 bool Position::is_draw(int ply) const {
 
   if (st->rule50 > 99 && (!checkers() || MoveList<LEGAL>(*this).size()))
@@ -1142,7 +1142,7 @@ bool Position::has_repeated() const {
     }
     return false;
 }
-#if defined (Sullivan) || (Blau) 
+#if defined (Sullivan) || (Blau)
 bool Position::king_danger() const {
 
     Square ksq = square<KING>(sideToMove);
@@ -1333,3 +1333,242 @@ bool Position::pos_is_ok() const {
 
   return true;
 }
+#else
+
+bool Position::is_draw(int ply) const {
+
+  if (st->rule50 > 99 + bool(checkers()))
+      return true;
+
+  // Return a draw score if a position repeats once earlier but strictly
+  // after the root, or repeats twice before or at the root.
+  return st->repetition && st->repetition < ply;
+}
+
+
+// Position::has_repeated() tests whether there has been at least one repetition
+// of positions since the last capture or pawn move.
+
+bool Position::has_repeated() const {
+
+    StateInfo* stc = st;
+    int end = std::min(st->rule50, st->pliesFromNull);
+    while (end-- >= 4)
+    {
+        if (stc->repetition)
+            return true;
+
+        stc = stc->previous;
+    }
+    return false;
+}
+
+bool Position::is_scb(Color Us) const {
+
+    if (pieces(Us, QUEEN))
+        return false;
+
+    if (pieces(Us, ROOK))
+        return false;
+
+    if (pieces(Us, KNIGHT))
+        return false;
+
+    if (      pieces(Us, BISHOP)
+        && !((pieces(Us, BISHOP) & ~DarkSquares) && (pieces(Us, BISHOP) &  DarkSquares)))
+            return true;
+
+    return false;
+}
+
+
+bool Position::king_danger() const {
+
+    Square ksq = square<KING>(sideToMove);
+    Bitboard kingRing, kingAttackers, legalKing;
+
+    kingRing = kingAttackers = legalKing = 0;
+
+    kingRing = attacks_bb<KING>(ksq);
+
+    while (kingRing)
+    {
+      Square to = pop_lsb(&kingRing);
+      Bitboard enemyAttackers = pieces(~sideToMove) & attackers_to(to);
+      if (!enemyAttackers)
+      {
+          if ((pieces(sideToMove) & to) == 0)
+              legalKing |= to;
+      }
+
+      while (enemyAttackers)
+      {
+        Square currentEnemy = pop_lsb(&enemyAttackers);
+        if ((currentEnemy & ~kingRing) || (more_than_one(attackers_to(to) & pieces(~sideToMove))))
+            kingAttackers |= currentEnemy;
+      }
+    }
+    int kingAttackersCount = popcount(kingAttackers);
+    int legalKingCount = popcount(legalKing);
+
+    if (   (kingAttackersCount > 1 &&  legalKingCount < 2)
+        || (kingAttackersCount > 0 && !legalKingCount))
+        return true;
+
+    return false;
+}
+
+/// Position::has_game_cycle() tests if the position has a move which draws by repetition,
+/// or an earlier position has a move that directly reaches the current position.
+
+bool Position::has_game_cycle(int ply) const {
+
+  int j;
+
+  int end = std::min(st->rule50, st->pliesFromNull);
+
+  if (end < 3)
+    return false;
+
+  Key originalKey = st->key;
+  StateInfo* stp = st->previous;
+
+  for (int i = 3; i <= end; i += 2)
+  {
+      stp = stp->previous->previous;
+
+      Key moveKey = originalKey ^ stp->key;
+      if (   (j = H1(moveKey), cuckoo[j] == moveKey)
+          || (j = H2(moveKey), cuckoo[j] == moveKey))
+      {
+          Move move = cuckooMove[j];
+          Square s1 = from_sq(move);
+          Square s2 = to_sq(move);
+
+          if (!(between_bb(s1, s2) & pieces()))
+          {
+              if (ply > i)
+                  return true;
+
+              // For nodes before or at the root, check that the move is a
+              // repetition rather than a move to the current position.
+              // In the cuckoo table, both moves Rc1c5 and Rc5c1 are stored in
+              // the same location, so we have to select which square to check.
+              if (color_of(piece_on(empty(s1) ? s2 : s1)) != side_to_move())
+                  continue;
+
+              // For repetitions before or at the root, require one more
+              if (stp->repetition)
+                  return true;
+          }
+      }
+  }
+  return false;
+}
+
+
+/// Position::flip() flips position with the white and black sides reversed. This
+/// is only useful for debugging e.g. for finding evaluation symmetry bugs.
+
+void Position::flip() {
+
+  string f, token;
+  std::stringstream ss(fen());
+
+  for (Rank r = RANK_8; r >= RANK_1; --r) // Piece placement
+  {
+      std::getline(ss, token, r > RANK_1 ? '/' : ' ');
+      f.insert(0, token + (f.empty() ? " " : "/"));
+  }
+
+  ss >> token; // Active color
+  f += (token == "w" ? "B " : "W "); // Will be lowercased later
+
+  ss >> token; // Castling availability
+  f += token + " ";
+
+  std::transform(f.begin(), f.end(), f.begin(),
+                 [](char c) { return char(islower(c) ? toupper(c) : tolower(c)); });
+
+  ss >> token; // En passant square
+  f += (token == "-" ? token : token.replace(1, 1, token[1] == '3' ? "6" : "3"));
+
+  std::getline(ss, token); // Half and full moves
+  f += token;
+
+  set(f, is_chess960(), st, this_thread());
+
+  assert(pos_is_ok());
+}
+
+
+/// Position::pos_is_ok() performs some consistency checks for the
+/// position object and raises an asserts if something wrong is detected.
+/// This is meant to be helpful when debugging.
+
+bool Position::pos_is_ok() const {
+
+  constexpr bool Fast = true; // Quick (default) or full check?
+
+  if (   (sideToMove != WHITE && sideToMove != BLACK)
+      || piece_on(square<KING>(WHITE)) != W_KING
+      || piece_on(square<KING>(BLACK)) != B_KING
+      || (   ep_square() != SQ_NONE
+          && relative_rank(sideToMove, ep_square()) != RANK_6))
+      assert(0 && "pos_is_ok: Default");
+
+  if (Fast)
+      return true;
+
+  if (   pieceCount[W_KING] != 1
+      || pieceCount[B_KING] != 1
+      || attackers_to(square<KING>(~sideToMove)) & pieces(sideToMove))
+      assert(0 && "pos_is_ok: Kings");
+
+  if (   (pieces(PAWN) & (Rank1BB | Rank8BB))
+      || pieceCount[W_PAWN] > 8
+      || pieceCount[B_PAWN] > 8)
+      assert(0 && "pos_is_ok: Pawns");
+
+  if (   (pieces(WHITE) & pieces(BLACK))
+      || (pieces(WHITE) | pieces(BLACK)) != pieces()
+      || popcount(pieces(WHITE)) > 16
+      || popcount(pieces(BLACK)) > 16)
+      assert(0 && "pos_is_ok: Bitboards");
+
+  for (PieceType p1 = PAWN; p1 <= KING; ++p1)
+      for (PieceType p2 = PAWN; p2 <= KING; ++p2)
+          if (p1 != p2 && (pieces(p1) & pieces(p2)))
+              assert(0 && "pos_is_ok: Bitboards");
+
+  StateInfo si = *st;
+  set_state(&si);
+  if (std::memcmp(&si, st, sizeof(StateInfo)))
+      assert(0 && "pos_is_ok: State");
+
+  for (Piece pc : Pieces)
+  {
+      if (   pieceCount[pc] != popcount(pieces(color_of(pc), type_of(pc)))
+          || pieceCount[pc] != std::count(board, board + SQUARE_NB, pc))
+          assert(0 && "pos_is_ok: Pieces");
+
+      for (int i = 0; i < pieceCount[pc]; ++i)
+          if (board[pieceList[pc][i]] != pc || index[pieceList[pc][i]] != i)
+              assert(0 && "pos_is_ok: Index");
+  }
+
+  for (Color c : { WHITE, BLACK })
+      for (CastlingRights cr : {c & KING_SIDE, c & QUEEN_SIDE})
+      {
+          if (!can_castle(cr))
+              continue;
+
+          if (   piece_on(castlingRookSquare[cr]) != make_piece(c, ROOK)
+              || castlingRightsMask[castlingRookSquare[cr]] != cr
+              || (castlingRightsMask[square<KING>(c)] & cr) != cr)
+              assert(0 && "pos_is_ok: Castling");
+      }
+
+  return true;
+}
+#endif

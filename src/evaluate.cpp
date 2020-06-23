@@ -379,7 +379,7 @@ namespace {
 
             // Bonus for queen on weak square in enemy camp
             if (relative_rank(Us, s) > RANK_4 && (~pe->pawn_attacks_span(Them) & s))
-                score += QueenInfiltration;    
+                score += QueenInfiltration;
         }
     }
     if (T)
@@ -871,7 +871,7 @@ namespace {
         Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
-
+#ifndef Noir
     // Evaluation grain
     v = (v / 16) * 16;
 
@@ -882,6 +882,9 @@ namespace {
     v = v * (100 - pos.rule50_count()) / 100;
 
     return v;
+#else
+    return (pos.side_to_move() == WHITE ? v : -v) + Tempo;
+#endif
   }
 
 } // namespace

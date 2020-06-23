@@ -61,7 +61,7 @@ namespace {
   Endgame<KQKRPs> ScaleKQKRPs[] = { Endgame<KQKRPs>(WHITE), Endgame<KQKRPs>(BLACK) };
   Endgame<KPsK>   ScaleKPsK[]   = { Endgame<KPsK>(WHITE),   Endgame<KPsK>(BLACK) };
   Endgame<KPKP>   ScaleKPKP[]   = { Endgame<KPKP>(WHITE),   Endgame<KPKP>(BLACK) };
-
+#ifndef Noir
   // Helper used to detect a given material distribution
   bool is_KXK(const Position& pos, Color us) {
     return  !more_than_one(pos.pieces(~us))
@@ -72,6 +72,17 @@ namespace {
     return   pos.non_pawn_material(us) == BishopValueMg
           && pos.count<PAWN  >(us) >= 1;
   }
+#else
+  bool is_KXK(const Position& pos, Color us) {
+    return  !more_than_one(pos.pieces(~us))
+          && pos.non_pawn_material(us) >= KnightValueMg;
+  }
+
+  bool is_KBPsK(const Position& pos, Color us) {
+    return    pos.is_scb(us)
+          &&  pos.count<PAWN  >(us) >= 1;
+  }
+#endif
 
   bool is_KQKRPs(const Position& pos, Color us) {
     return  !pos.count<PAWN>(us)

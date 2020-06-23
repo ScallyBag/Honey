@@ -556,7 +556,7 @@ ifeq ($(pext),yes)
 	endif
 endif
 
-### 3.8 Link Time Optimization, it works since gcc 4.5 but not on mingw under Windows.
+### 3.8 Link Time Optimization
 ### This is a mix of compile and link time options because the lto link phase
 ### needs access to the optimization flags.
 ifeq ($(optimize),yes)
@@ -850,11 +850,13 @@ icc-profile-make:
 ### Based on commits through 06/18/2020:
 ### ======================================================
 ### Black-Diamond-dev-061820.exe.bench:Nodes searched  : 6168296
-### Black-Diamond-dev-061820.exe.bench:Nodes/second    : 2468305
+### Black-Diamond-dev-061820.exe.bench:Nodes/second    : 2454554
 ### Bluefish-dev-061820.exe.bench:Nodes searched  : 6690854
-### Bluefish-dev-061820.exe.bench:Nodes/second    : 2455359
+### Bluefish-dev-061820.exe.bench:Nodes/second    : 2491938
 ### Honey-dev-061820.exe.bench:Nodes searched  : 6079438
-### Honey-dev-061820.exe.bench:Nodes/second    : 2567330
+### Honey-dev-061820.exe.bench:Nodes/second    : 2460314
+### Stockfish-dev-061820.exe.bench:Nodes searched  : 6387635
+### Stockfish-dev-061820.exe.bench:Nodes/second    : 2513827
 ### Weakfish-dev-061820.exe.bench:Nodes searched  : 6621439
-### Weakfish-dev-061820.exe.bench:Nodes/second    : 2527266
+### Weakfish-dev-061820.exe.bench:Nodes/second    : 2586499
 ### ======================================================

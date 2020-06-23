@@ -115,7 +115,6 @@ void init(OptionsMap& o) {
 
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
-	  o["7 Man Probing"]            << Option(false);
 	  o["FastPlay"]                 << Option(false);
 	  o["Min Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output

@@ -131,14 +131,15 @@ void set(istringstream& is) {
         Options[name] = value;
         sync_cout << FontColor::green << "Confirmation: "<< name << " set to " << value << FontColor::reset << sync_endl;
     }
+    else if (name == "960")
+    {
+      Options["UCI_Chess960"] = {value};
+      sync_cout << FontColor::green << "Confirmation: "<< "UCI_Chess960" << " set to " << value << FontColor::reset << sync_endl;
+    }
     else if (name == "dpa")
     {
       Options["Deep Pro Analysis"] = {value};
       sync_cout << FontColor::green << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value << FontColor::reset << sync_endl;
-    }
-    else if (name == "t")  {
-      Threads.set(stoi(value));
-      sync_cout << FontColor::green << "Confirmation: "<< "Threads" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "h")  {
       TT.resize(stoi(value));
@@ -161,13 +162,17 @@ void set(istringstream& is) {
     }
     else if (name == "prov")
     {
-      Options["Pro Analysis"] = {value};
+      Options["Pro Value"] = {value};
       sync_cout << FontColor::green << "Confirmation: "<< "Pro Value" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "so")
     {
     Options["Score Output"] = {value};
     sync_cout << FontColor::green << "Confirmation: "<< "Score Output" << " set to " << value << FontColor::reset << sync_endl;
+    }
+    else if (name == "t")  {
+      Threads.set(stoi(value));
+      sync_cout << FontColor::green << "Confirmation: "<< "Threads" << " set to " << value << FontColor::reset << sync_endl;
     }
     else if (name == "ta")
     {
@@ -188,7 +193,8 @@ void set(istringstream& is) {
       sync_cout << FontColor::green << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
       sync_cout << FontColor::reset << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
       sync_cout << "\n Shortcuts:"  << sync_endl;
-      sync_cout << FontColor::green << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
+      sync_cout << FontColor::green << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
+      sync_cout << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
       sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
       sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
@@ -309,7 +315,17 @@ void set(istringstream& is) {
 #ifdef Add_Features
         else if (token == "s")          set(is);
 #endif
+#ifndef Noir
         else if (token == "position")   position(pos, is, states);
+#else
+        else if (token == "position")
+        {
+          position(pos, is, states);
+
+          if (Options["Clean Search"] == 1)
+              Search::clear();
+        }
+#endif
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take some while
     }
 
@@ -418,11 +434,11 @@ void UCI::loop(int argc, char* argv[]) {
        else
           sync_cout << FontColor::green << "Unknown command: " << cmd << FontColor::reset << sync_endl;
 
-  } while (token != "quit" && token != "q" && argc == 1); 
+  } while (token != "quit" && token != "q" && argc == 1);
     // Command line args are one-shot
 }
 
-
+#ifndef Noir
 /// UCI::value() converts a Value to a string suitable for use with the UCI
 /// protocol specification:
 ///
@@ -513,3 +529,83 @@ Move UCI::to_move(const Position& pos, string& str) {
 
   return MOVE_NONE;
 }
+#else
+
+/// UCI::value() converts a Value to a string suitable for use with the UCI
+/// protocol specification:
+///
+/// cp <x>    The score from the engine's point of view in centipawns.
+/// mate <y>  Mate in y moves, not plies. If the engine is getting mated
+///           use negative values for y.
+
+string UCI::value(Value v, Value v2) {
+
+  assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
+
+  stringstream ss;
+
+  if (abs(v) < VALUE_MATE_IN_MAX_PLY)
+  {
+      if (   abs(v) < 95 * PawnValueEg
+          && abs(v - v2) < PawnValueEg)
+          v = (v + v2) / 2;
+
+      ss << "cp " << v * 100 / PawnValueEg;
+  }
+  else
+      ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+
+  return ss.str();
+}
+
+
+/// UCI::square() converts a Square to a string in algebraic notation (g1, a7, etc.)
+
+std::string UCI::square(Square s) {
+  return std::string{ char('a' + file_of(s)), char('1' + rank_of(s)) };
+}
+
+
+/// UCI::move() converts a Move to a string in coordinate notation (g1f3, a7a8q).
+/// The only special case is castling, where we print in the e1g1 notation in
+/// normal chess mode, and in e1h1 notation in chess960 mode. Internally all
+/// castling moves are always encoded as 'king captures rook'.
+
+string UCI::move(Move m, bool chess960) {
+
+  Square from = from_sq(m);
+  Square to = to_sq(m);
+
+  if (m == MOVE_NONE)
+      return "(none)";
+
+  if (m == MOVE_NULL)
+      return "0000";
+
+  if (type_of(m) == CASTLING && !chess960)
+      to = make_square(to > from ? FILE_G : FILE_C, rank_of(from));
+
+  string move = UCI::square(from) + UCI::square(to);
+
+  if (type_of(m) == PROMOTION)
+      move += " pnbrqk"[promotion_type(m)];
+
+  return move;
+}
+
+
+/// UCI::to_move() converts a string representing a move in coordinate notation
+/// (g1f3, a7a8q) to the corresponding legal Move, if any.
+
+Move UCI::to_move(const Position& pos, string& str) {
+
+  if (str.length() == 5) // Junior could send promotion piece in uppercase
+      str[4] = char(tolower(str[4]));
+
+  for (const auto& m : MoveList<LEGAL>(pos))
+      if (str == UCI::move(m, pos.is_chess960()))
+          return m;
+
+  return MOVE_NONE;
+}
+#endif
