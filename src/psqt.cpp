@@ -22,9 +22,9 @@
 #include <algorithm>
 
 #include "types.h"
-#ifdef Stockfish
+//#ifdef Stockfish
 #include "bitboard.h"
-#endif
+//#endif
 
 namespace PSQT {
 
@@ -37,7 +37,7 @@ namespace PSQT {
 constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
   { },
   { },
-#if ((defined Sullivan) || (defined Blau))
+/*#if ((defined Sullivan) || (defined Blau))
   { // Knight
    { S( -172, -100), S(-94,-70), S(-77,-47), S(-76,-20) },
    { S(  -78,  -69), S(-40,-55), S(-26,-17), S(-12,  7) },
@@ -58,7 +58,7 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
     { S(-17,-31), S(-14,-20), S(  5, -1), S(  0,  1) },
     { S(-48,-46), S(  1,-42), S(-14,-37), S(-23,-24) }
   },
-#else
+#else*/
   { // Knight
    { S(-175, -96), S(-92,-65), S(-74,-49), S(-73,-21) },
    { S( -77, -67), S(-41,-54), S(-27,-18), S(-15,  8) },
@@ -79,7 +79,7 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
    { S(-17,-31), S(-14,-20), S(  5, -1), S(  0,  1) },
    { S(-48,-46), S(  1,-42), S(-14,-37), S(-23,-24) }
   },
-#endif
+//#endif
   { // Rook
    { S(-31, -9), S(-20,-13), S(-14,-10), S(-5, -9) },
    { S(-21,-12), S(-13, -9), S( -8, -1), S( 6, -2) },
@@ -102,13 +102,9 @@ constexpr Score Bonus[][RANK_NB][int(FILE_NB) / 2] = {
   },
 
   { // King
-#if defined (Stockfish) || (Weakfish)
+
    { S(271,  1), S(327, 45), S(271, 85), S(198, 76) },
    { S(278, 53), S(303,100), S(234,133), S(179,135) },
-#else
-   { S(271,  1), S(327, 45), S(270, 85), S(192, 76) },
-   { S(278, 53), S(303,100), S(230,133), S(174,135) },
-#endif
    { S(195, 88), S(258,130), S(169,169), S(120,175) },
    { S(164,103), S(190,156), S(138,172), S( 98,172) },
    { S(154, 96), S(179,166), S(105,199), S( 70,199) },
@@ -144,11 +140,11 @@ void init() {
 
       for (Square s = SQ_A1; s <= SQ_H8; ++s)
       {
-#ifndef Stockfish
-          File f = map_to_queenside(file_of(s));
-#else
+//#ifndef Stockfish
+//          File f = map_to_queenside(file_of(s));
+//#else
           File f = File(edge_distance(file_of(s)));
-#endif
+//#endif
           psq[ pc][ s] = score + (type_of(pc) == PAWN ? PBonus[rank_of(s)][file_of(s)]
                                                       : Bonus[pc][rank_of(s)][f]);
           psq[~pc][~s] = -psq[pc][s];

@@ -329,9 +329,9 @@ void MainThread::search() {
          }
          else
              {
-				 limitStrength = true;
-				 jekyll = true;
-			 }
+              limitStrength = true;
+              jekyll = true;
+             }
 
          if (Options["Engine_Level"] == "World_Champion")
              uci_elo = 2900;
@@ -634,8 +634,8 @@ void Thread::search() {
           {
               Value prev = rootMoves[pvIdx].previousScore;
 
-#if defined (Sullivan) || (Blau) || (Noir)
-              delta = Value(19 + abs(prev) / 64);
+#if defined (Sullivan) || (Blau)
+              delta = Value(18 + abs(prev) / 64);
 #else
               delta = Value(19);
 #endif
@@ -774,7 +774,11 @@ void Thread::search() {
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search.
+#ifdef Stockfish
           if (Time.elapsed() > totalTime)
+#else
+          if (Time.elapsed() > totalTime || rootMoves.size() == 1)
+#endif
           {
               // If we are allowed to ponder do not stop the search now but
               // keep pondering until the GUI sends "ponderhit" or "stop".
@@ -846,11 +850,9 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue;
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
-         ttCapture, singularQuietLMR;
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
-
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
     ss->inCheck = pos.checkers();
@@ -859,7 +861,6 @@ namespace {
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     maxValue = VALUE_INFINITE;
-
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
@@ -1057,7 +1058,6 @@ namespace {
 
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
-
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6
@@ -1074,9 +1074,6 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
-#if defined (Sullivan) || (Blau) || (Noir)   //authored by J Oster originally, in corchess by Ivan Ilvec
-        && thisThread->selDepth + 3 > thisThread->rootDepth
-#endif
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
@@ -1235,11 +1232,6 @@ moves_loop: // When in check, search starts from here
 
       // Step 13. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
-#ifdef Stockfish
-#else
-// Below by by https://github.com/joergoster https://github.com/joergoster/Stockfish/commit/6d92435ffd0a5c3cb7d080125cb0524d642b44de
-      && thisThread->rootDepth > 4
-#endif
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
       {
@@ -1251,9 +1243,6 @@ moves_loop: // When in check, search starts from here
 
           if (   !captureOrPromotion
 		 && !givesCheck
-#if defined (Sullivan) || (Blau)
-                 && (!PvNode || !pos.advanced_pawn_push(move) || pos.non_pawn_material(~us) > BishopValueMg )
-#endif
               )
           {
               // Countermoves based pruning (~20 Elo)
@@ -1432,7 +1421,6 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularQuietLMR)
               r -= 1 + formerPv;
-
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~5 Elo)
@@ -1677,6 +1665,7 @@ moves_loop: // When in check, search starts from here
         || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
 
+
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     // Decide whether or not to include checks: this fixes also the type of
@@ -1788,7 +1777,6 @@ moves_loop: // When in check, search starts from here
       // Don't search moves with negative SEE values
       if (!ss->inCheck && !pos.see_ge(move))
           continue;
-
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
 

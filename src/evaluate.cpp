@@ -78,25 +78,14 @@ namespace {
   constexpr Value LazyThreshold  = Value(1400);
   constexpr Value SpaceThreshold = Value(12222);
 
-  // KingAttackWeights[PieceType] contains king attack weights by piece type
-#if defined (Sullivan) || (Blau)
-  constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 79, 53, 43, 10 };
-#else
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
-#endif
 
   // Penalties for enemy's safe checks
-#if defined (Sullivan) || (Blau)
-  constexpr int QueenSafeCheck  = 770;
-  constexpr int RookSafeCheck   = 1074;
-  constexpr int BishopSafeCheck = 620;
-  constexpr int KnightSafeCheck = 770;
-#else
   constexpr int QueenSafeCheck  = 772;
   constexpr int RookSafeCheck   = 1084;
   constexpr int BishopSafeCheck = 645;
   constexpr int KnightSafeCheck = 792;
-#endif
+
 #define S(mg, eg) make_score(mg, eg)
 
   // MobilityBonus[PieceType-2][attacked] contains bonuses for middle and end game,
@@ -155,34 +144,16 @@ namespace {
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
   constexpr Score RestrictedPiece     = S(  7,  7);
-#ifdef Blau
-  constexpr Score RookOnPawn          = S( 10, 32);
-  constexpr Score RookOnKingRing      = S( 16,  0);
-  constexpr Score RookOnQueenFile     = S( 11,  4);
-#elif defined (Sullivan) || (Noir)
-  constexpr Score RookOnPawn          = S( 10, 22);
-  constexpr Score RookOnKingRing      = S( 16,  0);
-  constexpr Score RookOnQueenFile     = S( 9,  6);
-#else
   constexpr Score RookOnKingRing      = S( 16,  0);
   constexpr Score RookOnQueenFile     = S(  5,  9);
-#endif
   constexpr Score SliderOnQueen       = S( 59, 18);
   constexpr Score ThreatByKing        = S( 24, 89);
   constexpr Score ThreatByPawnPush    = S( 48, 39);
   constexpr Score ThreatBySafePawn    = S(173, 94);
-#if defined (Stockfish) || (Weakfish)
+
   constexpr Score TrappedRook         = S( 55, 13);
-#else
-  constexpr Score TrappedRook         = S( 47,  4);
-#endif
-#if defined (Sullivan) || (Blau)|| (Noir)
-  constexpr Score WeakQueen          = S( 49, 15);
-  constexpr Score WeakQueenProtection = S( 14,  0);
-#else
   constexpr Score WeakQueen           = S( 51, 14);
   constexpr Score WeakQueenProtection = S( 15,  0);
-#endif
 
 #undef S
 
@@ -259,15 +230,11 @@ namespace {
 
     // Find our pawns that are blocked or on the first two ranks
     Bitboard b = pos.pieces(Us, PAWN) & (shift<Down>(pos.pieces()) | LowRanks);
-#if defined (Stockfish) || (Weakfish)
+
     // Squares occupied by those pawns, by our king or queen, by blockers to attacks on our king
     // or controlled by enemy pawns are excluded from the mobility area.
     mobilityArea[Us] = ~(b | pos.pieces(Us, KING, QUEEN) | pos.blockers_for_king(Us) | pe->pawn_attacks(Them));
-#else
-    // Squares occupied by those pawns, by our king or queen or controlled by
-    // enemy pawns are excluded from the mobility area.
-    mobilityArea[Us] = ~(b | pos.pieces(Us, KING, QUEEN) | pe->pawn_attacks(Them));
-#endif
+
 
     // Initialize attackedBy[] for king and pawns
     attackedBy[Us][KING] = pos.attacks_from<KING>(ksq);
@@ -385,11 +352,6 @@ namespace {
 
         if (Pt == ROOK)
         {
-#if defined (Sullivan) || (Blau) || (Noir)
-            // Bonus for aligning rook with enemy pawns on the same rank/file
-            if (relative_rank(Us, s) >= RANK_5)
-                score += RookOnPawn * popcount(pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s]);
-#endif
             // Bonus for rook on the same file as a queen
             if (file_bb(s) & pos.pieces(QUEEN))
                 score += RookOnQueenFile;
@@ -503,37 +465,19 @@ namespace {
                  + 148 * popcount(unsafeChecks)
                  +  98 * popcount(pos.blockers_for_king(Us))
                  +  69 * kingAttacksCount[Them]
-#if defined (Sullivan) || (Blau) || (Noir)
-                 +   4 * (kingFlankAttack - kingFlankDefense)
-#endif
                  +   3 * kingFlankAttack * kingFlankAttack / 8
                  +       mg_value(mobility[Them] - mobility[Us])
                  - 873 * !pos.count<QUEEN>(Them)
                  - 100 * bool(attackedBy[Us][KNIGHT] & attackedBy[Us][KING])
-#if defined (Sullivan) || (Blau) || (Noir)
-                 -  35 * bool(attackedBy[Us][BISHOP] & attackedBy[Us][KING])
-#endif
                  -   6 * mg_value(score) / 8
-#if defined (Sullivan) || (Blau) || (Noir)
-                 -   7;
-#else
                  -   4 * kingFlankDefense
                  +  37;
-#endif
 
 
     // Transform the kingDanger units into a Score, and subtract it from the evaluation
 
-#ifdef Blau
-    if (kingDanger > 100)
-        score -= make_score(kingDanger * kingDanger / 3200, kingDanger / 10);
-#elif Sullivan
-    if (kingDanger > 88)
-        score -= make_score(kingDanger * kingDanger / 3584, kingDanger / 14);
-#else
     if (kingDanger > 100)
         score -= make_score(kingDanger * kingDanger / 4096, kingDanger / 16);
-#endif
 
     // Penalty when our king is on a pawnless flank
     if (!(pos.pieces(PAWN) & KingFlank[file_of(ksq)]))
@@ -782,9 +726,6 @@ namespace {
   template<Tracing T>
   Value Evaluation<T>::winnable(Score score) const {
 
-#if defined (Sullivan) || (Blau) || (Noir)
-    int separation = distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
-#endif
 
     int outflanking =  distance<File>(pos.square<KING>(WHITE), pos.square<KING>(BLACK))
                      - distance<Rank>(pos.square<KING>(WHITE), pos.square<KING>(BLACK));
@@ -803,9 +744,6 @@ namespace {
                     + 12 * pos.count<PAWN>()
                     +  9 * outflanking
                     + 21 * pawnsOnBothFlanks
-#if defined (Sullivan) || (Blau) || (Noir)
-                    + 50 * (separation > 3) * (outflanking <= 0)
-#endif
                     + 24 * infiltration
                     + 51 * !pos.non_pawn_material()
                     - 43 * almostUnwinnable
@@ -885,18 +823,18 @@ namespace {
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
     // Early exit if score is high
-#if defined (Stockfish) || (Weakfish)
+//#if defined (Stockfish) || (Weakfish)
     Value v = (mg_value(score) + eg_value(score)) / 2;
     if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
       return pos.side_to_move() == WHITE ? v : -v;
-#else
+/*#else
     Value v = (mg_value(score) + eg_value(score)) / 2;
     if(!T){//Fix for UCI command 'eval';
      if ( (pos.this_thread()->bestMoveChanges < 13)
        && (abs(v) > LazyThreshold + pos.non_pawn_material() / 64))
        return pos.side_to_move() == WHITE ? v : -v;
     }
-#endif
+#endif*/
     // Main evaluation begins here
 
     initialize<WHITE>();
