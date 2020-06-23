@@ -115,7 +115,6 @@ void TranspositionTable::clear() {
 TTEntry* TranspositionTable::probe(const Key key, bool& found) const {
 
   TTEntry* const tte = first_entry(key);
-
   for (int i = 0; i < ClusterSize; ++i)
       if (!tte[i].key || tte[i].key == key)
       {
