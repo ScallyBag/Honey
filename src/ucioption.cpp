@@ -101,7 +101,7 @@ void init(OptionsMap& o) {
 
     o["Contempt"]                 << Option(true);
 
-     o["Dynamic_Contempt"]         << Option(true);
+    o["Dynamic_Contempt"]         << Option(true);
 
 
     o["Analysis_Contempt"]        << Option("Off var White var Black var Both var Off", "Off");
@@ -150,10 +150,10 @@ void init(OptionsMap& o) {
     o["UCI_LimitStrength"]        << Option(false);
     o["Slow_Play"]                << Option(false);
 #ifdef Weak
-    o["Weakfish"]                     << Option(true);
+//    o["Weakfish"]                 << Option(true);
 #endif
-/* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*/
-    o["Engine_Elo"]                  << Option(1750, 1000, 2900);
+/* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*///
+    o["Engine_Elo"]               << Option(1750, 1000, 2900);
     o["FIDE_Ratings"]             << Option(true);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
@@ -218,7 +218,7 @@ Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(
 { defaultValue = v; currentValue = cur; }
 
 Option::operator double() const {
-  assert(type == "check" || type == "spin");		//macOS clang 6.0 error
+  assert(type == "check" || type == "spin");
   return (type == "spin" ? stof(currentValue) : currentValue == "true");
 }
 

@@ -53,7 +53,8 @@ namespace Search {
 
   int benchKnps;
   int dct;
-  int defensive;
+  bool defensive;
+  int defensive_v = 0;
   int proValue;
   int profound_v;
 }
@@ -124,7 +125,7 @@ namespace {
 
 bool  fide, jekyll, minOutput, uci_sleep;
 bool limitStrength = false;
-int  intLevel = 40, tactical, uci_elo =0;
+int  intLevel = 40, tactical, uci_elo = 0;
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread
   struct Breadcrumb {
@@ -265,11 +266,11 @@ void MainThread::search() {
     minOutput           = Options["Min Output"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
-    uci_sleep           = Options["Slow Play"];
+    uci_sleep           = Options["Slow_Play"];
     proValue            = Options["Pro Value"];
     profound            = Options["Pro Analysis"];
     dpa                 = Options["Deep Pro Analysis"];
-    mpv                 =Options["MultiPV"];
+    mpv                 = Options["MultiPV"];
 
 
 
@@ -326,7 +327,7 @@ void MainThread::search() {
          }
          else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
          {
-             uci_elo = (Options["UCI_Elo"]);
+             uci_elo = (Options["Engine_Elo"]);
              limitStrength = true;
              jekyll=true; //on with uci_elo, variety gets turned off with adaptive
              goto skipLevels;
@@ -442,7 +443,7 @@ skipLevels:
 
   if (int(Options["MultiPV"]) == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]) || limitStrength)
+      && !(Skill(Options["Skill Level"]).enabled() || (Options["UCI_LimitStrength"]) || limitStrength)
       && rootMoves[0].pv[0] != MOVE_NONE)
       bestThread = Threads.get_best_thread();
 
@@ -525,7 +526,8 @@ void Thread::search() {
   double timeReduction = 1, totBestMoveChanges = 0;
   Color us = rootPos.side_to_move();
   ctempt= Options["Contempt"];
-  defensive = -34 * (int(Options["Defensive"]));  //about 16 cp
+  if (Options["Defensive"])
+      defensive_v = -34;  //about 16 cp
 
 
 
@@ -655,12 +657,12 @@ void Thread::search() {
               beta  = std::min(prev + delta, VALUE_INFINITE);
 
               // Adjust contempt based on root move's bestPreviousScore (dynamic contempt)
-              dct = ctempt * (ct + (110 - ct / 2) * prev / (abs(prev) + 140)) + defensive;
+              dct = ctempt * (ct + (110 - ct / 2) * prev / (abs(prev) + 140)) + defensive_v;
 
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
           }
-#ifndef Noir
+#ifndef Noir  //Noir starts at line 2247
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
@@ -1086,13 +1088,25 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
+#ifdef Stockfish
         &&  pos.non_pawn_material(us)
+#else
+        &&  pos.non_pawn_material(us) > BishopValueMg
+        &&  thisThread->selDepth + 5 > thisThread->rootDepth
+#endif
+/*#ifdef Blau
+        && !kingDanger
+#endif*/
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
+#ifdef Stockfish
         Depth R = (737 + 77 * depth) / 246 + std::min(int(eval - beta) / 192, 3);
+#else
+        Depth R = std::max(1, int(2.77 * log(depth)) + std::min(int(eval - beta) / 192, 3));
+#endif
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -2632,7 +2646,8 @@ namespace {
            &&  eval >= beta
            &&  eval >= ss->staticEval
            &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
-           &&  pos.non_pawn_material(us)
+           &&  pos.non_pawn_material(us) > BishopValueMg
+           &&  thisThread->selDepth + 5 > thisThread->rootDepth
            && !kingDanger
            && !(rootDepth > 10 && MoveList<LEGAL>(pos).size() < 6))
        {
@@ -3719,7 +3734,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
 
     RootInTB = false;
-    UseRule50 = bool(Options["Syzygy50MoveRule"]);
+    //UseRule50 = bool(Options["Syzygy50MoveRule"]);
     ProbeDepth = int(Options["SyzygyProbeDepth"]);
     Cardinality = int(Options["SyzygyProbeLimit"]);
 
