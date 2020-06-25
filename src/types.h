@@ -207,19 +207,7 @@ enum Value : int {
   #define QVM 78/100
   #define QVE 78/100
 
-/*#elif (defined Sullivan)
-  #define PVM 100/100
-  #define PVE 100/100
-  #define NVM 100/100
-  #define NVE 100/100
-  #define BVM 100/100
-  #define BVE 100/100
-  #define RVM 100/100
-  #define RVE 100/100
-  #define QVM 100/100
-  #define QVE 100/100*/
-
-#else
+#elif (defined Sullivan)
   #define PVM 102/100
   #define PVE 102/100
   #define NVM 101/100
@@ -230,6 +218,19 @@ enum Value : int {
   #define RVE 100/100
   #define QVM 101/100
   #define QVE 101/100
+
+#else
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+
 #endif
 
 PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
