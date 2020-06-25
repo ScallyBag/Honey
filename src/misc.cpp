@@ -155,13 +155,13 @@ public:
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::blue << "\n\n\n    ######                                                #     # ###            #####     \n";
-     sp << FontColor::blue << "    #     # #      #    # ###### ###### #  ####  #    #    #   #   #     #####  #     #    \n";
-     sp << FontColor::blue << "    #     # #      #    # #      #      # #      #    #     # #    #     #    #       #    \n";
-     sp << FontColor::blue << "    ######  #      #    # #####  #####  #  ####  ######      #     # ### #    #  #####     \n";
-     sp << FontColor::blue << "    #     # #      #    # #      #      #      # #    #     # #    #     #####        #    \n";
-     sp << FontColor::blue << "    #     # #      #    # #      #      # #    # #    #    #   #   #     #   #  #     #    \n";
-     sp << FontColor::blue << "    ######  ######  ####  ###### #      #  ####  #    #   #     # ###    #    #  #####     \n\n";
+     sp << FontColor::engine << "\n\n\n    ######                                                #     # ###            #####                           \n";
+     sp << FontColor::engine << "    #     # #      #    # ###### ###### #  ####  #    #    #   #   #     #####  #     #       /''*._                   \n";
+     sp << FontColor::engine << "    #     # #      #    # #      #      # #      #    #     # #    #     #    #       #   .-*'`    `*-.._.-'\\         \n";
+     sp << FontColor::engine << "    ######  #      #    # #####  #####  #  ####  ######      #     # ### #    #  #####   < * ) ) )   ,     (           \n";
+     sp << FontColor::engine << "    #     # #      #    # #      #      #      # #    #     # #    #     #####        #   `*-._`._(__.--*'`.)          \n";
+     sp << FontColor::engine << "    #     # #      #    # #      #      # #    # #    #    #   #   #     #   #  #     #                                \n";
+     sp << FontColor::engine << "    ######  ######  ####  ###### #      #  ####  #    #   #     # ###    #    #  #####                                 \n\n";
 
   return sp.str();
 }
@@ -171,13 +171,13 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::white << "\n\n\n       #     ######                                ######                                           #     #     # ###            #####     \n";
-     sp << FontColor::white << "      # #    #     # #        ##    ####  #    #   #     # #   ##   #    #  ####  #    # #####     # #     #   #   #     #####  #     #    \n";
-     sp << FontColor::white << "     #   #   #     # #       #  #  #    # #   #    #     # #  #  #  ##  ## #    # ##   # #    #   #   #     # #    #     #    #       #    \n";
-     sp << FontColor::white << "    #     #  ######  #      #    # #      ####     #     # # #    # # ## # #    # # #  # #    #  #     #     #     # ### #    #  #####     \n";
-     sp << FontColor::white << "     #   #   #     # #      ###### #      #  #     #     # # ###### #    # #    # #  # # #    #   #   #     # #    #     #####        #    \n";
-     sp << FontColor::white << "      # #    #     # #      #    # #    # #   #    #     # # #    # #    # #    # #   ## #    #    # #     #   #   #     #   #  #     #    \n";
-     sp << FontColor::white << "       #     ######  ###### #    #  ####  #    #   ######  # #    # #    #  ####  #    # #####      #     #     # ###    #    #  #####     \n\n";
+     sp << FontColor::engine << "\n\n\n    ######                                   #       ######                                        #     # ###            #####     \n";
+     sp << FontColor::engine << "    #     # #        ##    ####  #    #     # #      #     # #   ##   #    #  ####  #    # #####    #   #   #     #####  #     #    \n";
+     sp << FontColor::engine << "    #     # #       #  #  #    # #   #     #   #     #     # #  #  #  ##  ## #    # ##   # #    #    # #    #     #    #       #    \n";
+     sp << FontColor::engine << "    ######  #      #    # #      ####     #     #    #     # # #    # # ## # #    # # #  # #    #     #     # ### #    #  #####     \n";
+     sp << FontColor::engine << "    #     # #      ###### #      #  #      #   #     #     # # ###### #    # #    # #  # # #    #    # #    #     #####        #    \n";
+     sp << FontColor::engine << "    #     # #      #    # #    # #   #      # #      #     # # #    # #    # #    # #   ## #    #   #   #   #     #   #  #     #    \n";
+     sp << FontColor::engine << "    ######  ###### #    #  ####  #    #      #       ######  # #    # #    #  ####  #    # #####   #     # ###    #    #  #####     \n\n";
 
 
   return sp.str();
@@ -188,13 +188,13 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::red   << "\n\n\n     #####                                                      #     # ###             #####     \n";
-     sp << FontColor::red   << "    #     # #####  ####   ####  #    # ###### #  ####  #    #    #   #   #      #####  #     #    \n";
-     sp << FontColor::red   << "    #         #   #    # #    # #   #  #      # #      #    #     # #    #      #    #       #    \n";
-     sp << FontColor::white << "     #####    #   #    # #      ####   #####  #  ####  ######      #     #  ### #    #  #####     \n";
-     sp << FontColor::white << "          #   #   #    # #      #  #   #      #      # #    #     # #    #      #####        #    \n";
-     sp << FontColor::blue  << "    #     #   #   #    # #    # #   #  #      # #    # #    #    #   #   #      #   #  #     #    \n";
-     sp << FontColor::blue  << "     #####    #    ####   ####  #    # #      #  ####  #    #   #     # ###     #    #  #####     \n\n";
+     sp << FontColor::red   << "\n\n\n     #####                                                      #     # ###             #####                      \n";
+     sp << FontColor::red   << "    #     # #####  ####   ####  #    # ###### #  ####  #    #    #   #   #      #####  #     #       /''*._              \n";
+     sp << FontColor::red   << "    #         #   #    # #    # #   #  #      # #      #    #     # #    #      #    #       #   .-*'`    `*-.._.-'\\    \n";
+     sp << FontColor::white << "     #####    #   #    # #      ####   #####  #  ####  ######      #     #  ### #    #  #####   < * ) ) )   ,     (      \n";
+     sp << FontColor::blue  << "          #   #   #    # #      #  #   #      #      # #    #     # #    #      #####        #   `*-._`._(__.--*'`.)     \n";
+     sp << FontColor::blue  << "    #     #   #   #    # #    # #   #  #      # #    # #    #    #   #   #      #   #  #     #                           \n";
+     sp << FontColor::blue  << "     #####    #    ####   ####  #    # #      #  ####  #    #   #     # ###     #    #  #####                            \n\n";
 
   return sp.str();
 }
@@ -205,13 +205,13 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::yellow << "\n\n\n    #     #                              #     # ###             #####     \n";
-     sp << FontColor::yellow << "    #     #  ####  #    # ###### #   #    #   #   #      #####  #     #    \n";
-     sp << FontColor::yellow << "    #     # #    # ##   # #       # #      # #    #      #    #       #    \n";
-     sp << FontColor::yellow << "    ####### #    # # #  # #####    #        #     #  ### #    #  #####     \n";
-     sp << FontColor::yellow << "    #     # #    # #  # # #        #       # #    #      #####        #    \n";
-     sp << FontColor::yellow << "    #     # #    # #   ## #        #      #   #   #      #   #  #     #    \n";
-     sp << FontColor::yellow << "    #     #  ####  #    # ######   #     #     # ###     #    #  #####     \n\n";
+     sp << FontColor::engine << "\n\n\n    #     #                              #     # ###             #####    __         __    \n";
+     sp << FontColor::engine << "    #     #  ####  #    # ###### #   #    #   #   #      #####  #     #  /  \\.-'''-./  \\       \n";
+     sp << FontColor::engine << "    #     # #    # ##   # #       # #      # #    #      #    #       #  \\    -   -    /        \n";
+     sp << FontColor::engine << "    ####### #    # # #  # #####    #        #     #  ### #    #  #####    |   o   o   |          \n";
+     sp << FontColor::engine << "    #     # #    # #  # # #        #       # #    #      #####        #   \\  .-'''-.  /         \n";
+     sp << FontColor::engine << "    #     # #    # #   ## #        #      #   #   #      #   #  #     #    '-\\__Y__/-'          \n";
+     sp << FontColor::engine << "    #     #  ####  #    # ######   #     #     # ###     #    #  #####        `---`              \n\n";
 
   return sp.str();
 }
@@ -221,13 +221,13 @@ const std::string splash() {
 const std::string splash() {
 
      stringstream sp;
-     sp << FontColor::cyan << "\n\n\n    #     #                                               #     # ###             #####     \n";
-     sp << FontColor::cyan << "    #  #  # ######   ##   #    # ###### #  ####  #    #    #   #   #      #####  #     #    \n";
-     sp << FontColor::cyan << "    #  #  # #       #  #  #   #  #      # #      #    #     # #    #      #    #       #    \n";
-     sp << FontColor::cyan << "    #  #  # #####  #    # ####   #####  #  ####  ######      #     #  ### #    #  #####     \n";
-     sp << FontColor::cyan << "    #  #  # #      ###### #  #   #      #      # #    #     # #    #      #####        #    \n";
-     sp << FontColor::cyan << "    #  #  # #      #    # #   #  #      # #    # #    #    #   #   #      #   #  #     #    \n";
-     sp << FontColor::cyan << "    ## ##   ###### #    # #    # #      #  ####  #    #   #     # ###     #    #  #####      \n\n";
+     sp << FontColor::engine << "\n\n\n    #      #                                               #     # ###             #####    |\\/\\/\\/|    \n";
+     sp << FontColor::engine << "    #      # ######   ##   #    # ###### #  ####  #    #    #   #   #      #####  #     #   |      |       \n";
+     sp << FontColor::engine << "    #      # #       #  #  #   #  #      # #      #    #     # #    #      #    #       #   | (o)(o)       \n";
+     sp << FontColor::engine << "    #   #  # #####  #    # ####   #####  #  ####  ######      #     #  ### #    #  #####    c      _)      \n";
+     sp << FontColor::engine << "    #   #  # #      ###### #  #   #      #      # #    #     # #    #      #####        #   | ,___|        \n";
+     sp << FontColor::engine << "    #   #  # #      #    # #   #  #      # #    # #    #    #   #   #      #   #  #     #   |   /          \n";
+     sp << FontColor::engine << "    ### ###  ###### #    # #    # #      #  ####  #    #   #     # ###     #    #  #####   /____\\         \n\n";
 
   return sp.str();
 }
@@ -246,15 +246,15 @@ const string engine_info(bool to_uci) {
     stringstream ss, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
 #ifdef Blau
-    ss << FontColor::blue    << "    Bluefish " << Version << Suffix << setfill('0');
-#elif Honey
-    ss << FontColor::yellow  << "    Honey " << Version << Suffix << setfill('0') ;
+    ss << FontColor::engine    << "    Bluefish " << Version << Suffix << setfill('0');
+#elif Sullivan
+    ss << FontColor::engine    << "    Honey " << Version << Suffix << setfill('0') ;
 #elif Noir
-	  ss << FontColor::white   << "    Black Diamond " << Version << Suffix << setfill('0');
+	  ss << FontColor::engine    << "    Black Diamond " << Version << Suffix << setfill('0');
 #elif Stockfish
-    ss << FontColor::red     << "    Stockfish " << Version << Suffix << setfill('0');
-#elif Weak
-    ss << FontColor::cyan    << "    Weakfish " << Version << Suffix << setfill('0');
+    ss << FontColor::white     << "    Stockfish " << Version << Suffix << setfill('0');
+#elif Weakfish
+    ss << FontColor::engine    << "    Weakfish " << Version << Suffix << setfill('0');
 #endif
 #if (defined Sullivan && defined Test)
 	if (Version.empty())

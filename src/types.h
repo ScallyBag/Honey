@@ -183,16 +183,16 @@ enum Value : int {
 
 //Code idea below by Ed Schröder
 #if defined (Weakfish)
-  #define PVM 82/100
-  #define PVE 82/100
-  #define NVM 78/100
-  #define NVE 78/100
-  #define BVM 78/100
-  #define BVE 78/100
-  #define RVM 78/100
-  #define RVE 78/100
-  #define QVM 78/100
-  #define QVE 78/100
+  #define PVM 80/100
+  #define PVE 80/100
+  #define NVM 70/100
+  #define NVE 70/100
+  #define BVM 60/100
+  #define BVE 60/100
+  #define RVM 50/100
+  #define RVE 50/100
+  #define QVM 40/100
+  #define QVE 40/100
 
 
 #elif (defined Blau)
@@ -220,16 +220,16 @@ enum Value : int {
   #define QVE 100/100*/
 
 #else
-  #define PVM 100/100
-  #define PVE 100/100
-  #define NVM 100/100
-  #define NVE 100/100
+  #define PVM 102/100
+  #define PVE 102/100
+  #define NVM 101/100
+  #define NVE 101/100
   #define BVM 100/100
   #define BVE 100/100
   #define RVM 100/100
   #define RVE 100/100
-  #define QVM 100/100
-  #define QVE 100/100
+  #define QVM 101/100
+  #define QVE 101/100
 #endif
 
 PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,

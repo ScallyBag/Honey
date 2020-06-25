@@ -466,7 +466,7 @@ skipLevels:
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore)
           ++i;
           bestPreviousScore = bestThread->rootMoves[i].score;
-          sync_cout << FontColor::green << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
+          sync_cout << FontColor::engine << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
       }
       else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 7 )
@@ -486,7 +486,7 @@ skipLevels:
 
           }
           bestPreviousScore = bestThread->rootMoves[i].score;
-          sync_cout << FontColor::green << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
+          sync_cout << FontColor::engine << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
       }
       else
@@ -864,14 +864,25 @@ namespace {
     Depth extension, newDepth;
     Value bestValue, value, ttValue, eval, maxValue;
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
+#if defined (Stockfish) || (Sullivan) || (Weakfish)
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR;
+#else
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR, kingDanger;
+#endif
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
+#ifdef Blau
+    int rootDepth;
+#endif
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
     ss->inCheck = pos.checkers();
     priorCapture = pos.captured_piece();
     Color us = pos.side_to_move();
+#ifdef Blau
+    kingDanger = false;
+    rootDepth = thisThread->rootDepth;
+#endif
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     maxValue = VALUE_INFINITE;
@@ -1072,9 +1083,16 @@ namespace {
 
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
+#ifdef Blau
+    if (rootDepth > 10)
+        kingDanger = pos.king_danger();
+#endif
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6
+#ifdef Blau
+        && !kingDanger
+#endif
         &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -1088,21 +1106,20 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
-#ifdef Stockfish
+#if defined (Stockfish) || (Sullivan) || (Weakfish)
         &&  pos.non_pawn_material(us)
 #else
         &&  pos.non_pawn_material(us) > BishopValueMg
-        &&  thisThread->selDepth + 5 > thisThread->rootDepth
-#endif
-/*#ifdef Blau
+        &&  thisThread->selDepth + 3 > thisThread->rootDepth
         && !kingDanger
-#endif*/
+#endif
+
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-#ifdef Stockfish
+#if defined (Stockfish)
         Depth R = (737 + 77 * depth) / 246 + std::min(int(eval - beta) / 192, 3);
 #else
         Depth R = std::max(1, int(2.77 * log(depth)) + std::min(int(eval - beta) / 192, 3));
@@ -2069,7 +2086,7 @@ void MainThread::check_time() {
     if (tock - tick >= 10000 && minOutput)
     {
       tick = tock;
-      sync_cout << FontColor::green << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
+      sync_cout << FontColor::engine << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
       //dbg_print();
     }
@@ -2079,7 +2096,7 @@ void MainThread::check_time() {
     if (tock - tick >= 60000 && minOutput)
     {
       tick = tock;
-      sync_cout << FontColor::green << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
+      sync_cout << FontColor::engine << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << FontColor::reset << sync_endl;
       //dbg_print();
     }
@@ -2089,7 +2106,7 @@ void MainThread::check_time() {
     if (tock - tick >= 300000 && minOutput)
     {
       tick = tock;
-      sync_cout << FontColor::green << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
+      sync_cout << FontColor::engine << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << FontColor::reset << sync_endl;
       //dbg_print();
     }
@@ -2136,7 +2153,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
           ss << "\n";
       if (v >= VALUE_MATE_IN_MAX_PLY)
       {
-          ss << FontColor::green << "\n";
+          ss << FontColor::engine << "\n";
           ss << "info"
              << " depth "    << d
              << " seldepth " << rootMoves[i].selDepth
@@ -3734,7 +3751,7 @@ bool RootMove::extract_ponder_from_tt(Position& pos) {
 void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
 
     RootInTB = false;
-    //UseRule50 = bool(Options["Syzygy50MoveRule"]);
+    UseRule50 = bool(Options["Syzygy50MoveRule"]);
     ProbeDepth = int(Options["SyzygyProbeDepth"]);
     Cardinality = int(Options["SyzygyProbeLimit"]);
 

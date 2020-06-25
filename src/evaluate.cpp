@@ -75,7 +75,7 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  #ifdef Stockfish
+  #if defined (Stockfish) || (Sullivan)
   constexpr Value LazyThreshold  = Value(1400);
   #endif
   constexpr Value SpaceThreshold = Value(12222);
@@ -830,7 +830,7 @@ namespace {
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
     // Early exit if score is high
-#ifdef Stockfish
+#if defined (Stockfish) || (Sullivan)
     Value v = (mg_value(score) + eg_value(score)) / 2;
     if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
       return pos.side_to_move() == WHITE ? v : -v;
