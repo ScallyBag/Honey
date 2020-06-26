@@ -949,7 +949,7 @@ return strongSide == pos.side_to_move() ? result : -result;
 }
 
 
-/// KQ vs KR.  This is almost identical to KX vs K:  We give the attacking
+/// KQ vs KR. This is almost identical to KX vs K: we give the attacking
 /// king a bonus for having the kings close together, and for forcing the
 /// defending king towards the edge. If we also take care to avoid null move for
 /// the defending side in the search, this is usually sufficient to win KQ vs KR.
@@ -972,7 +972,7 @@ return strongSide == pos.side_to_move() ? result : -result;
 
 
 /// KNN vs KP. Very drawish, but there are some mate opportunities if we can
-//  press the weakSide King to a corner before the pawn advances too much.
+/// press the weakSide King to a corner before the pawn advances too much.
 template<>
 Value Endgame<KNNKP>::operator()(const Position& pos) const {
 
@@ -1267,7 +1267,7 @@ return SCALE_FACTOR_NONE;
 }
 
 
-/// K and two or more pawns vs K. There is just a single rule here: If all pawns
+/// K and two or more pawns vs K. There is just a single rule here: if all pawns
 /// are on the same rook file and are blocked by the defending king, it's a draw.
 template<>
 ScaleFactor Endgame<KPsK>::operator()(const Position& pos) const {
@@ -1384,7 +1384,7 @@ default:
 }
 
 
-/// KBP vs KN. There is a single rule: If the defending king is somewhere along
+/// KBP vs KN. There is a single rule: if the defending king is somewhere along
 /// the path of the pawn, and the square of the king is not of the same color as
 /// the stronger side's bishop, it's a draw.
 template<>
@@ -1408,7 +1408,7 @@ return SCALE_FACTOR_NONE;
 
 
 /// KP vs KP. This is done by removing the weakest side's pawn and probing the
-/// KP vs K bitbase: If the weakest side has a draw without the pawn, it probably
+/// KP vs K bitbase: if the weakest side has a draw without the pawn, it probably
 /// has at least a draw with the pawn as well. The exception is when the stronger
 /// side's pawn is far advanced and not on a rook file; in this case it is often
 /// possible to win (e.g. 8/4k3/3p4/3P4/6K1/8/8/8 w - - 0 1).

@@ -129,23 +129,23 @@ namespace {
   };
 
   // Assorted bonuses and penalties
-  constexpr Score BishopPawns         = S(  3,  7);
+  constexpr Score BishopKingProtector = S(  6,  9);
   constexpr Score BishopOnKingRing    = S( 24,  0);
+  constexpr Score BishopOutpost       = S( 30, 23);
+  constexpr Score BishopPawns         = S(  3,  7);
   constexpr Score BishopXRayPawns     = S(  4,  5);
   constexpr Score CorneredBishop      = S( 50, 50);
   constexpr Score FlankAttacks        = S(  8,  0);
   constexpr Score Hanging             = S( 69, 36);
-  constexpr Score BishopKingProtector = S(  6,  9);
   constexpr Score KnightKingProtector = S(  8,  9);
   constexpr Score KnightOnQueen       = S( 16, 11);
+  constexpr Score KnightOutpost       = S( 56, 36);
   constexpr Score LongDiagonalBishop  = S( 45,  0);
   constexpr Score MinorBehindPawn     = S( 18,  3);
-  constexpr Score KnightOutpost       = S( 56, 36);
-  constexpr Score BishopOutpost       = S( 30, 23);
-  constexpr Score ReachableOutpost    = S( 31, 22);
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
   constexpr Score QueenInfiltration   = S( -2, 14);
+  constexpr Score ReachableOutpost    = S( 31, 22);
   constexpr Score RestrictedPiece     = S(  7,  7);
   constexpr Score RookOnKingRing      = S( 16,  0);
   constexpr Score RookOnQueenFile     = S(  6, 11);
@@ -155,8 +155,9 @@ namespace {
   constexpr Score ThreatBySafePawn    = S(173, 94);
 
   constexpr Score TrappedRook         = S( 55, 13);
-  constexpr Score WeakQueen           = S( 56, 15);
   constexpr Score WeakQueenProtection = S( 14,  0);
+  constexpr Score WeakQueen           = S( 56, 15);
+
 
 #undef S
 
@@ -219,6 +220,7 @@ namespace {
 
   // Evaluation::initialize() computes king and pawn attacks, and the king ring
   // bitboard for a given color. This is done at the beginning of the evaluation.
+
   template<Tracing T> template<Color Us>
   void Evaluation<T>::initialize() {
 
@@ -259,6 +261,7 @@ namespace {
 
 
   // Evaluation::pieces() scores pieces of a given color and type
+
   template<Tracing T> template<Color Us, PieceType Pt>
   Score Evaluation<T>::pieces() {
 
@@ -392,6 +395,7 @@ namespace {
 
 
   // Evaluation::king() assigns bonuses and penalties to a king of a given color
+
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::king() const {
 
@@ -502,6 +506,7 @@ namespace {
 
   // Evaluation::threats() assigns bonuses according to the types of the
   // attacking and the attacked pieces.
+
   template<Tracing T> template<Color Us>
   Score Evaluation<T>::threats() const {
 
@@ -727,8 +732,8 @@ namespace {
 
 
   // Evaluation::winnable() adjusts the mg and eg score components based on the
-  // known attacking/defending status of the players.
-  // A single value is derived from the mg and eg values and returned.
+  // known attacking/defending status of the players. A single value is derived
+  // by interpolation from the mg and eg values and returned.
 
   template<Tracing T>
   Value Evaluation<T>::winnable(Score score) const {
@@ -838,12 +843,11 @@ namespace {
     Value v = (mg_value(score) + eg_value(score)) / 2;  //idea from Corchess
 #endif
     // Main evaluation begins here
-
     initialize<WHITE>();
     initialize<BLACK>();
 
     // Pieces evaluated first (also populates attackedBy, attackedBy2).
-    // Note that the order of evaluation of the terms is left unspecified
+    // Note that the order of evaluation of the terms is left unspecified.
     score +=  pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
             + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
             + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()

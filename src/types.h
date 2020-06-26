@@ -407,11 +407,11 @@ constexpr Color operator~(Color c) {
   return Color(c ^ BLACK); // Toggle color
 }
 
-constexpr Square flip_rank(Square s) {
+constexpr Square flip_rank(Square s) { // Swap A1 <-> A8
   return Square(s ^ SQ_A8);
 }
 
-constexpr Square flip_file(Square s) {
+constexpr Square flip_file(Square s) { // Swap A1 <-> H1
   return Square(s ^ SQ_H1);
 }
 
@@ -420,7 +420,7 @@ constexpr Square operator~(Square s) {
 }
 
 constexpr Piece operator~(Piece pc) {
-  return Piece(pc ^ 8); // Swap color of piece B_KNIGHT -> W_KNIGHT
+  return Piece(pc ^ 8); // Swap color of piece B_KNIGHT <-> W_KNIGHT
 }
 #ifndef Stockfish
 inline File map_to_queenside(File f) {
