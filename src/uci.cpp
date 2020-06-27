@@ -294,7 +294,7 @@ void set(istringstream& is) {
         if (token == "go" || token == "eval")
         {
 
-            cerr << "\nPosition: " << cnt++ << '/' << num << endl;
+            cerr << FontColor::reset << "\nPosition: " << cnt++ << '/' << num << endl;
             if (token == "go")
             {
                lap_time_elapsed = now();
@@ -430,8 +430,9 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "d")     sync_cout << pos << sync_endl;
       else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
-       else if (token == "c++") sync_cout << compiler_info() << sync_endl;
-       else
+      else if (token == "c++") sync_cout << compiler_info() << sync_endl;
+      else if (token == "") sync_cout << sync_endl;
+      else
           sync_cout << FontColor::error << "Unknown command: " << cmd << FontColor::reset << sync_endl;
 
   } while (token != "quit" && token != "q" && argc == 1);
@@ -474,7 +475,7 @@ string UCI::value(Value v) {
                         / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
     }
    else
-       ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+       ss << FontColor::engine <<  "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2 ;
 
   return ss.str();
 }
@@ -553,7 +554,7 @@ string UCI::value(Value v, Value v2) {
       ss << "cp " << v * 100 / PawnValueEg;
   }
   else
-      ss << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+      ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2 ;
 
   return ss.str();
 }

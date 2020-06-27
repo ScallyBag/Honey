@@ -55,8 +55,11 @@ int main(int argc, char* argv[]) {
    polybook2.init(Options["Book_File_2"]);
    polybook3.init(Options["Book_File_3"]);
    polybook4.init(Options["Book_File_4"]);
-
+#ifdef Weakfish
+  Threads.set(size_t(1));
+#else
   Threads.set(size_t(Options["Threads"]));
+#endif
   Search::clear(); // After threads are up
 
   UCI::loop(argc, argv);

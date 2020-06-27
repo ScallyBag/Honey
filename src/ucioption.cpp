@@ -112,46 +112,47 @@ void init(OptionsMap& o) {
     o["Threads"]                  << Option(1, 1, 512, on_threads);
     o["Hash"]                     << Option(256, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                   << Option(false);
-
+#ifndef Weakfish
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
     o["Variety"]                  << Option(false); // Do not use with Adaptive play
+  #endif
 	  o["FastPlay"]                 << Option(false);
 	  o["Min Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
                                            ,"Centipawn");
-
-
+#ifdef Weakfish
+    o["Level 1-20"]               << Option(6, 1, 20);
+#endif
+#ifndef Weakfish
 #if defined (Sullivan) || (Blau)
     o["Deep Pro Analysis"]        << Option(false);
-    o["Pro Analysis"]             << Option(true);
+    o["Pro Analysis"]             << Option(false);
     o["Pro Value"]                << Option(26, 0, 63);
 #else
     o["Deep Pro Analysis"]        << Option(false);
     o["Pro Analysis"]             << Option(false);
     o["Pro Value"]                << Option( 0, 0, 63);
 #endif
+#endif
     o["Defensive"]                << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
     o["Clean_Search"]             << Option(false);
-
     o["MultiPV"]                  << Option(1, 1, 256);
-
 #if (defined Pi )
     o["Bench_KNPS"]               << Option (200, 100, 1000);//used for UCI Play By Elo
 #else
-    o["Bench_KNPS"]               << Option (1500, 500, 6000);//used for UCI Play By Elo
+    o["Bench_KNPS"]               << Option (2500, 500, 6000);//used for UCI Play By Elo
 #endif
 
     o["Tactical"]                 << Option(0, 0, 8);
+
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
     o["UCI_LimitStrength"]        << Option(false);
-    o["Slow_Play"]                << Option(false);
-#ifdef Weak
-//    o["Weakfish"]                 << Option(true);
-#endif
+    o["Slow Play"]                << Option(false);
+
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*///
     o["Engine_Elo"]               << Option(1750, 1000, 2900);
     o["FIDE_Ratings"]             << Option(true);

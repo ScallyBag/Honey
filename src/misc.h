@@ -156,6 +156,12 @@ namespace FontColor {
   {
      return os << "\033[40m\033[1;91m";
   }
+    template < class CharT, class Traits >
+    constexpr
+    std::basic_ostream< CharT, Traits > & green( std::basic_ostream< CharT, Traits > &os )
+    {
+       return os << "\033[40m\033[1;92m";  //green
+    }
 #ifdef Stockfish
   template < class CharT, class Traits >
   constexpr

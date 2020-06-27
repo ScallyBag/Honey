@@ -31,14 +31,14 @@ BUILD="profile-build"
 
 #make function
 function mke() {
-make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS='-flto' make -j30 $BUILD $ARCH $COMP "$@"
 }
 
 mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
 mke WEAK=yes && wait
-mke 
+mke
 
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
@@ -54,7 +54,8 @@ echo "$(<benchnodes.txt)"
 sed -i.bak -e '850,972d' ../src/Makefile
 sed '849r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
-
+rm *.bench
+strip Black* Blue* Honey* Weak* Stock*
 
 end=`date +%s`
 runtime=$((end-start))

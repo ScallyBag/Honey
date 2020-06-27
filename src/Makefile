@@ -616,7 +616,7 @@ ifeq ($(COMP), ndk)
 	endif
 	STRIP=$(NDK)/toolchains/llvm/prebuilt/$(HOST)/$(SUB_DIR)/bin/strip
 else
-#	STRIP=strip
+	STRIP=strip
 endif
 ### ==========================================================================
 ### Section 4. Public Targets
@@ -703,11 +703,11 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
-ifeq ($(COMP),mingw)
-	strip $(EXE)
-else
-	strip $(EXE)
-endif
+#ifeq ($(COMP),mingw)
+#	strip $(EXE)
+#else
+#	strip $(EXE)
+#endif
 
 #	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
 	$(EXE) bench >/dev/null 2> $(EXE).bench && wait
@@ -847,16 +847,16 @@ icc-profile-make:
 #
 #
 #
-### Based on commits through 06/26/2020:
+### Based on commits through 06/29/2020:
 ### ======================================================
-### Black-Diamond-dev-062620.exe.bench:Nodes searched  : 9726506
-### Black-Diamond-dev-062620.exe.bench:Nodes/second    : 2347696
-### Bluefish-dev-062620.exe.bench:Nodes searched  : 6961096
-### Bluefish-dev-062620.exe.bench:Nodes/second    : 2384753
-### Honey-dev-062620.exe.bench:Nodes searched  : 6246611
-### Honey-dev-062620.exe.bench:Nodes/second    : 2521845
-### Stockfish-dev-062620.exe.bench:Nodes searched  : 4789930
-### Stockfish-dev-062620.exe.bench:Nodes/second    : 2479259
-### Weakfish-dev-062620.exe.bench:Nodes searched  : 5267676
-### Weakfish-dev-062620.exe.bench:Nodes/second    : 2455793
+### Black-Diamond-dev-062820.exe.bench:Nodes searched  : 16014796
+### Black-Diamond-dev-062820.exe.bench:Nodes/second    : 2286847
+### Bluefish-dev-062820.exe.bench:Nodes searched  : 6673456
+### Bluefish-dev-062820.exe.bench:Nodes/second    : 2373206
+### Honey-dev-062820.exe.bench:Nodes searched  : 6571294
+### Honey-dev-062820.exe.bench:Nodes/second    : 2565909
+### Stockfish-dev-062820.exe.bench:Nodes searched  : 4789930
+### Stockfish-dev-062820.exe.bench:Nodes/second    : 2566950
+### Weakfish-dev-062820.exe.bench:Nodes searched  : 4060
+### Weakfish-dev-062820.exe.bench:Nodes/second    : 2906
 ### ======================================================
