@@ -309,8 +309,8 @@ endif
 
 ifeq ($(ARCH),armv8)
 	arch = armv8-a
-	bits = 64
 	prefetch = yes
+	popcnt = yes
 endif
 
 ifeq ($(ARCH),armv7-a)
@@ -535,7 +535,7 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(arch),ppc64)
+	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a))
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse4 -DUSE_POPCNT
@@ -849,14 +849,14 @@ icc-profile-make:
 #
 ### Based on commits through 06/29/2020:
 ### ======================================================
-### Black-Diamond-dev-062820.exe.bench:Nodes searched  : 16014796
-### Black-Diamond-dev-062820.exe.bench:Nodes/second    : 2286847
-### Bluefish-dev-062820.exe.bench:Nodes searched  : 6673456
-### Bluefish-dev-062820.exe.bench:Nodes/second    : 2373206
-### Honey-dev-062820.exe.bench:Nodes searched  : 6571294
-### Honey-dev-062820.exe.bench:Nodes/second    : 2565909
-### Stockfish-dev-062820.exe.bench:Nodes searched  : 4789930
-### Stockfish-dev-062820.exe.bench:Nodes/second    : 2566950
-### Weakfish-dev-062820.exe.bench:Nodes searched  : 4060
-### Weakfish-dev-062820.exe.bench:Nodes/second    : 2906
+### Black-Diamond-dev-062920.exe.bench:Nodes searched  : 15693086
+### Black-Diamond-dev-062920.exe.bench:Nodes/second    : 2238990
+### Bluefish-dev-062920.exe.bench:Nodes searched  : 6658318
+### Bluefish-dev-062920.exe.bench:Nodes/second    : 2377121
+### Honey-dev-062920.exe.bench:Nodes searched  : 6582076
+### Honey-dev-062920.exe.bench:Nodes/second    : 2535468
+### Stockfish-dev-062920.exe.bench:Nodes searched  : 4441323
+### Stockfish-dev-062920.exe.bench:Nodes/second    : 2516330
+### Weakfish-dev-062920.exe.bench:Nodes searched  : 3708
+### Weakfish-dev-062920.exe.bench:Nodes/second    : 2650
 ### ======================================================
