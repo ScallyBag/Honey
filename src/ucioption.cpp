@@ -122,7 +122,7 @@ void init(OptionsMap& o) {
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
                                            ,"Centipawn");
 #ifdef Weakfish
-    o["Level 1-20"]               << Option(6, 1, 20);
+    o["Level 1-20"]               << Option(10, 1, 20);
 #endif
 #ifndef Weakfish
 #if defined (Sullivan) || (Blau)
@@ -146,7 +146,7 @@ void init(OptionsMap& o) {
 #endif
 
     o["Tactical"]                 << Option(0, 0, 8);
-
+    o["UCI_ShowWDL"]           << Option(true);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
