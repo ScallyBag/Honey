@@ -122,7 +122,7 @@ void init(OptionsMap& o) {
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
                                            ,"Centipawn");
 #ifdef Weakfish
-    o["Level"]               << Option(10, 1, 20);
+    o["Fish_Level"]               << Option(10, 1, 20);
 #endif
 #ifndef Weakfish
 #if defined (Sullivan) || (Blau)
