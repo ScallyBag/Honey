@@ -300,7 +300,7 @@ void MainThread::search() {
     dpa                 = Options["Deep Pro Analysis"];
     mpv                 = Options["MultiPV"];
 #ifdef Weakfish
-    weakLevel           = Options["Level 1-20"] - 1 ;
+    weakLevel           = Options["Level"] - 1 ;
 #endif
 
   Color us = rootPos.side_to_move();
