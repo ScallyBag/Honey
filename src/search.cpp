@@ -53,14 +53,14 @@ namespace Search {
   bool weakFish = true;
   int  weakLevel;
 #endif
-  bool profound=false;
+//  bool profound=false;
   int benchKnps;
   int dct;
 
   int defensive_v = 0;
   int mpv;
-  int proValue;
-  int profound_v;
+//  int proValue;
+//  int profound_v;
 }
 
 namespace Tablebases {
@@ -295,8 +295,8 @@ void MainThread::search() {
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["Slow Play"];
-    proValue            = Options["Pro Value"];
-    profound            = Options["Pro Analysis"];
+//    proValue            = Options["Pro Value"];
+//    profound            = Options["Pro Analysis"];
     dpa                 = Options["Deep Pro Analysis"];
     mpv                 = Options["MultiPV"];
 #ifdef Weakfish
@@ -445,6 +445,7 @@ skipLevels:
                  }
              uci_elo =  ccrlELo - shallow_adjust;
          }
+/* not working right
       if (mpv > 1)
           profound = false;
 #ifdef Weakfish
@@ -467,6 +468,7 @@ skipLevels:
               }
           //std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
         }
+        */
       Threads.start_searching(); // start non-main threads
       Thread::search();          // main thread start searching
       }
@@ -620,10 +622,10 @@ void Thread::search() {
 #ifdef Weakfish
 if (!weakFish)
 #endif
-    if (tactical) {
+/*    if (tactical) {
       multiPV = pow(2, tactical);
       profound = false;}
-
+*/
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
@@ -673,7 +675,7 @@ if (!weakFish)
 
       // MultiPV loop. We perform a full root search for each PV line
 
-  profound_test = false;
+/*  profound_test = false;
   //std::cerr << "\nPro Analysis value test 2: " << profound_v << "\n" << sync_endl;//debug
   if ((profound) && (!tactical)){
     size_t multiPVStore = multiPV;
@@ -691,7 +693,7 @@ if (!weakFish)
             multiPV = multiPVStore;//Options["MultiPV"];}
           }
      }
-}
+}*/
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -772,7 +774,7 @@ if (!weakFish)
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-#ifdef Stockfish
+#if defined  (Stockfish) || (Noir)
                   ++failedHighCnt;
 #endif
               }
@@ -1142,7 +1144,7 @@ namespace {
     // Step 7. Razoring (~1 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
         &&  depth == 1
-        &&  !(pos.this_thread()->profound_test)
+//        &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
 
@@ -1160,7 +1162,7 @@ namespace {
 #ifdef Blau
         && !kingDanger
 #endif
-        &&  !(pos.this_thread()->profound_test)
+//        &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
@@ -2747,7 +2749,7 @@ namespace {
            &&  eval >= ss->staticEval
            &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
            &&  pos.non_pawn_material(us) > BishopValueMg
-           &&  thisThread->selDepth + 5 > thisThread->rootDepth
+          // &&  thisThread->selDepth + 5 > thisThread->rootDepth
            && !kingDanger
            && !(rootDepth > 10 && MoveList<LEGAL>(pos).size() < 6))
        {
