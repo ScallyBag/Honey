@@ -412,7 +412,17 @@ ifeq ($(COMP),clang)
 	endif
 	endif
 
-	ifeq ($(ARCH),$(filter $(ARCH),armv7 armv8))
+ifeq ($(ARCH),armv7)
+		ifeq ($(OS),Android)
+			CXXFLAGS += -m$(bits)
+			LDFLAGS += -m$(bits)
+		endif
+	else
+		CXXFLAGS += -m$(bits)
+		LDFLAGS += -m$(bits)
+	endif
+
+	ifeq ($(ARCH),armv8))
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -703,14 +713,15 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
-#ifeq ($(COMP),mingw)
-#	strip $(EXE)
-#else
-#	strip $(EXE)
-#endif
+ifeq ($(COMP),mingw)
+	strip $(EXE)
+else
+	strip $(EXE)
+endif
 
-#	@cp $(EXE) /Users/michaelbyrne/cluster.mfb
+ifeq ($(COMP),mingw)
 	$(EXE) bench >/dev/null 2> $(EXE).bench && wait
+endif
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
@@ -836,27 +847,16 @@ icc-profile-make:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 06/30/2020:
+### Based on commits through 07/01/2020:
 ### ======================================================
-### Black-Diamond-XI-r3.exe.bench:Nodes searched  : 15805604
-### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2323328
+### Black-Diamond-XI-r3.exe.bench:Nodes searched  : 15038924
+### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2312613
 ### Bluefish-XI-r3.exe.bench:Nodes searched  : 6645876
-### Bluefish-XI-r3.exe.bench:Nodes/second    : 2377773
+### Bluefish-XI-r3.exe.bench:Nodes/second    : 2407926
 ### Honey-XI-r3.exe.bench:Nodes searched  : 5729490
-### Honey-XI-r3.exe.bench:Nodes/second    : 2565826
+### Honey-XI-r3.exe.bench:Nodes/second    : 2601948
 ### Stockfish-XI-r3.exe.bench:Nodes searched  : 4523573
-### Stockfish-XI-r3.exe.bench:Nodes/second    : 2514493
+### Stockfish-XI-r3.exe.bench:Nodes/second    : 2573135
 ### Weakfish-XI-r3.exe.bench:Nodes searched  : 3890
-### Weakfish-XI-r3.exe.bench:Nodes/second    : 2792
+### Weakfish-XI-r3.exe.bench:Nodes/second    : 2772
 ### ======================================================

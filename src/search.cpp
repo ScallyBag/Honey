@@ -2560,7 +2560,7 @@ namespace {
         {
             if (VALUE_DRAW >= beta)
             {
-                tte->save(posKey, VALUE_DRAW, ttPv, BOUND_EXACT,
+                tte->save(posKey, VALUE_DRAW, ttPv, BOUND_LOWER,
                           depth, MOVE_NONE, VALUE_NONE);
 
                 return VALUE_DRAW;
@@ -2670,8 +2670,8 @@ namespace {
 
                 if (    abs(v) <= drawScore
                     || !ttHit
-                    || (v < -drawScore && beta  > tbValue)
-                    || (v >  drawScore && alpha < tbValue))
+                    || (v < -drawScore && beta  > tbValue + 19)
+                    || (v >  drawScore && alpha < tbValue - 19))
                 {
                     tte->save(posKey, tbValue, ttPv, v > drawScore ? BOUND_LOWER : v < -drawScore ? BOUND_UPPER : BOUND_EXACT,
                               depth, MOVE_NONE, VALUE_NONE);
@@ -2977,6 +2977,7 @@ namespace {
               // Futility pruning for captures
               if (   !givesCheck
                   && lmrDepth < 6
+                  && PieceValue[MG][type_of(movedPiece)] >= PieceValue[MG][type_of(pos.piece_on(to_sq(move)))]
                   && !ss->inCheck
                   && ss->staticEval + 267 + 391 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
                   continue;
