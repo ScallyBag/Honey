@@ -847,16 +847,16 @@ icc-profile-make:
 #
 #
 #
-### Based on commits through 06/30/2020:
+### Based on commits through 07/01/2020:
 ### ======================================================
 ### Black-Diamond-XI-r3.exe.bench:Nodes searched  : 15038924
-### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2299529
+### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2312613
 ### Bluefish-XI-r3.exe.bench:Nodes searched  : 6645876
-### Bluefish-XI-r3.exe.bench:Nodes/second    : 2285376
+### Bluefish-XI-r3.exe.bench:Nodes/second    : 2407926
 ### Honey-XI-r3.exe.bench:Nodes searched  : 5729490
-### Honey-XI-r3.exe.bench:Nodes/second    : 2573894
+### Honey-XI-r3.exe.bench:Nodes/second    : 2601948
 ### Stockfish-XI-r3.exe.bench:Nodes searched  : 4523573
-### Stockfish-XI-r3.exe.bench:Nodes/second    : 2577534
+### Stockfish-XI-r3.exe.bench:Nodes/second    : 2573135
 ### Weakfish-XI-r3.exe.bench:Nodes searched  : 3890
-### Weakfish-XI-r3.exe.bench:Nodes/second    : 2782
+### Weakfish-XI-r3.exe.bench:Nodes/second    : 2772
 ### ======================================================

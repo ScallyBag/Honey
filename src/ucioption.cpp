@@ -74,7 +74,6 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 /// init() initializes the UCI options to their hard-coded default values
 void init(OptionsMap& o) {
 
-
     // At most 2^32 superclusters. Supercluster = 8 kB
     constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
 
@@ -146,7 +145,7 @@ void init(OptionsMap& o) {
 #endif
 
     o["Tactical"]                 << Option(0, 0, 8);
-    o["UCI_ShowWDL"]           << Option(true);
+    o["UCI_ShowWDL"]              << Option(true);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play

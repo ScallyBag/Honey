@@ -20,6 +20,7 @@
  */
 
 #include <cassert>
+#include <cmath>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -342,6 +343,28 @@ void set(istringstream& is) {
          cerr << "\nNodes/second    : " << nodes / elapsed << "k" << endl;
   }
 
+  // The win rate model returns the probability (per mille) of winning given an eval
+  // and a game-ply. The model fits rather accurately the LTC fishtest statistics.
+  int win_rate_model(Value v, int ply) {
+
+     // The model captures only up to 240 plies, so limit input (and rescale)
+     double m = std::min(240, ply) / 64.0;
+
+     // Coefficients of a 3rd order polynomial fit based on fishtest data
+     // for two parameters needed to transform eval to the argument of a
+     // logistic function.
+     double as[] = {-8.24404295, 64.23892342, -95.73056462, 153.86478679};
+     double bs[] = {-3.37154371, 28.44489198, -56.67657741,  72.05858751};
+     double a = (((as[0] * m + as[1]) * m + as[2]) * m) + as[3];
+     double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
+
+     // Transform eval to centipawns with limited range
+     double x = Utility::clamp(double(100 * v) / PawnValueEg, -1000.0, 1000.0);
+
+     // Return win rate in per mille (rounded to nearest)
+     return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
+  }
+
 } // namespace
 
 
@@ -454,7 +477,7 @@ string UCI::value(Value v) {
   stringstream ss;
 
   const float vs = (float)v;
-  constexpr float sf = 2.15; // scoring percentage factor
+  constexpr float sf = 2.8125; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
 
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
@@ -471,11 +494,28 @@ string UCI::value(Value v) {
        else if (Options["Score Output"] == "Centipawn")
 	         ss << fixed << setprecision(0) << "cp " << (vs * vf);
        else
-            ss << "cp " << fixed << setprecision(2) << 100 * (pow (sf,(sf * vs /1000)))
-                        / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
+            ss << "cp "  << int(1000 * (pow (sf,(sf * vs /1000)))
+                        / (pow(sf,(sf * vs /1000)) + 1));  // Commandline score percenatge
     }
    else
        ss << FontColor::engine <<  "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2 ;
+
+  return ss.str();
+}
+
+
+/// UCI::wdl() report WDL statistics given an evaluation and a game ply, based on
+/// data gathered for fishtest LTC games.
+
+string UCI::wdl(Value v, int ply) {
+
+  stringstream ss;
+
+  int wdl_w = win_rate_model( v, ply);
+  int wdl_l = win_rate_model(-v, ply);
+  int wdl_d = 1000 - wdl_w - wdl_l;
+  int wdl_s = int(( 2 * wdl_w ) + wdl_d ) / 2;
+  ss << " wdl " << wdl_w << " " << wdl_d << " " << wdl_l << " sp " << wdl_s ;
 
   return ss.str();
 }
@@ -539,14 +579,38 @@ Move UCI::to_move(const Position& pos, string& str) {
 /// mate <y>  Mate in y moves, not plies. If the engine is getting mated
 ///           use negative values for y.
 
-string UCI::value(Value v, Value v2) {
+string UCI::value(Value v , Value v2) {
 
-  assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
+  //assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
-
+  const float vs = (float)v + (float)v2 / 4;
+  constexpr float sf = 2.15; // scoring percentage factor
+  constexpr float vf = 0.31492; // centipawn value factor
+  //v = (v + v2) / 2;
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
   {
+    // Score percentage evalaution output, similair to Lc0 output.
+    // For use with GUIs that divide centipawn scores by 100, e.g, xBoard, Arena, Fritz, etc.
+    if ( Options["Score Output"] == "ScorPct-GUI")
+        ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
+            / (pow(sf,(sf * vs /1000)) + 1);
+
+    // Centipawn scoring, value times centipawn factor
+    // SF values the raw score of pawns much higher than 100, see types.h
+    // The higher raw score allows for greater precison in many evaluation functions
+     else if (Options["Score Output"] == "Centipawn")
+         ss << fixed << setprecision(0) << "cp " << (vs * vf);
+     else
+          ss << "cp " << 1000 * (pow (sf,(sf * vs /1000)))
+                      / (pow(sf,(sf * vs /1000)) + 1);  // Commandline score percenatge
+  }
+ else
+     ss << FontColor::engine <<  "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2 ;
+
+return ss.str();
+}
+/*  {
       if (   abs(v) < 95 * PawnValueEg
           && abs(v - v2) < PawnValueEg)
           v = (v + v2) / 2;
@@ -555,6 +619,23 @@ string UCI::value(Value v, Value v2) {
   }
   else
       ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2 ;
+
+  return ss.str();
+}*/
+
+
+/// UCI::wdl() report WDL statistics given an evaluation and a game ply, based on
+/// data gathered for fishtest LTC games.
+
+string UCI::wdl(Value v, int ply) {
+
+  stringstream ss;
+
+  int wdl_w = win_rate_model( v, ply);
+  int wdl_l = win_rate_model(-v, ply);
+  int wdl_d = 1000 - wdl_w - wdl_l;
+  int wdl_s = (( 2 * wdl_w ) + wdl_d ) / 2;
+  ss << " wdl " << wdl_w << " " << wdl_d << " " << wdl_l << " sp " << wdl_s ;
 
   return ss.str();
 }
@@ -609,4 +690,4 @@ Move UCI::to_move(const Position& pos, string& str) {
 
   return MOVE_NONE;
 }
-#endif
+#endif //Noir
