@@ -183,7 +183,7 @@ namespace FontColor {
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[40m\033[1;94m";  //blue
+     return os << "\033[1;106m\033[1;94m";  //blue
   }
 #endif
 #ifdef Weakfish
@@ -191,7 +191,7 @@ namespace FontColor {
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[40m\033[1;96m"; //cyan
+     return os << "\033[0;100m\033[1;97m"; //cyan
   }
 #endif
 #ifdef Noir

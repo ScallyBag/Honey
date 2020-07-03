@@ -53,14 +53,14 @@ namespace Search {
   bool weakFish = true;
   int  weakLevel;
 #endif
-//  bool profound=false;
+  bool profound=false;
   int benchKnps;
   int dct;
 
   int defensive_v = 0;
   int mpv;
-//  int proValue;
-//  int profound_v;
+  int proValue;
+  int profound_v;
 }
 
 namespace Tablebases {
@@ -259,13 +259,7 @@ void MainThread::search() {
 #endif
     PRNG rng(now());
     int shallow_adjust = 35; //to roughly anchor 1712 rating to CCRL Shallow  2.0 rating of 1712
-	/* Reset on 11/14/2019:
-  500 game(s) loaded
-  Rank Name                    Rating   Δ     +    -     #     Σ    Σ%     W    L    D   W%    =%   OppR
-  ---------------------------------------------------------------------------------------------------------
-  1 Honey-XR7-1712  11/14/2019  1055   0.0   25   25   500  251.5  50.3  169  166  165  33.8  33.0  1053
-  2 Honey-CCRL-1712 10/02/2019  1053   1.3   25   25   500  248.5  49.7  166  169  165  33.2  33.0  1055
-  ---------------------------------------------------------------------------------------------------------*/
+
     adaptive            = Options["Adaptive_Play"];
     defensive           = Options["Defensive"];
     fide                = Options["FIDE_Ratings"];
@@ -274,8 +268,8 @@ void MainThread::search() {
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["Slow Play"];
-//    proValue            = Options["Pro Value"];
-//    profound            = Options["Pro Analysis"];
+    proValue            = Options["Pro Value"];
+    profound            = Options["Pro Analysis"];
     dpa                 = Options["Deep Pro Analysis"];
     mpv                 = Options["MultiPV"];
 #ifdef Weakfish
@@ -424,30 +418,24 @@ skipLevels:
                  }
              uci_elo =  ccrlELo - shallow_adjust;
          }
-/* not working right
+
       if (mpv > 1)
           profound = false;
-#ifdef Weakfish
-      if ((!tactical && profound) || weakFish )
-#else
+
       if (!tactical && profound)
-#endif
+
       {
 
           if (proValue && !dpa)
                profound_v = proValue * (std::max(Time.optimum(),Limits.movetime));
-#ifdef Weakfish
-          else if (dpa || weakFish)
-#else
           else if (dpa)
-#endif
               {
                 profound_v = proValue * 900000;
                 //std::cerr << "\nPro Analysis value2: " << profound_v << "\n" << sync_endl; //debug
               }
           //std::cerr << "\nPro Analysis value: " << profound_v << "\n" << sync_endl; //debug
         }
-        */
+
       Threads.start_searching(); // start non-main threads
       Thread::search();          // main thread start searching
       }
@@ -601,10 +589,9 @@ void Thread::search() {
 #ifdef Weakfish
 if (!weakFish)
 #endif
-/*    if (tactical) {
+    if (tactical) {
       multiPV = pow(2, tactical);
       profound = false;}
-*/
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
@@ -654,7 +641,7 @@ if (!weakFish)
 
       // MultiPV loop. We perform a full root search for each PV line
 
-/*  profound_test = false;
+  profound_test = false;
   //std::cerr << "\nPro Analysis value test 2: " << profound_v << "\n" << sync_endl;//debug
   if ((profound) && (!tactical)){
     size_t multiPVStore = multiPV;
@@ -672,7 +659,7 @@ if (!weakFish)
             multiPV = multiPVStore;//Options["MultiPV"];}
           }
      }
-}*/
+}
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -753,9 +740,9 @@ if (!weakFish)
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-#if defined  (Stockfish) || (Noir)
+//#if defined  (Stockfish) || (Noir)
                   ++failedHighCnt;
-#endif
+//#endif
               }
               else
               {
@@ -908,7 +895,7 @@ namespace {
     Value bestValue, value, ttValue, eval, maxValue;
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
 
-#if defined (Stockfish) || (Sullivan) || (Weakfish)
+#ifndef Blau
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR;
 #else
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR, kingDanger;
@@ -1123,10 +1110,10 @@ namespace {
     // Step 7. Razoring (~1 Elo)
     if (   !rootNode // The required rootNode PV handling is not available in qsearch
         &&  depth == 1
-//        &&  !(pos.this_thread()->profound_test)
+        &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-
+#endif
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
@@ -1135,13 +1122,14 @@ namespace {
     if (rootDepth > 10)
         kingDanger = pos.king_danger();
 #endif
+#ifndef Weakfish
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6
 #ifdef Blau
         && !kingDanger
 #endif
-//        &&  !(pos.this_thread()->profound_test)
+        &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
@@ -1152,16 +1140,14 @@ namespace {
         && (ss-1)->statScore < 23824
         &&  eval >= beta
         &&  eval >= ss->staticEval
-#ifndef Weakfish
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
-#endif
         && !excludedMove
-#if defined (Stockfish) || (Sullivan) || (Weakfish)
+#ifndef Blau
         &&  pos.non_pawn_material(us)
 #else
         &&  pos.non_pawn_material(us) > BishopValueMg
         &&  thisThread->selDepth + 3 > thisThread->rootDepth
-        && !kingDanger
+        &&  !kingDanger
 #endif
 
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
@@ -1324,7 +1310,7 @@ moves_loop: // When in check, search starts from here
 
       // Calculate new depth for this move
       newDepth = depth - 1;
-
+#ifndef Weakfish
       // Step 13. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
           && pos.non_pawn_material(us)
@@ -1383,7 +1369,7 @@ moves_loop: // When in check, search starts from here
                   continue;
           }
       }
-
+#endif
       // Step 14. Extensions (~75 Elo)
 
       // Singular extension search (~70 Elo). If all moves but one fail low on a
@@ -3693,34 +3679,6 @@ namespace {
 /// MainThread::check_time() is used to print debug info and, more importantly,
 /// to detect when we are out of available time and thus stop the search.
 
-/*void MainThread::check_time() {
-
-  if (--callsCnt > 0)
-      return;
-
-  // When using nodes, ensure checking rate is not lower than 0.1% of nodes
-  callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
-
-  static TimePoint lastInfoTime = now();
-
-  TimePoint elapsed = Time.elapsed();
-  TimePoint tick = Limits.startTime + elapsed;
-
-  if (tick - lastInfoTime >= 1000)
-  {
-      lastInfoTime = tick;
-      dbg_print();
-  }
-
-  // We should not stop pondering until told so by the GUI
-  if (ponder)
-      return;
-
-  if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
-      || (Limits.movetime && elapsed >= Limits.movetime)
-      || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
-      Threads.stop = true;
-}*/
 void MainThread::check_time() {
 
   if (--callsCnt > 0)
@@ -3775,55 +3733,6 @@ if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOn
     || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
     Threads.stop = true;
 }
-
-//old
-/*
-  static TimePoint tick = now();
-
-  TimePoint elapsed = Time.elapsed();
-  TimePoint tock = Limits.startTime + elapsed;
-  Thread* bestThread = this;
-  if (elapsed <= 120050)
-  {
-    if (tock - tick >= 10000 && minOutput)
-    {
-      tick = tock;
-      sync_cout << FontColor::engine << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
-      //dbg_print();
-    }
-  }
-  else if (elapsed <= 600100)
-  {
-    if (tock - tick >= 60000 && minOutput)
-    {
-      tick = tock;
-      sync_cout << FontColor::engine << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << FontColor::reset << sync_endl;
-      //dbg_print();
-    }
-  }
-  else
-  {
-    if (tock - tick >= 300000 && minOutput)
-    {
-      tick = tock;
-      sync_cout << FontColor::engine << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << FontColor::reset << sync_endl;
-      //dbg_print();
-    }
-  }
-
-  // We should not stop pondering until told so by the GUI
-  if (ponder)
-      return;
-
-  if (   (Limits.use_time_management() && (elapsed > Time.maximum() - 10 || stopOnPonderhit))
-      || (Limits.movetime && elapsed >= Limits.movetime)
-      || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
-      Threads.stop = true;
-}
-*/
 
 /// UCI::pv() formats PV information according to the UCI protocol. UCI requires
 /// that all (if any) unsearched PV lines are sent using a previous search score.
