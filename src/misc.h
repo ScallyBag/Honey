@@ -143,12 +143,12 @@ namespace WinProcGroup {
 
 namespace FontColor {
 
-    template < class CharT, class Traits >
-    constexpr
-    std::basic_ostream< CharT, Traits > & black( std::basic_ostream< CharT, Traits > &os )
-    {
-       return os << "\033[1;107m\033[1;90m";
-    }
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & black( std::basic_ostream< CharT, Traits > &os )
+  {
+    return os << "\033[1;107m\033[1;90m";
+  }
 
   template < class CharT, class Traits >
   constexpr
@@ -183,7 +183,7 @@ namespace FontColor {
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[1;106m\033[1;94m";  //blue
+     return os << "\033[1;106m\033[1;94m";  //blue & cyan
   }
 #endif
 #ifdef Weakfish
@@ -191,7 +191,7 @@ namespace FontColor {
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[0;100m\033[1;97m"; //cyan
+     return os << "\033[40m\033[1;97m"; //white
   }
 #endif
 #ifdef Noir
@@ -199,7 +199,7 @@ namespace FontColor {
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[40m\033[1;97m";  //white
+     return os << "\033[1;107m\033[1;90m";  //black
   }
 #endif
   template < class CharT, class Traits >
@@ -213,7 +213,7 @@ namespace FontColor {
   constexpr
   std::basic_ostream< CharT, Traits > & white( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[40m\033[1;97m";
+     return os << "\033[40m\033[1;90m";
   }
 
   template < class CharT, class Traits >
