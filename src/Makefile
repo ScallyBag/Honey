@@ -47,7 +47,7 @@ DATE2=$(shell date +"%m%d")
 ### WEAK = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = yes
+RELEASEVER = no
 RELVERSION = XI-r3
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -847,16 +847,16 @@ icc-profile-make:
 #
 #
 #
-### Based on commits through 07/03/2020:
+### Based on commits through 07/07/2020:
 ### ======================================================
-### Black-Diamond-XI-r3.exe.bench:Nodes searched  : 15038924
-### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2294967
-### Bluefish-XI-r3.exe.bench:Nodes searched  : 4377334
-### Bluefish-XI-r3.exe.bench:Nodes/second    : 2019065
-### Honey-XI-r3.exe.bench:Nodes searched  : 4564579
-### Honey-XI-r3.exe.bench:Nodes/second    : 2596461
-### Stockfish-XI-r3.exe.bench:Nodes searched  : 4431626
-### Stockfish-XI-r3.exe.bench:Nodes/second    : 2481313
-### Weakfish-XI-r3.exe.bench:Nodes searched  : 4728
-### Weakfish-XI-r3.exe.bench:Nodes/second    : 236400
+### Black-Diamond-dev-070720.exe.bench:Nodes searched  : 14220173
+### Black-Diamond-dev-070720.exe.bench:Nodes/second    : 2229915
+### Bluefish-dev-070720.exe.bench:Nodes searched  : 4729824
+### Bluefish-dev-070720.exe.bench:Nodes/second    : 2357838
+### Honey-dev-070720.exe.bench:Nodes searched  : 4944209
+### Honey-dev-070720.exe.bench:Nodes/second    : 2610458
+### Stockfish-dev-070720.exe.bench:Nodes searched  : 4882833
+### Stockfish-dev-070720.exe.bench:Nodes/second    : 2507875
+### Weakfish-dev-070720.exe.bench:Nodes searched  : 4074
+### Weakfish-dev-070720.exe.bench:Nodes/second    : 140482
 ### ======================================================
