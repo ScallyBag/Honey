@@ -72,6 +72,11 @@ Currently, Crystal has the following UCI options:
     Output the N best lines (principal variations, PVs) when searching.
     Leave at 1 for best performance.
 
+  * #### UCI_ShowWDL
+    If enabled, show approximate WDL statistics as part of the engine output.
+    These WDL numbers model expected game outcomes for a given evaluation and
+    game ply for engine self-play at fishtest LTC conditions (60+0.6s per game).
+
   * #### Move Overhead
     Assume a time delay of x ms due to network and GUI overheads. This is useful to
     avoid losses on time in those cases.
