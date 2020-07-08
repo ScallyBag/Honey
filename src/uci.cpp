@@ -589,10 +589,13 @@ Move UCI::to_move(const Position& pos, string& str) {
 
 string UCI::value(Value v , Value v2) {
 
-  //assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
+  assert(-VALUE_INFINITE < v && v < VALUE_INFINITE);
 
   stringstream ss;
-  const float vs = (float)v + (float)v2 / 4;
+  if (   abs(v) < 95 * PawnValueEg
+         && abs(v - v2) < PawnValueEg)
+  v = (v + v2) / 2;
+  const float vs = (float)v;
   constexpr float sf = 2.15; // scoring percentage factor
   constexpr float vf = 0.31492; // centipawn value factor
 

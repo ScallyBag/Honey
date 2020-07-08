@@ -145,7 +145,7 @@ void init(OptionsMap& o) {
 #endif
 
     o["Tactical"]                 << Option(0, 0, 8);
-    o["UCI_ShowWDL"]              << Option(true);
+    o["ShowWDL"]                  << Option(false);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
@@ -167,7 +167,7 @@ void init(OptionsMap& o) {
     o["Slow Mover"]               << Option(100, 10, 1000);
     o["Nodestime"]                << Option(0, 0, 10000);
     o["UCI_Chess960"]             << Option(false);
-    o["UCI_AnalyseMode"]          << Option(false);
+    o["AnalyseMode"]          << Option(false);
     o["SyzygyPath"]               << Option("<empty>", on_tb_path);
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
     o["Syzygy50MoveRule"]         << Option(true);

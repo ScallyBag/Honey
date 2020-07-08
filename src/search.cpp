@@ -89,7 +89,9 @@ namespace {
   constexpr uint64_t ttHitAverageResolution = 1024;
 #endif
   // Razor and futility margins
+#ifndef Noir
   constexpr int RazorMargin = 527;
+#endif
 #ifndef Weakfish
   Value futility_margin(Depth d, bool improving) {
     return Value(227 * (d - improving));
@@ -104,7 +106,7 @@ namespace {
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
-    return (3 + depth * depth) / (2 - improving);
+      return (3 + depth * depth) / (2 - improving);
   }
 
   // History and stats update bonus, based on depth
@@ -414,7 +416,7 @@ skipLevels:
                    sync_cout <<FontColor::engine << sync_endl;
                    sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime << " milliseconds\n" << sync_endl;// for debug
                    sync_cout << FontColor::reset << sync_endl;
-                   std::this_thread::sleep_for (std::chrono::milliseconds(sleepTime));
+                   std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
                  }
              uci_elo =  ccrlELo - shallow_adjust;
          }
@@ -606,7 +608,7 @@ if (!weakFish)
 #endif
   int ct = int(ctempt) * (int(Options["Contempt_Value"]) * PawnValueEg / 100); // From centipawns
   // In analysis mode, adjust contempt in accordance with user preference
-  if (Limits.infinite || Options["UCI_AnalyseMode"])
+  if (Limits.infinite || Options["AnalyseMode"])
       ct =  Options["Analysis_Contempt"] == "Off"  ? 0
           : Options["Analysis_Contempt"] == "Both" ? ct
           : Options["Analysis_Contempt"] == "White" && us == BLACK ? -ct
@@ -642,10 +644,9 @@ if (!weakFish)
       // MultiPV loop. We perform a full root search for each PV line
 
   profound_test = false;
-  //std::cerr << "\nPro Analysis value test 2: " << profound_v << "\n" << sync_endl;//debug
-  if ((profound) && (!tactical)){
+   //std::cerr << "\nPro Analysis value test 2: " << profound_v << "\n" << sync_endl;//debug
     size_t multiPVStore = multiPV;
-    if ( multiPV == 1 && profound_v )
+    if ( profound && !tactical && multiPV == 1 && profound_v )
     {
 
         if (Threads.nodes_searched() <= (uint64_t)profound_v)
@@ -654,12 +655,13 @@ if (!weakFish)
             multiPV = std::min(8, int(rootMoves.size()));
           }
 
-         else if (Threads.nodes_searched() > (uint64_t)profound_v){
+         else if (Threads.nodes_searched() > (uint64_t)profound_v)
+          {
             profound_test = false;
-            multiPV = multiPVStore;//Options["MultiPV"];}
+            multiPV = multiPVStore;//Options["MultiPV"];
           }
-     }
-}
+      }
+
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -856,7 +858,6 @@ if (!weakFish)
 
 
 namespace {
-
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType NT>
@@ -920,7 +921,6 @@ namespace {
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
-
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
         thisThread->selDepth = ss->ply + 1;
@@ -1729,6 +1729,7 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, pvHit, givesCheck, captureOrPromotion;
     int moveCount;
+    Thread* thisThread = pos.this_thread();
 
     if (PvNode)
     {
@@ -1737,7 +1738,7 @@ moves_loop: // When in check, search starts from here
         ss->pv[0] = MOVE_NONE;
     }
 
-    Thread* thisThread = pos.this_thread();
+
     (ss+1)->ply = ss->ply + 1;
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
@@ -2208,7 +2209,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
              << " multipv "  << i + 1
              << " score "    << UCI::value(v);
 
-      if (Options["UCI_ShowWDL"])
+      if (Options["ShowWDL"])
           ss << UCI::wdl(v, pos.game_ply());
 
       if (!tb && i == pvIdx)
@@ -2486,6 +2487,8 @@ namespace {
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
+  //  thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
+  //  thisThread->nodes++;
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
@@ -2495,7 +2498,7 @@ namespace {
     // search to overwrite a previous full search TT value, so we use a different
     // position key in case of an excluded move.
     excludedMove = ss->excludedMove;
-    posKey = pos.key() ^ Key(excludedMove);
+    posKey = excludedMove == MOVE_NONE ? pos.key() : pos.key() ^ make_key(excludedMove);
     tte = TT.probe(posKey, ttHit);
     ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
     ttDepth = tte->depth();
@@ -2505,7 +2508,7 @@ namespace {
     ttPv = PvNode || (ttHit && tte->is_pv());
     formerPv = ttPv && !PvNode;
 
-    if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !pos.captured_piece() && is_ok((ss-1)->currentMove))
+    if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !priorCapture && is_ok((ss-1)->currentMove))
     thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
@@ -2708,8 +2711,7 @@ namespace {
            &&  eval >= beta
            &&  eval >= ss->staticEval
            &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
-           &&  pos.non_pawn_material(us) > BishopValueMg
-          // &&  thisThread->selDepth + 5 > thisThread->rootDepth
+           &&  pos.non_pawn_material(us)
            && !kingDanger
            && !(rootDepth > 10 && MoveList<LEGAL>(pos).size() < 6))
        {
@@ -2869,9 +2871,6 @@ namespace {
           pos.do_move(move, st, givesCheck);
           isMate = MoveList<LEGAL>(pos).size() == 0;
           pos.undo_move(move);
-
-          if (!isMate) // Don't double count nodes
-              thisThread->nodes.fetch_sub(1, std::memory_order_relaxed);
       }
 
       if (isMate)
@@ -2939,7 +2938,8 @@ namespace {
                   && lmrDepth < 6
                   && PieceValue[MG][type_of(movedPiece)] >= PieceValue[MG][type_of(pos.piece_on(to_sq(move)))]
                   && !ss->inCheck
-                  && ss->staticEval + 267 + 391 * lmrDepth + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
+                  && ss->staticEval + 267 + 391 * lmrDepth
+                     + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
                   continue;
 
               // See based pruning
@@ -3107,7 +3107,7 @@ namespace {
               // hence break make_move(). (~2 Elo)
               else if (    type_of(move) == NORMAL
                        && !pos.see_ge(reverse_move(move)))
-                  r -= 2 + ttPv;
+                  r -= 2 + ttPv - (type_of(movedPiece) == PAWN);
 
               ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                              + (*contHist[0])[movedPiece][to_sq(move)]
@@ -3333,6 +3333,8 @@ namespace {
     ss->inCheck = pos.checkers();
     moveCount = 0;
     gameCycle = false;
+  //  thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
+  //  thisThread->nodes++;
 
     if (pos.has_game_cycle(ss->ply))
     {
@@ -3539,11 +3541,11 @@ namespace {
   }
 
 
-  // value_from_tt() is the inverse of value_to_tt(): It adjusts a mate or TB score
-  // from the transposition table (which refers to the plies to mate/be mated
-  // from current position) to "plies to mate/be mated (TB win/loss) from the root".
-  // However, for mate scores, to avoid potentially false mate scores related to the 50 moves rule,
-  // and the graph history interaction, return an optimal TB score instead.
+  // value_from_tt() is the inverse of value_to_tt(): it adjusts a mate or TB score
+  // from the transposition table (which refers to the plies to mate/be mated from
+  // current position) to "plies to mate/be mated (TB win/loss) from the root". However,
+  // for mate scores, to avoid potentially false mate scores related to the 50 moves rule
+  // and the graph history interaction, we return an optimal TB score instead.
 
   Value value_from_tt(Value v, int ply, int r50c) {
 
@@ -3770,7 +3772,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
          << " multipv "  << i + 1
          << " score "    << UCI::value(v, v2);
 
-      if (Options["UCI_ShowWDL"])
+      if (Options["ShowWDL"])
           ss << UCI::wdl(v, pos.game_ply());
 
       if (!tb && i == pvIdx)

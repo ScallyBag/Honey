@@ -75,11 +75,10 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  #if defined (Stockfish) || (Sullivan)
   constexpr Value LazyThreshold  = Value(1400);
-  #endif
   constexpr Value SpaceThreshold = Value(12222);
 
+  // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
 
   // SafeCheck[PieceType][single/multiple] contains safe check bonus by piece type,
@@ -840,13 +839,10 @@ namespace {
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
 
     // Early exit if score is high
-#if defined (Stockfish) || (Sullivan)
     Value v = (mg_value(score) + eg_value(score)) / 2;
     if (abs(v) > LazyThreshold + pos.non_pawn_material() / 64)
-      return pos.side_to_move() == WHITE ? v : -v;
-#else
-    Value v = (mg_value(score) + eg_value(score)) / 2;  //idea from Corchess
-#endif
+       return pos.side_to_move() == WHITE ? v : -v;
+
     // Main evaluation begins here
     initialize<WHITE>();
     initialize<BLACK>();
@@ -877,7 +873,7 @@ namespace {
         Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
-#ifndef Noir
+#ifdef Stockfish
     // Evaluation grain
     v = (v / 16) * 16;
 
