@@ -892,7 +892,7 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-#ifndef Stockfish
+#ifdef Weakfish
     Value bestValue, value, ttValue, eval, maxValue;
 #else
     Value bestValue, value, ttValue, eval, maxValue, probcutBeta;
@@ -1202,30 +1202,19 @@ namespace {
         }
     }
 #ifndef Weakfish // no reductions in Weakfish
-#ifdef Stockfish
     probcutBeta = beta + 176 - 49 * improving;
-#endif
 
     // Step 10. ProbCut (~10 Elo)
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
         &&  depth > 4
-#ifndef Stockfish
-        &&  abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
-#else
         &&  abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         && !(   ttHit
              && tte->depth() >= depth - 3
              && ttValue != VALUE_NONE
              && ttValue < probcutBeta))
-#endif
     {
-#ifndef Stockfish
-      Value raisedBeta = beta + 176 - 49 * improving;
-      assert(raisedBeta < VALUE_INFINITE);
-      MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &captureHistory);
-#else
         if (   ttHit
             && tte->depth() >= depth - 3
             && ttValue != VALUE_NONE
@@ -1236,18 +1225,10 @@ namespace {
 
         assert(probcutBeta < VALUE_INFINITE);
         MovePicker mp(pos, ttMove, probcutBeta - ss->staticEval, &captureHistory);
-#endif
         int probCutCount = 0;
 
         while (   (move = mp.next_move()) != MOVE_NONE
-#ifndef Stockfish
-               && probCutCount < 2 + 2 * cutNode
-               && !(   move == ttMove
-                   && tte->depth() >= depth - 4
-                   && ttValue < raisedBeta))
-#else
                && probCutCount < 2 + 2 * cutNode)
-#endif
             if (move != excludedMove && pos.legal(move))
             {
                 assert(pos.capture_or_promotion(move));
@@ -1265,25 +1246,14 @@ namespace {
                 pos.do_move(move, st);
 
                 // Perform a preliminary qsearch to verify that the move holds
-#ifndef Stockfish
-                value = -qsearch<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1);
-#else
                 value = -qsearch<NonPV>(pos, ss+1, -probcutBeta, -probcutBeta+1);
-#endif
 
                 // If the qsearch held, perform the regular search
-#ifndef Stockfish
-                if (value >= raisedBeta)
-                    value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - 4, !cutNode);
-#else
                 if (value >= probcutBeta)
                     value = -search<NonPV>(pos, ss+1, -probcutBeta, -probcutBeta+1, depth - 4, !cutNode);
-#endif
+
                 pos.undo_move(move);
-#ifndef Stockfish
-                if (value >= raisedBeta)
-                   return value;
-#else
+
                 if (value >= probcutBeta)
                 {
                     tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
@@ -1291,7 +1261,6 @@ namespace {
                         depth - 3, move, ss->staticEval);
                     return value;
                 }
-#endif
             }
     }
 #endif  //ifndef Weakfish
@@ -1780,7 +1749,6 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, pvHit, givesCheck, captureOrPromotion;
     int moveCount;
-    Thread* thisThread = pos.this_thread();
 
     if (PvNode)
     {
@@ -1789,7 +1757,7 @@ moves_loop: // When in check, search starts from here
         ss->pv[0] = MOVE_NONE;
     }
 
-
+    Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
