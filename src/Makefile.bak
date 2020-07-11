@@ -847,16 +847,16 @@ icc-profile-make:
 #
 #
 #
-### Based on commits through 07/10/2020:
+### Based on commits through 07/11/2020:
 ### ======================================================
-### Black-Diamond-dev-071020.exe.bench:Nodes searched  : 17316687
-### Black-Diamond-dev-071020.exe.bench:Nodes/second    : 2501688
-### Bluefish-dev-071020.exe.bench:Nodes searched  : 5176157
-### Bluefish-dev-071020.exe.bench:Nodes/second    : 2414252
-### Honey-dev-071020.exe.bench:Nodes searched  : 4509493
-### Honey-dev-071020.exe.bench:Nodes/second    : 2553506
-### Stockfish-dev-071020.exe.bench:Nodes searched  : 4594058
-### Stockfish-dev-071020.exe.bench:Nodes/second    : 2494059
-### Weakfish-dev-071020.exe.bench:Nodes searched  : 4396
-### Weakfish-dev-071020.exe.bench:Nodes/second    : 199818
+### Black-Diamond-dev-071120.exe.bench:Nodes searched  : 15847399
+### Black-Diamond-dev-071120.exe.bench:Nodes/second    : 2531129
+### Bluefish-dev-071120.exe.bench:Nodes searched  : 5042605
+### Bluefish-dev-071120.exe.bench:Nodes/second    : 2355256
+### Honey-dev-071120.exe.bench:Nodes searched  : 4436542
+### Honey-dev-071120.exe.bench:Nodes/second    : 2509356
+### Stockfish-dev-071120.exe.bench:Nodes searched  : 4620646
+### Stockfish-dev-071120.exe.bench:Nodes/second    : 2536029
+### Weakfish-dev-071120.exe.bench:Nodes searched  : 4341
+### Weakfish-dev-071120.exe.bench:Nodes/second    : 188739
 ### ======================================================
