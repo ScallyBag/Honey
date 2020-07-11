@@ -850,13 +850,13 @@ icc-profile-make:
 ### Based on commits through 07/11/2020:
 ### ======================================================
 ### Black-Diamond-dev-071120.exe.bench:Nodes searched  : 15847399
-### Black-Diamond-dev-071120.exe.bench:Nodes/second    : 2553560
+### Black-Diamond-dev-071120.exe.bench:Nodes/second    : 2523471
 ### Bluefish-dev-071120.exe.bench:Nodes searched  : 5042605
-### Bluefish-dev-071120.exe.bench:Nodes/second    : 2455017
+### Bluefish-dev-071120.exe.bench:Nodes/second    : 2406971
 ### Honey-dev-071120.exe.bench:Nodes searched  : 4436542
-### Honey-dev-071120.exe.bench:Nodes/second    : 2493840
-### Stockfish-dev-071120.exe.bench:Nodes searched  : 4620646
-### Stockfish-dev-071120.exe.bench:Nodes/second    : 2578485
+### Honey-dev-071120.exe.bench:Nodes/second    : 2495242
+### Stockfish-dev-071120.exe.bench:Nodes searched  : 4354137
+### Stockfish-dev-071120.exe.bench:Nodes/second    : 2387136
 ### Weakfish-dev-071120.exe.bench:Nodes searched  : 4341
-### Weakfish-dev-071120.exe.bench:Nodes/second    : 197318
+### Weakfish-dev-071120.exe.bench:Nodes/second    : 173640
 ### ======================================================
