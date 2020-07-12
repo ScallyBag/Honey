@@ -590,8 +590,8 @@
    Bitboard strongPawns = pos.pieces(strongSide, PAWN);
 
    // If all pawns are ahead of the king on a single rook file, it's a draw.
-   if (!((strongPawns & ~FileABB) || (strongPawns & ~FileHBB)) &&
-       !(strongPawns & ~passed_pawn_span(weakSide, weakKing)))
+   if ( !(strongPawns & ~(FileABB | FileHBB))
+       && !(strongPawns & ~passed_pawn_span(weakSide, weakKing)))
        return SCALE_FACTOR_DRAW;
 
    return SCALE_FACTOR_NONE;
@@ -746,7 +746,7 @@
  }
 #else
 
-Square strongKing = pos.square<KING>(strongSide);
+  Square strongKing = pos.square<KING>(strongSide);
   Square weakKing   = pos.square<KING>(weakSide);
   Value result = Value(push_to_edge(weakKing) + push_close(strongKing, weakKing));
 
