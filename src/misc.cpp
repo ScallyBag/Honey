@@ -71,7 +71,7 @@ size_t memtest = 0; //lp mem test
 /// DD-MM-YY and show in engine_info.
 
 #if (defined Add_Features && ReleaseVer)
-const string Version = "XI-r3 ";
+const string Version = "XI-r3.1 ";
 #else
 const string Version = "";
 #endif

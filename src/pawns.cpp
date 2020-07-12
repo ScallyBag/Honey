@@ -66,21 +66,13 @@ namespace {
   // RANK_1 = 0 is used for files where the enemy has no pawn, or their pawn
   // is behind our king. Note that UnblockedStorm[0][1-2] accommodate opponent pawn
   // on edge, likely blocked by our king.
-//#if defined  (Stockfish) || (Weakfish)  // #1154 UnblockedStorm tuned
   constexpr Value UnblockedStorm[int(FILE_NB) / 2][RANK_NB] = {
     { V( 85), V(-289), V(-166), V(97), V(50), V( 45), V( 50) },
     { V( 46), V( -25), V( 122), V(45), V(37), V(-10), V( 20) },
     { V( -6), V(  51), V( 168), V(34), V(-2), V(-22), V(-14) },
     { V(-15), V( -11), V( 101), V( 4), V(11), V(-15), V(-29) }
   };
-/*#else
-  constexpr Value UnblockedStorm[int(FILE_NB) / 2][RANK_NB] = {
-    { V( 89), V(-285), V(-185), V(93), V(57), V( 45), V( 51) },
-    { V( 44), V( -18), V( 123), V(46), V(39), V( -7), V( 23) },
-    { V(  4), V(  52), V( 162), V(37), V( 7), V(-14), V( -2) },
-    { V(-10), V( -14), V(  90), V(15), V( 2), V( -7), V(-16) }
-  };
-#endif*/
+
   #undef S
   #undef V
 
@@ -120,18 +112,18 @@ namespace {
 
         Rank r = relative_rank(Us, s);
 
+        // Flag the pawn
         opposed    = theirPawns & forward_file_bb(Us, s);
         blocked    = theirPawns & (s + Up);
         stoppers   = theirPawns & passed_pawn_span(Us, s);
-
-        lever      = theirPawns & PawnAttacks[Us][s];
-        leverPush  = theirPawns & PawnAttacks[Us][s + Up];
+        lever      = theirPawns & pawn_attacks_bb(Us, s);
+        leverPush  = theirPawns & pawn_attacks_bb(Us, s + Up);
         doubled    = ourPawns   & (s - Up);
         neighbours = ourPawns   & adjacent_files_bb(s);
         phalanx    = neighbours & rank_bb(s);
         support    = neighbours & rank_bb(s - Up);
 
-
+        // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
         backward =  !(neighbours & forward_ranks_bb(Them, s + Up))
                   && (leverPush | blocked);
@@ -246,11 +238,8 @@ Score Entry::evaluate_shelter(const Position& pos, Square ksq) const {
 
       b = theirPawns & file_bb(f);
       int theirRank = b ? relative_rank(Us, frontmost_sq(Them, b)) : 0;
-/*#ifndef Stockfish
-      File d = map_to_queenside(f);
-#else*/
+
       int d = edge_distance(f);
-//#endif
       bonus += make_score(ShelterStrength[d][ourRank], 0);
 
       if (ourRank && (ourRank == theirRank - 1))
@@ -288,7 +277,7 @@ Score Entry::do_king_safety(const Position& pos) {
   Bitboard pawns = pos.pieces(Us, PAWN);
   int minPawnDist = 6;
 
-  if (pawns & PseudoAttacks[KING][ksq])
+  if (pawns & attacks_bb<KING>(ksq))
       minPawnDist = 1;
   else while (pawns)
       minPawnDist = std::min(minPawnDist, distance(ksq, pop_lsb(&pawns)));

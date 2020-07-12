@@ -19,7 +19,7 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #ifndef BITBOARD_H_INCLUDED
+#ifndef BITBOARD_H_INCLUDED
 #define BITBOARD_H_INCLUDED
 
 #include <string>
