@@ -892,7 +892,11 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
+#ifdef Weakfish
+    Value bestValue, value, ttValue, eval, maxValue;
+#else
     Value bestValue, value, ttValue, eval, maxValue, probcutBeta;
+#endif
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
 
 #ifndef Blau
@@ -1197,7 +1201,6 @@ namespace {
                 return nullValue;
         }
     }
-
 #ifndef Weakfish // no reductions in Weakfish
     probcutBeta = beta + 176 - 49 * improving;
 
