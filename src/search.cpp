@@ -891,7 +891,11 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
+#ifdef Weakfish
+    Value bestValue, value, ttValue, eval, maxValue;
+#else
     Value bestValue, value, ttValue, eval, maxValue, probcutBeta;
+#endif
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
 
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR;
@@ -1227,12 +1231,13 @@ namespace {
 
                 if (value >= probcutBeta)
                 {
-                  if ( !(ttHit
-                     && tte->depth() >= depth - 3
-                     && ttValue != VALUE_NONE))
-                      tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
-                          BOUND_LOWER,
-                          depth - 3, move, ss->staticEval);
+                    if ( !(ttHit
+                       && tte->depth() >= depth - 3
+                       && ttValue != VALUE_NONE))
+                        tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+                            BOUND_LOWER,
+                            depth - 3, move, ss->staticEval);
+                    return value;
                 }
             }
     }
