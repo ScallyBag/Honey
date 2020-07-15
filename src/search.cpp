@@ -741,9 +741,7 @@ if (!weakFish)
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
-//#if defined  (Stockfish) || (Noir)
                   ++failedHighCnt;
-//#endif
               }
               else
               {
@@ -857,6 +855,7 @@ if (!weakFish)
 
 
 namespace {
+
   // search<>() is the main search function for both PV and non-PV nodes
 
   template <NodeType NT>
@@ -896,33 +895,26 @@ namespace {
     Value bestValue, value, ttValue, eval, maxValue;
 #else
     Value bestValue, value, ttValue, eval, maxValue, probcutBeta;
+#endif
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture;
-#endif
-#ifndef Blau
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR;
-#else
-    bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR, kingDanger;
-#endif
+    bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
+         ttCapture, singularQuietLMR;
     Piece movedPiece;
     int moveCount, captureCount, quietCount;
-#ifdef Blau
-    int rootDepth;
-#endif
+
     // Step 1. Initialize node
     Thread* thisThread = pos.this_thread();
     ss->inCheck = pos.checkers();
     priorCapture = pos.captured_piece();
     Color us = pos.side_to_move();
-#ifdef Blau
-    kingDanger = false;
-    rootDepth = thisThread->rootDepth;
-#endif
     moveCount = captureCount = quietCount = ss->moveCount = 0;
     bestValue = -VALUE_INFINITE;
     maxValue = VALUE_INFINITE;
+
     // Check for the available remaining time
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
+
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
         thisThread->selDepth = ss->ply + 1;
@@ -1123,18 +1115,10 @@ namespace {
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
-
-#ifdef Blau
-    if (rootDepth > 10)
-        kingDanger = pos.king_danger();
-#endif
 #ifndef Weakfish
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6
-#ifdef Blau
-        && !kingDanger
-#endif
         &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -1148,14 +1132,12 @@ namespace {
         &&  eval >= ss->staticEval
         &&  ss->staticEval >= beta - 33 * depth - 33 * improving + 112 * ttPv + 311
         && !excludedMove
-#ifndef Blau
+#ifdef Stockfish
         &&  pos.non_pawn_material(us)
 #else
-        &&  pos.non_pawn_material(us) > BishopValueMg
         &&  thisThread->selDepth + 3 > thisThread->rootDepth
-        &&  !kingDanger
+        &&  pos.non_pawn_material(us) > BishopValueMg
 #endif
-
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
     {
         assert(eval - beta >= 0);
@@ -1200,8 +1182,8 @@ namespace {
                 return nullValue;
         }
     }
-
 #ifndef Weakfish // no reductions in Weakfish
+
     probcutBeta = beta + 176 - 49 * improving;
 
     // Step 10. ProbCut (~10 Elo)
@@ -1256,9 +1238,12 @@ namespace {
 
                 if (value >= probcutBeta)
                 {
-                    tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
-                        BOUND_LOWER,
-                        depth - 3, move, ss->staticEval);
+                    if ( !(ttHit
+                       && tte->depth() >= depth - 3
+                       && ttValue != VALUE_NONE))
+                        tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+                            BOUND_LOWER,
+                            depth - 3, move, ss->staticEval);
                     return value;
                 }
             }
@@ -1343,8 +1328,7 @@ moves_loop: // When in check, search starts from here
           int lmrDepth = std::max(newDepth - reduction(improving, depth, moveCount), 0);
 
           if (   !captureOrPromotion
-		 && !givesCheck
-              )
+              && !givesCheck)
           {
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
@@ -1524,6 +1508,7 @@ moves_loop: // When in check, search starts from here
           // Decrease reduction if ttMove has been singularly extended (~3 Elo)
           if (singularQuietLMR)
               r -= 1 + formerPv;
+
           if (!captureOrPromotion)
           {
               // Increase reduction if ttMove is a capture (~5 Elo)
@@ -1749,7 +1734,6 @@ moves_loop: // When in check, search starts from here
     Value bestValue, value, ttValue, futilityValue, futilityBase, oldAlpha;
     bool ttHit, pvHit, givesCheck, captureOrPromotion;
     int moveCount;
-    Thread* thisThread = pos.this_thread();
 
     if (PvNode)
     {
@@ -1758,7 +1742,7 @@ moves_loop: // When in check, search starts from here
         ss->pv[0] = MOVE_NONE;
     }
 
-
+    Thread* thisThread = pos.this_thread();
     (ss+1)->ply = ss->ply + 1;
     bestMove = MOVE_NONE;
     ss->inCheck = pos.checkers();
@@ -1768,7 +1752,6 @@ moves_loop: // When in check, search starts from here
     if (   pos.is_draw(ss->ply)
         || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !ss->inCheck) ? evaluate(pos) : VALUE_DRAW;
-
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
@@ -1878,9 +1861,10 @@ moves_loop: // When in check, search starts from here
           }
       }
 
-      // Don't search moves with negative SEE values
+      // Do not search moves with negative SEE values
       if (  !ss->inCheck && !pos.see_ge(move))
           continue;
+
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
 

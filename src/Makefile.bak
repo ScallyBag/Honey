@@ -47,7 +47,7 @@ DATE2=$(shell date +"%m%d")
 ### WEAK = yes
 
 ### Release versions , enter yes and release version below foor releases
-RELEASEVER = no
+RELEASEVER = yes
 RELVERSION = XI-r3
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -849,6 +849,14 @@ icc-profile-make:
 #
 ### Based on commits through 07/14/2020:
 ### ======================================================
-### Black-Diamond-dev-071420.exe.bench:Nodes searched  : 17316687
-### Black-Diamond-dev-071420.exe.bench:Nodes/second    : 2536500
+### Black-Diamond-XI-r3.exe.bench:Nodes searched  : 16747542
+### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2575752
+### Bluefish-XI-r3.exe.bench:Nodes searched  : 4792565
+### Bluefish-XI-r3.exe.bench:Nodes/second    : 2483194
+### Honey-XI-r3.exe.bench:Nodes searched  : 4739588
+### Honey-XI-r3.exe.bench:Nodes/second    : 2539972
+### Stockfish-XI-r3.exe.bench:Nodes searched  : 4578298
+### Stockfish-XI-r3.exe.bench:Nodes/second    : 2511408
+### Weakfish-XI-r3.exe.bench:Nodes searched  : 4502
+### Weakfish-XI-r3.exe.bench:Nodes/second    : 195739
 ### ======================================================

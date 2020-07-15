@@ -208,16 +208,16 @@ enum Value : int {
   #define QVE 78/100
 
 #elif (defined Sullivan)
-  #define PVM 102/100
-  #define PVE 102/100
-  #define NVM 101/100
-  #define NVE 101/100
-  #define BVM 100/100
-  #define BVE 100/100
-  #define RVM 100/100
-  #define RVE 100/100
-  #define QVM 101/100
-  #define QVE 101/100
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM  98/100
+  #define NVE  98/100
+  #define BVM  98/100
+  #define BVE  98/100
+  #define RVM  98/100
+  #define RVE  98/100
+  #define QVM 100/100
+  #define QVE 100/100
 
 #else
   #define PVM 100/100
