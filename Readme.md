@@ -180,7 +180,6 @@ On Unix-like systems, it should be easy to compile Stockfish
 directly from the source code with the included Makefile in the folder
 `src`. In general it is recommended to run `make help` to see a list of make
 targets with corresponding descriptions.
-<<<<<<< HEAD
 
 ```
     cd src
@@ -188,15 +187,6 @@ targets with corresponding descriptions.
     make build ARCH=x86-64-modern
 ```
 
-=======
-
-```
-    cd src
-    make help
-    make build ARCH=x86-64-modern
-```
-
->>>>>>> 995ee4b31105ad8c7976cc68c11fabfdc5108e63
 When not using the Makefile to compile (for instance with Microsoft MSVC) you
 need to manually set/unset some switches in the compiler command line; see
 file *types.h* for a quick reference.
