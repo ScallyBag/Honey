@@ -1111,11 +1111,11 @@ namespace {
         &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-#endif
+//#endif
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
-#ifndef Weakfish
+//#ifndef Weakfish
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6
@@ -1146,7 +1146,7 @@ namespace {
 #if defined (Stockfish)
         Depth R = (737 + 77 * depth) / 246 + std::min(int(eval - beta) / 192, 3);
 #else
-        Depth R = std::max(1, int(2.77 * log(depth)) + std::min(int(eval - beta) / 192, 3));
+      Depth R = std::max(1, int(2.77 * log(depth)) + std::min(int(eval - beta) / 192, 3));
 #endif
 
         ss->currentMove = MOVE_NULL;
