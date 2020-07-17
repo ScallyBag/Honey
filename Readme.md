@@ -81,9 +81,6 @@ Currently, Crystal has the following UCI options:
     Assume a time delay of x ms due to network and GUI overheads. This is useful to
     avoid losses on time in those cases.
 
-  * #### Minimum Thinking Time
-    Search for at least x ms per move.
-
   * #### Slow Mover
     Lower values will make Stockfish take less time in games, higher values will
     make it think longer.

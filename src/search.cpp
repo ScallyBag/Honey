@@ -537,7 +537,7 @@ namespace {
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth, ttDepth;
     Bound ttBound;
-    Value bestValue, value, ttValue, eval;
+    Value bestValue, value, ttValue, eval, probcutBeta;
     bool ttHit, ttPv, formerPv, givesCheck, improving, didLMR, priorCapture, isMate, gameCycle;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning, ttCapture, singularQuietLMR, kingDanger;
     Piece movedPiece;
@@ -577,8 +577,12 @@ namespace {
     ttPv = PvNode || (ttHit && tte->is_pv());
     formerPv = ttPv && !PvNode;
 
-    if (ttPv && depth > 12 && ss->ply - 1 < MAX_LPH && !priorCapture && is_ok((ss-1)->currentMove))
-    thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
+    if (   ttPv
+        && depth > 12
+        && ss->ply - 1 < MAX_LPH
+        && !priorCapture
+        && is_ok((ss-1)->currentMove))
+        thisThread->lowPlyHistory[ss->ply - 1][from_to((ss-1)->currentMove)] << stat_bonus(depth - 5);
 
     // thisThread->ttHitAverage can be used to approximate the running average of ttHit
     thisThread->ttHitAverage =   (ttHitAverageWindow - 1) * thisThread->ttHitAverage / ttHitAverageWindow
@@ -592,7 +596,7 @@ namespace {
         {
             if (VALUE_DRAW >= beta)
             {
-                tte->save(posKey, VALUE_DRAW, ttPv, BOUND_LOWER,
+                tte->save(posKey, VALUE_DRAW, ttPv, BOUND_UPPER,
                           depth, MOVE_NONE, VALUE_NONE);
 
                 return VALUE_DRAW;
@@ -826,21 +830,32 @@ namespace {
            }
        }
 
+       probcutBeta = beta + 176 - 49 * improving;
+
        // Step 10. ProbCut (~10 Elo)
        // If we have a good enough capture and a reduced search returns a value
        // much above beta, we can (almost) safely prune the previous move.
        if (    depth > 4
-           &&  abs(beta) < VALUE_TB_WIN_IN_MAX_PLY)
+           &&  abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
+           && !(   ttHit
+                && tte->depth() >= depth - 3
+                && ttValue != VALUE_NONE
+                && ttValue < probcutBeta))
        {
-           Value raisedBeta = std::min(beta + 176 - 49 * improving, VALUE_INFINITE);
-           MovePicker mp(pos, ttMove, raisedBeta - ss->staticEval, &captureHistory);
+            if (   ttHit
+                && tte->depth() >= depth - 3
+                && ttValue != VALUE_NONE
+                && ttValue >= probcutBeta
+                && ttMove
+                && pos.capture_or_promotion(ttMove))
+                return probcutBeta;
+
+           assert(probcutBeta < VALUE_INFINITE);
+           MovePicker mp(pos, ttMove, probcutBeta - ss->staticEval, &captureHistory);
            int probCutCount = 0;
 
            while (  (move = mp.next_move()) != MOVE_NONE
-                  && probCutCount < 2 + 2 * cutNode
-                  && !(   move == ttMove
-                       && ttDepth >= depth - 4
-                       && ttValue < raisedBeta))
+                  && probCutCount < 2 + 2 * cutNode)
                if (move != excludedMove)
                {
                    assert(pos.capture_or_promotion(move));
@@ -858,16 +873,23 @@ namespace {
                    pos.do_move(move, st);
 
                    // Perform a preliminary qsearch to verify that the move holds
-                   value = -qsearch<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1);
+                   value = -qsearch<NonPV>(pos, ss+1, -probcutBeta, -probcutBeta+1);
 
                    // If the qsearch held perform the regular search
-                   if (value >= raisedBeta)
-                       value = -search<NonPV>(pos, ss+1, -raisedBeta, -raisedBeta+1, depth - 4, !cutNode);
+                   if (value >= probcutBeta)
+                       value = -search<NonPV>(pos, ss+1, -probcutBeta, -probcutBeta+1, depth - 4, !cutNode);
 
                    pos.undo_move(move);
 
-                   if (value >= raisedBeta)
-                       return std::min(value, VALUE_TB_WIN_IN_MAX_PLY);
+                   if (value >= probcutBeta)
+                   {
+                       value = std::min(value, VALUE_TB_WIN_IN_MAX_PLY);
+
+                       tte->save(posKey, value_to_tt(value, ss->ply), ttPv,
+                                 BOUND_LOWER, depth - 4, move, ss->staticEval);
+
+                       return value;
+                   }
                }
        }
     } //End early Pruning
@@ -1499,8 +1521,8 @@ namespace {
 
     // Initialize a MovePicker object for the current position, and prepare
     // to search the moves. Because the depth is <= 0 here, only captures,
-    // queen promotions and checks (only if depth >= DEPTH_QS_CHECKS) will
-    // be generated.
+    // queen and checking knight promotions, and other checks(only if depth >= DEPTH_QS_CHECKS)
+    // will be generated.
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
                                       contHist,
