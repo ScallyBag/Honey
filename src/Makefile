@@ -211,7 +211,7 @@ endif
 ### ==========================================================================
 
 ### 3.1 Selecting compiler (default = gcc)
-CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++17 $(EXTRACXXFLAGS) $(NNUECXXFLAGS)
+CXXFLAGS += -Wall -Wcast-qual -Wno-class-memaccess -Wno-sign-compare -Wno-unused-function -Wno-unused-parameter -fno-exceptions -std=c++17 $(EXTRACXXFLAGS) $(NNUECXXFLAGS)
 DEPENDFLAGS += -std=c++17
 LDFLAGS += $(EXTRALDFLAGS)
 
@@ -222,7 +222,7 @@ endif
 ifeq ($(COMP),gcc)
 	comp=gcc
 	CXX=g++
-	CXXFLAGS += -pedantic -Wextra -Wshadow
+	CXXFLAGS += -pedantic -Wextra 
 
 	ifeq ($(ARCH),$(filter $(ARCH),armv7 armv8))
 		ifeq ($(OS),Android)
@@ -260,7 +260,7 @@ ifeq ($(COMP),mingw)
 		CXX=g++
 	endif
 
-	CXXFLAGS += -Wextra -Wshadow
+	CXXFLAGS += -Wextra
 	LDFLAGS += -static
 endif
 
@@ -273,7 +273,7 @@ endif
 ifeq ($(COMP),clang)
 	comp=clang
 	CXX=clang++
-	CXXFLAGS += -pedantic -Wextra -Wshadow
+	CXXFLAGS += -pedantic -Wextra
 
 	ifneq ($(KERNEL),Darwin)
 	ifneq ($(KERNEL),OpenBSD)
@@ -295,7 +295,7 @@ endif
 ifeq ($(COMP),msys2)
 	comp=gcc
 	CXX=g++
-	CXXFLAGS += -pedantic -Wextra -Wshadow
+	CXXFLAGS += -pedantic -Wextra
 
 	ifeq ($(ARCH),armv7)
 		ifeq ($(OS),Android)
