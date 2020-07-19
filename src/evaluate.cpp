@@ -22,6 +22,7 @@
 #include <cassert>
 #include <cstring>   // For std::memset
 #include <iomanip>
+#include <set>
 #include <sstream>
 
 #include "bitboard.h"
@@ -29,6 +30,7 @@
 #include "material.h"
 #include "pawns.h"
 #include "thread.h"
+#include "eval/nnue/evaluate_nnue.h"
 
 namespace Trace {
 
@@ -899,9 +901,11 @@ make_v:
 /// evaluate() is the evaluator for the outer world. It returns a static
 /// evaluation of the position from the point of view of the side to move.
 
+#if !defined(EVAL_NNUE)
 Value Eval::evaluate(const Position& pos) {
   return Evaluation<NO_TRACE>(pos).value();
 }
+#endif  // defined(EVAL_NNUE)
 
 
 /// trace() is like evaluate(), but instead of returning a value, it returns
@@ -946,3 +950,138 @@ std::string Eval::trace(const Position& pos) {
 
   return ss.str();
 }
+
+#if defined(EVAL_NNUE) || defined(EVAL_LEARN)
+namespace Eval {
+ExtBonaPiece kpp_board_index[PIECE_NB] = {
+    { BONA_PIECE_ZERO, BONA_PIECE_ZERO },
+    { f_pawn, e_pawn },
+    { f_knight, e_knight },
+    { f_bishop, e_bishop },
+    { f_rook, e_rook },
+    { f_queen, e_queen },
+    { f_king, e_king },
+    { BONA_PIECE_ZERO, BONA_PIECE_ZERO },
+
+    // When viewed from behind. f and e are exchanged.
+    { BONA_PIECE_ZERO, BONA_PIECE_ZERO },
+    { e_pawn, f_pawn },
+    { e_knight, f_knight },
+    { e_bishop, f_bishop },
+    { e_rook, f_rook },
+    { e_queen, f_queen },
+    { e_king, f_king },
+    { BONA_PIECE_ZERO, BONA_PIECE_ZERO }, // no money
+};
+
+// Check whether the pieceListFw[] held internally is a correct BonaPiece.
+// Note: For debugging. slow.
+bool EvalList::is_valid(const Position& pos)
+{
+  std::set<PieceNumber> piece_numbers;
+  for (Square sq = SQ_A1; sq != SQUARE_NB; ++sq) {
+    auto piece_number = piece_no_of_board(sq);
+    if (piece_number == PIECE_NUMBER_NB) {
+      continue;
+    }
+    assert(!piece_numbers.count(piece_number));
+    piece_numbers.insert(piece_number);
+  }
+
+  for (int i = 0; i < length(); ++i)
+  {
+    BonaPiece fw = pieceListFw[i];
+    // Go to the Position class to see if this fw really exists.
+
+    if (fw == Eval::BONA_PIECE_ZERO) {
+      continue;
+    }
+
+    // Out of range
+    if (!(0 <= fw && fw < fe_end))
+      return false;
+
+    // Since it is a piece on the board, I will check if this piece really exists.
+    for (Piece pc = NO_PIECE; pc < PIECE_NB; ++pc)
+    {
+      auto pt = type_of(pc);
+      if (pt == NO_PIECE_TYPE || pt == 7) // non-existing piece
+        continue;
+
+      // BonaPiece start number of piece pc
+      auto s = BonaPiece(kpp_board_index[pc].fw);
+      if (s <= fw && fw < s + SQUARE_NB)
+      {
+        // Since it was found, check if this piece is at sq.
+        Square sq = (Square)(fw - s);
+        Piece pc2 = pos.piece_on(sq);
+
+        if (pc2 != pc)
+          return false;
+
+        goto Found;
+      }
+    }
+    // It was a piece that did not exist for some reason..
+    return false;
+  Found:;
+  }
+
+  // Validate piece_no_list_board
+  for (auto sq = SQUARE_ZERO; sq < SQUARE_NB; ++sq) {
+    Piece expected_piece = pos.piece_on(sq);
+    PieceNumber piece_number = piece_no_list_board[sq];
+    if (piece_number == PIECE_NUMBER_NB) {
+      assert(expected_piece == NO_PIECE);
+      if (expected_piece != NO_PIECE) {
+        return false;
+      }
+      continue;
+    }
+
+    BonaPiece bona_piece_white = pieceListFw[piece_number];
+    Piece actual_piece;
+    for (actual_piece = NO_PIECE; actual_piece < PIECE_NB; ++actual_piece) {
+      if (kpp_board_index[actual_piece].fw == BONA_PIECE_ZERO) {
+        continue;
+      }
+
+      if (kpp_board_index[actual_piece].fw <= bona_piece_white
+        && bona_piece_white < kpp_board_index[actual_piece].fw + SQUARE_NB) {
+        break;
+      }
+    }
+
+    assert(actual_piece != PIECE_NB);
+    if (actual_piece == PIECE_NB) {
+      return false;
+    }
+
+    assert(actual_piece == expected_piece);
+    if (actual_piece != expected_piece) {
+      return false;
+    }
+
+    Square actual_square = static_cast<Square>(
+      bona_piece_white - kpp_board_index[actual_piece].fw);
+    assert(sq == actual_square);
+    if (sq != actual_square) {
+      return false;
+    }
+  }
+
+  return true;
+}
+}
+#endif  // defined(EVAL_NNUE) || defined(EVAL_LEARN)
+
+#if !defined(EVAL_NNUE)
+namespace Eval {
+void evaluate_with_no_return(const Position& pos) {}
+void update_weights(uint64_t epoch, const std::array<bool, 4> & freeze) {}
+void init_grad(double eta1, uint64_t eta_epoch, double eta2, uint64_t eta2_epoch, double eta3) {}
+void add_grad(Position& pos, Color rootColor, double delt_grad, const std::array<bool, 4> & freeze) {}
+void save_eval(std::string suffix) {}
+double get_eta() { return 0.0; }
+}
+#endif  // defined(EVAL_NNUE)
