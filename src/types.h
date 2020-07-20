@@ -1,22 +1,23 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
+ Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1
+ Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+ Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
+ Copyright (C) 2017-2020 Michael Byrne, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
 
-  Stockfish is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
+ Honey is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+ Honey is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef TYPES_H_INCLUDED
 #define TYPES_H_INCLUDED
@@ -183,17 +184,73 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
-  PawnValueMg   = 124,   PawnValueEg   = 206,
-  KnightValueMg = 781,   KnightValueEg = 854,
-  BishopValueMg = 825,   BishopValueEg = 915,
-  RookValueMg   = 1276,  RookValueEg   = 1380,
-  QueenValueMg  = 2538,  QueenValueEg  = 2682,
-  Tempo = 28,
+//Code idea below by Ed Schr√∂der
+#if defined (Weakfish)
+  #define PVM 80/100
+  #define PVE 80/100
+  #define NVM 70/100
+  #define NVE 70/100
+  #define BVM 60/100
+  #define BVE 60/100
+  #define RVM 50/100
+  #define RVE 50/100
+  #define QVM 40/100
+  #define QVE 40/100
 
-  MidgameLimit  = 15258, EndgameLimit  = 3915,
+
+#elif (defined Blau)
+  #define PVM 78/100
+  #define PVE 78/100
+  #define NVM 78/100
+  #define NVE 78/100
+  #define BVM 78/100
+  #define BVE 78/100
+  #define RVM 78/100
+  #define RVE 78/100
+  #define QVM 78/100
+  #define QVE 78/100
+
+#elif (defined Sullivan)
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM  98/100
+  #define NVE  98/100
+  #define BVM  98/100
+  #define BVE  98/100
+  #define RVM  98/100
+  #define RVE  98/100
+  #define QVM 100/100
+  #define QVE 100/100
+
+#else
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+
+#endif
+
+PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
+KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
+BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
+RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
+QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
+Tempo = 28,
+
+#ifdef Noir
+VALUE_TB_WIN    = 101 * PawnValueEg,
+#endif
+
+MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE,
 
 // Maximum value returned by the evaluation function (I want it to be around 2**14..)
-  VALUE_MAX_EVAL = 27000,
+VALUE_MAX_EVAL = 27000
 };
 
 enum PieceType {
@@ -365,10 +422,18 @@ constexpr Square flip_file(Square s) { // Swap A1 <-> H1
   return Square(s ^ SQ_H1);
 }
 
+constexpr Square operator~(Square s) {
+  return Square(s ^ SQ_A8); // Vertical flip SQ_A1 -> SQ_A8
+}
+
 constexpr Piece operator~(Piece pc) {
   return Piece(pc ^ 8); // Swap color of piece B_KNIGHT <-> W_KNIGHT
 }
-
+#ifndef Stockfish
+inline File map_to_queenside(File f) {
+  return std::min(f, File(FILE_H - f)); // Map files ABCDEFGH to files ABCDDCBA
+}
+#endif
 constexpr CastlingRights operator&(Color c, CastlingRights cr) {
   return CastlingRights((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
 }
@@ -463,7 +528,7 @@ constexpr bool is_ok(Move m) {
   return from_sq(m) != to_sq(m); // Catch MOVE_NULL and MOVE_NONE
 }
 
-// Return squares when turning the board 180Åã
+// Return squares when turning the board 180ÔøΩÔøΩ
 constexpr Square Inv(Square sq) { return (Square)((SQUARE_NB - 1) - sq); }
 
 // Return squares when mirroring the board
