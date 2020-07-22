@@ -188,23 +188,23 @@ SRCS = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp 
 
 OBJS = $(SRCS:.cpp=.o)
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 8
+PGOBENCH  = ./$(EXE) bench 16 1 6
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 12
-PGOBENCH2 = ./$(EXE) bench 16 2 5
+PGOBENCH  = ./$(EXE) bench 16 1 8
+PGOBENCH2 = ./$(EXE) bench 16 2 4
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 18
-PGOBENCH2 = ./$(EXE) bench 16 2 7
+PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 2 5
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 18
-PGOBENCH2 = ./$(EXE) bench 16 2 10
+PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 2 5
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 18
-PGOBENCH2 = ./$(EXE) bench 16 2 10
+PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 2 5
 endif
 ### Object files
 #ifeq ($(FILES),with_c_book)
@@ -416,14 +416,14 @@ ifeq ($(ARCH),armv8)
 	popcnt = yes
 endif
 
-ifeq ($(ARCH),armv7-a)
-	arch = any
-endif
+#ifeq ($(ARCH),armv7-a)
+#	arch = any
+#endif
 
-ifeq ($(ARCH),armv8-a)
-	arch = any
-	bits = 64
-endif
+#ifeq ($(ARCH),armv8-a)
+#	arch = any
+#	bits = 64
+#endif
 
 ifeq ($(ARCH),ppc-32)
 	arch = ppc
@@ -440,25 +440,25 @@ endif
 ### Section 3. Low-level Configuration
 ### ==========================================================================
 
-### 3.1 Selecting compiler (default = gcc)
-CXXFLAGS += -Wall -Wcast-qual -Wno-class-memaccess -Wno-sign-compare -Wno-unused-function -Wno-unused-parameter -fno-exceptions -std=c++17 $(EXTRACXXFLAGS) $(NNUECXXFLAGS)
-DEPENDFLAGS += -std=c++17
-LDFLAGS += $(EXTRALDFLAGS)
+-mfloat-abi=soft-mfloat-abi=soft### 3.1 Selecting compiler (default = gcc)
+CXXFLAGS += -Wall -Wcast-qual -Wno-unused-variable -Wno-class-memaccess -Wno-sign-compare -Wno-unused-function -Wno-unused-parameter -fno-exceptions -std=c++17 $(EXTRACXXFLAGS) $(NNUECXXFLAGS)
+DEPENDFLAGS += -std=c++17 -latomic -Wno-unused-variable
+LDFLAGS += $(EXTRALDFLAGS) -latomic
 
 ifeq ($(COMP),)
 	COMP=gcc
 endif
 
 ifeq ($(COMP),gcc)
-	comp=gcc
-	CXX=g++
+	comp=gcc-10.1
+	CXX=g++-10.1
 	CXXFLAGS += -pedantic -Wextra
 
 	ifeq ($(ARCH),armv7)
-	CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
+	CXXFLAGS +=  -Wno-pedantic -mfloat-abi=hard -mfpu=neon-fp-armv8 -mtune=cortex-a53
 		ifeq ($(OS),Android)
-			CXXFLAGS += -m$(bits)
-			LDFLAGS += -m$(bits)
+			CXXFLAGS += -m$(bits) -latomic
+			LDFLAGS += -m$(bits) -latomic
 		endif
 	else
 		CXXFLAGS += -m$(bits)
@@ -522,7 +522,7 @@ ifeq ($(ARCH),armv7)
 	else
 		CXXFLAGS += -m$(bits)
 		LDFLAGS += -m$(bits)
-	endif
+endif
 
 	ifeq ($(ARCH),armv8))
 		ifeq ($(OS),Android)
@@ -640,7 +640,7 @@ ifeq ($(optimize),yes)
 
 	ifeq ($(comp),gcc)
 		ifeq ($(OS), Android)
-			CXXFLAGS += -fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp
+#			CXXFLAGS += -fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp
 		endif
 	endif
 
@@ -746,7 +746,7 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),clang)
-		CXXFLAGS += -flto
+##		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
 
@@ -868,12 +868,12 @@ $(directory):
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
-build: config-sanity
+build: #### config-sanity
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	@$(STRIP) $(EXE)
 	@rm -f *.o syzygy/*.o
 
-profile-build: config-sanity objclean profileclean
+profile-build: objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
@@ -888,6 +888,7 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+
 ##ifeq ($(COMP),mingw)
 ##	strip $(EXE)
 ##else
@@ -968,19 +969,18 @@ config-sanity:
 	@test "$(debug)" = "yes" || test "$(debug)" = "no"
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
-	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	@test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || "$(arch)" = "armv7" || test "$(arch)" = "armv8-a"
+#### @test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
-	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
-	@test "$(sse)" = "yes" || test "$(sse)" = "no"
-	@test "$(sse3)" = "yes" || test "$(sse3)" = "no"
-	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
-	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
-	@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
-	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
-	@test "$(pext)" = "yes" || test "$(pext)" = "no"
-	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
+#	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
+#	@test "$(sse)" = "yes" || test "$(sse)" = "no"
+#	@test "$(sse3)" = "yes" || test "$(sse3)" = "no"
+#	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
+#	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
+#	@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
+#	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
+#	@test "$(pext)" = "yes" || test "$(pext)" = "no"
+#	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
 	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
 $(EXE): $(OBJS)
@@ -1022,11 +1022,12 @@ icc-profile-use:
 	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
 	all
 
-nnue: config-sanity
+
+nnue: #### config-sanity
 	$(MAKE) CXXFLAGS='$(CXXFLAGS) -DEVAL_NNUE -DENABLE_TEST_CMD -fopenmp' LDFLAGS='$(LDFLAGS) -fopenmp' build
 
 profile-nnue: export NNUECXXFLAGS = -DEVAL_NNUE -DENABLE_TEST_CMD
-profile-nnue: config-sanity
+profile-nnue: ####
 	$(MAKE) profile-build
 
 nnue-gen-sfen-from-original-eval: config-sanity
