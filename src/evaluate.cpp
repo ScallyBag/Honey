@@ -31,7 +31,7 @@
 #include "thread.h"
 
 namespace Eval {
-   bool useNNUE;
+   bool useNNUE = true;
 }
 
 namespace Trace {
