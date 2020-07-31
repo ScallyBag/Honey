@@ -95,7 +95,7 @@ void init(OptionsMap& o) {
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
   o["Use NNUE"]              << Option(true, on_use_nnue);
-  o["EvalFile"]              << Option("nn-c157e0a5755b.nnue", on_eval_file);
+  o["EvalFile"]              << Option("eval.nnue", on_eval_file);
 }
 
 
