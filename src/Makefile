@@ -48,7 +48,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = XI-NN
+RELVERSION = XIr4
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
