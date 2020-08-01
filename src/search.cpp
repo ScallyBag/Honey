@@ -133,7 +133,7 @@ namespace {
     Move best = MOVE_NONE;
   };
 
-bool  fide, jekyll, minOutput, uci_sleep;
+bool  fide, minOutput, uci_sleep;
 bool limitStrength = false;
 int  intLevel = 40, tactical, uci_elo = 0;
 
@@ -265,7 +265,6 @@ void MainThread::search() {
     adaptive            = Options["Adaptive_Play"];
     defensive           = Options["Defensive"];
     fide                = Options["FIDE_Ratings"];
-    jekyll              = Options["Variety"];
     minOutput           = Options["Min Output"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
@@ -332,7 +331,7 @@ void MainThread::search() {
          {
              uci_elo = (Options["Engine_Elo"]);
              limitStrength = true;
-             jekyll=true; //on with uci_elo, variety gets turned off with adaptive
+             adaptive=true;
              goto skipLevels;
          }
          if (Options["Engine_Level"] == "None")
@@ -343,7 +342,7 @@ void MainThread::search() {
          else
              {
               limitStrength = true;
-              jekyll = true;
+              adaptive = true;
              }
 
          if (Options["Engine_Level"] == "World_Champion")
@@ -385,7 +384,7 @@ skipLevels:
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              benchKnps = 1000 * (Options["Bench_KNPS"]);
 #ifdef Weakfish
-            jekyll = true;
+            adaptive  = true;
              weakLevel = 100 * weakLevel;
              if (weakFish) uci_elo = 1000 + weakLevel;
 #endif
@@ -480,13 +479,11 @@ skipLevels:
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
 
-  if  (adaptive ) //mutually exclusive with variety
+  if  (adaptive )
   {
 
-	  jekyll = false;
-
       size_t i = 0;
-      if ( bestPreviousScore >= -PawnValueMg && bestPreviousScore <= PawnValueMg * 4 )
+      if ( bestPreviousScore >= -PawnValueMg && bestPreviousScore <= PawnValueMg * 5 )
       {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore)
           ++i;
@@ -494,7 +491,7 @@ skipLevels:
           sync_cout << FontColor::engine << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << FontColor::reset << sync_endl;
           sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
       }
-      else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 7 )
+      else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 10 )
       {
           while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < bestPreviousScore
                 && bestPreviousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
@@ -1911,7 +1908,7 @@ moves_loop: // When in check, search starts from here
        }
     }
 
-        if (!adaptive && jekyll && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
+        if (!adaptive  && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
         {
             //int o_value = bestValue;// for debug
             //sync_cout << "Value " << bestValue << sync_endl;// for debug

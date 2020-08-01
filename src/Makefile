@@ -165,24 +165,24 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 8 true
 PGOBENCH  = ./$(EXE) bench 16 1 8
+PGOBENCH  = ./$(EXE) bench 16 1 8 true
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 12 true
-PGOBENCH2 = ./$(EXE) bench 16 1 12
+PGOBENCH  = ./$(EXE) bench 16 1 12
+PGOBENCH2 = ./$(EXE) bench 16 1 12 true
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 17 true
-PGOBENCH2 = ./$(EXE) bench 16 1 17
+PGOBENCH  = ./$(EXE) bench 16 1 17
+PGOBENCH2 = ./$(EXE) bench 16 1 17 true
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 17 true
-PGOBENCH2 = ./$(EXE) bench 16 1 17
+PGOBENCH  = ./$(EXE) bench 16 1 17
+PGOBENCH2 = ./$(EXE) bench 16 1 17 true
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 17 true
-PGOBENCH2 = ./$(EXE) bench 16 1 17
+PGOBENCH  = ./$(EXE) bench 16 1 17
+PGOBENCH2 = ./$(EXE) bench 16 1 17 true
 endif
 ### Source and object files
 ifeq ($(FILES),with_c_book)
@@ -1047,16 +1047,16 @@ icc-profile-make:
 ### Honey-XI-r3.exe.bench:Nodes/second    : 2557791
 ### Stockfish-XI-r3.exe.bench:Nodes searched  : 4578298
 ### Stockfish-XI-r3.exe.bench:Nodes/second    : 2588071
-### Based on commits through 07/31/2020:
+### Based on commits through 08/01/2020:
 ### ======================================================
-### Black-Diamond-XI-NN.exe.bench:Nodes searched  : 16889036
-### Black-Diamond-XI-NN.exe.bench:Nodes/second    : 2429378
-### Bluefish-XI-NN.exe.bench:Nodes searched  : 4260073
-### Bluefish-XI-NN.exe.bench:Nodes/second    : 2408181
-### Honey-XI-NN.exe.bench:Nodes searched  : 4021494
-### Honey-XI-NN.exe.bench:Nodes/second    : 2453626
-### Stockfish-XI-NN.exe.bench:Nodes searched  : 4746804
-### Stockfish-XI-NN.exe.bench:Nodes/second    : 2477455
-### Weakfish-XI-NN.exe.bench:Nodes searched  : 4802
-### Weakfish-XI-NN.exe.bench:Nodes/second    : 117121
+### Black-Diamond-XIr4.exe.bench:Nodes searched  : 16889036
+### Black-Diamond-XIr4.exe.bench:Nodes/second    : 2478215
+### Bluefish-XIr4.exe.bench:Nodes searched  : 5031934
+### Bluefish-XIr4.exe.bench:Nodes/second    : 2443872
+### Honey-XIr4.exe.bench:Nodes searched  : 4561802
+### Honey-XIr4.exe.bench:Nodes/second    : 2457867
+### Stockfish-XIr4.exe.bench:Nodes searched  : 5136479
+### Stockfish-XIr4.exe.bench:Nodes/second    : 2473027
+### Weakfish-XIr4.exe.bench:Nodes searched  : 3676
+### Weakfish-XIr4.exe.bench:Nodes/second    : 147040
 ### ======================================================

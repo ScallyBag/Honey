@@ -48,7 +48,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = XI-NN
+RELVERSION = XIr4
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -165,24 +165,24 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 8 true
 PGOBENCH  = ./$(EXE) bench 16 1 8
+PGOBENCH  = ./$(EXE) bench 16 1 8 true
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 12 true
-PGOBENCH2 = ./$(EXE) bench 16 1 12
+PGOBENCH  = ./$(EXE) bench 16 1 12
+PGOBENCH2 = ./$(EXE) bench 16 1 12 true
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 17 true
-PGOBENCH2 = ./$(EXE) bench 16 1 17
+PGOBENCH  = ./$(EXE) bench 16 1 17
+PGOBENCH2 = ./$(EXE) bench 16 1 17 true
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 17 true
-PGOBENCH2 = ./$(EXE) bench 16 1 17
+PGOBENCH  = ./$(EXE) bench 16 1 17
+PGOBENCH2 = ./$(EXE) bench 16 1 17 true
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 17 true
-PGOBENCH2 = ./$(EXE) bench 16 1 17
+PGOBENCH  = ./$(EXE) bench 16 1 17
+PGOBENCH2 = ./$(EXE) bench 16 1 17 true
 endif
 ### Source and object files
 ifeq ($(FILES),with_c_book)
@@ -1050,13 +1050,13 @@ icc-profile-make:
 ### Based on commits through 07/31/2020:
 ### ======================================================
 ### Black-Diamond-XI-NN.exe.bench:Nodes searched  : 16889036
-### Black-Diamond-XI-NN.exe.bench:Nodes/second    : 2394928
+### Black-Diamond-XI-NN.exe.bench:Nodes/second    : 2429378
 ### Bluefish-XI-NN.exe.bench:Nodes searched  : 4260073
-### Bluefish-XI-NN.exe.bench:Nodes/second    : 2385259
+### Bluefish-XI-NN.exe.bench:Nodes/second    : 2408181
 ### Honey-XI-NN.exe.bench:Nodes searched  : 4021494
-### Honey-XI-NN.exe.bench:Nodes/second    : 2409523
+### Honey-XI-NN.exe.bench:Nodes/second    : 2453626
 ### Stockfish-XI-NN.exe.bench:Nodes searched  : 4746804
-### Stockfish-XI-NN.exe.bench:Nodes/second    : 2438009
+### Stockfish-XI-NN.exe.bench:Nodes/second    : 2477455
 ### Weakfish-XI-NN.exe.bench:Nodes searched  : 4802
-### Weakfish-XI-NN.exe.bench:Nodes/second    : 123128
+### Weakfish-XI-NN.exe.bench:Nodes/second    : 117121
 ### ======================================================

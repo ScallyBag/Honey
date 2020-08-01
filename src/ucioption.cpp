@@ -126,10 +126,7 @@ void init(OptionsMap& o) {
     o["Threads"]                  << Option(1, 1, 512, on_threads);
     o["Hash"]                     << Option(256, 1, MaxHashMB, on_hash_size);
     o["Ponder"]                   << Option(false);
-#ifndef Weakfish
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
-    o["Variety"]                  << Option(false); // Do not use with Adaptive play
-  #endif
 	  o["FastPlay"]                 << Option(false);
 	  o["Min Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
