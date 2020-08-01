@@ -133,12 +133,14 @@ vector<string> setup_bench(const Position& current, istream& is) {
 #else
   string ttSize    = (is >> token) ? token : "256";
 #endif
-  string threads   = (is >> token) ? token : "1";
-  string limit     = (is >> token) ? token : "13";
-  string fenFile   = (is >> token) ? token : "default";
-  string limitType = (is >> token) ? token : "depth";
+  string threads   = (is >> token) ? token  : "1";
+  string limit     = (is >> token) ? token  : "13";
+  string limitNN  =  (is >> token) ? token  : "false";
+  string limitEvF  =  (is >> token) ? token : "";
+  string fenFile   = (is >> token) ? token  : "default";
+  string limitType = (is >> token) ? token  : "depth";
 
-  go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
+  go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit + limitNN + limitEvF;
 
   if (fenFile == "default")
       fens = Defaults;
@@ -166,6 +168,8 @@ vector<string> setup_bench(const Position& current, istream& is) {
 
   list.emplace_back("setoption name Threads value " + threads);
   list.emplace_back("setoption name Hash value " + ttSize);
+  list.emplace_back("setoption name UseNN value " + limitNN);
+  list.emplace_back("setoption name EvalFile value " + limitEvF);
   list.emplace_back("ucinewgame");
 
   for (const string& fen : fens)

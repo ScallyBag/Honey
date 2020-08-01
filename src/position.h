@@ -28,7 +28,10 @@
 #include <string>
 
 #include "bitboard.h"
+#include "evaluate.h"
 #include "types.h"
+
+#include "nnue/nnue_accumulator.h"
 
 
 /// StateInfo struct stores information needed to restore a Position object to
@@ -55,6 +58,10 @@ struct StateInfo {
   Bitboard   pinners[COLOR_NB];
   Bitboard   checkSquares[PIECE_TYPE_NB];
   int        repetition;
+
+  // Used by NNUE
+  Eval::NNUE::Accumulator accumulator;
+  DirtyPiece dirtyPiece;
 };
 
 
@@ -176,6 +183,10 @@ public:
   bool pos_is_ok() const;
   void flip();
 
+  // Used by NNUE
+  StateInfo* state() const;
+  const EvalList* eval_list() const;
+
 private:
   // Initialization helpers (used while setting up a position)
   void set_castling_right(Color c, Square rfrom);
@@ -188,6 +199,9 @@ private:
   void move_piece(Square from, Square to);
   template<bool Do>
   void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
+
+  // ID of a piece on a given square
+  PieceId piece_id_on(Square sq) const;
 
   // Data members
   Piece board[SQUARE_NB];
@@ -205,6 +219,10 @@ private:
   Thread* thisThread;
   StateInfo* st;
   bool chess960;
+  bool nnue;
+
+  // List of pieces used in NNUE evaluation function
+  EvalList evalList;
 };
 
 namespace PSQT {

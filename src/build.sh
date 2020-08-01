@@ -15,8 +15,9 @@ start=`date +%s`
 #ARCH="ARCH=general-64"
 #ARCH="ARCH=x86-64"
 #ARCH="ARCH=x86-64-modern"
-ARCH="ARCH=x86-64-amd"
+#ARCH="ARCH=x86-64-amd"
 #ARCH="ARCH=x86-64-bmi2"
+ARCH="ARCH=x86-64-avx2"
 #ARCH="ARCH=armv7"
 #ARCH="ARCH=ppc-32"
 #ARCH="ARCH=ppc-64comp"
@@ -31,13 +32,13 @@ BUILD="profile-build"
 
 #make function
 function mke() {
-CXXFLAGS='-flto' make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS='-flto -mbmi ' make -j30 $BUILD $ARCH $COMP "$@"
 }
 
+mke WEAK=yes && wait
 mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
-mke WEAK=yes && wait
 mke
 
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
@@ -51,8 +52,8 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '850,972d' ../src/Makefile
-sed '849r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '1050,1172d' ../src/Makefile
+sed '1049r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 rm *.bench
 strip Black* Blue* Honey* Weak* Stock*

@@ -48,6 +48,7 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstdlib>
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include <stdlib.h>
@@ -71,7 +72,7 @@ size_t memtest = 0; //lp mem test
 /// DD-MM-YY and show in engine_info.
 
 #if (defined Add_Features && ReleaseVer)
-const string Version = "XI-r3.1 ";
+const string Version = "XI-NN-r1 ";
 #else
 const string Version = "";
 #endif
@@ -158,13 +159,13 @@ const std::string splash() {
 
      sp << FontColor::engine;
      sp << "\n\n\n";
-     sp <<  "    ######                                       #    # ~~~ ~~~ ~~~ ~~ ~~~ ~~~ #     # ###            #####     \n";
-     sp <<  "    #     # #      #    # ###### ###### #  ####  #    # ~~~ ~~ /''*._ ~~~~ ~~ ~ #   #   #     #####  #     #    \n";
-     sp <<  "    #     # #      #    # #      #      # #      #    # ~~ .-*'`    `*-.._.-'\\ ~ # #    #     #    #       #    \n";
-     sp <<  "    ######  #      #    # #####  #####  #  ####  ###### ~ < * ) ) )   ,     ( ~~~ #     # ### #    #  #####     \n";
-     sp <<  "    #     # #      #    # #      #      #      # #    # ~~ `*-._`._(__.--*'`.) ~ # #    #     #####        #    \n";
-     sp <<  "    #     # #      #    # #      #      # #    # #    #  ~~~ ~~ ~~~ ~~~ ~~ ~~~  #   #   #     #   #  #     #    \n";
-     sp <<  "    ######  ######  ####  ###### #      #  ####  #    # ~~ ~~~ ~~ ~~~ ~~~ ~~ ~ #     # ###    #    #  #####     \n\n";
+     sp <<  "    ######                                       #    # ~~~ ~~~ ~~~ ~~ ~~~ ~~~ #     # ###                      \n";
+     sp <<  "    #     # #      #    # ###### ###### #  ####  #    # ~~~ ~~ /''*._ ~~~~ ~~ ~ #   #   #     #    # #    #     \n";
+     sp <<  "    #     # #      #    # #      #      # #      #    # ~~ .-*'`    `*-.._.-'\\ ~ # #    #     ##   # ##   #     \n";
+     sp <<  "    ######  #      #    # #####  #####  #  ####  ###### ~ < * ) ) )   ,     ( ~~~ #     # ### # #  # # #  #     \n";
+     sp <<  "    #     # #      #    # #      #      #      # #    # ~~ `*-._`._(__.--*'`.) ~ # #    #     #  # # #  # #     \n";
+     sp <<  "    #     # #      #    # #      #      # #    # #    #  ~~~ ~~ ~~~ ~~~ ~~ ~~~  #   #   #     #   ## #   ##     \n";
+     sp <<  "    ######  ######  ####  ###### #      #  ####  #    # ~~ ~~~ ~~ ~~~ ~~~ ~~ ~ #     # ###    #    # #    #     \n\n";
 
   return sp.str();
 }
@@ -176,13 +177,13 @@ const std::string splash() {
      stringstream sp;
 
      sp << FontColor::engine << "\n\n\n";
-     sp <<  "    ######                       #     #   #     ######                                #####   #     # ###            #####     \n";
-     sp <<  "    #     # #        ##    ####  #    #   ###    #     # #   ##   #    #  ####  #    # #    #   #   #   #     #####  #     #    \n";
-     sp <<  "    #     # #       #  #  #    # #   #   #####   #     # #  #  #  ##  ## #    # ##   # #    #    # #    #     #    #       #    \n";
-     sp <<  "    ######  #      #    # #      ####   #######  #     # # #    # # ## # #    # # #  # #    #     #     # ### #    #  #####     \n";
-     sp <<  "    #     # #      ###### #      #  #    #####   #     # # ###### #    # #    # #  # # #    #    # #    #     #####        #    \n";
-     sp <<  "    #     # #      #    # #    # #   #    ###    #     # # #    # #    # #    # #   ## #    #   #   #   #     #   #  #     #    \n";
-     sp <<  "    ######  ###### #    #  ####  #    #    #     ######  # #    # #    #  ####  #    # #####   #     # ###    #    #  #####     \n\n";
+     sp <<  "    ######                       #     #   #     ######                                #####   #     # ###                      \n";
+     sp <<  "    #     # #        ##    ####  #    #   ###    #     # #   ##   #    #  ####  #    # #    #   #   #   #     #    # #    #     \n";
+     sp <<  "    #     # #       #  #  #    # #   #   #####   #     # #  #  #  ##  ## #    # ##   # #    #    # #    #     ##   # ##   #     \n";
+     sp <<  "    ######  #      #    # #      ####   #######  #     # # #    # # ## # #    # # #  # #    #     #     # ### # #  # # #  #     \n";
+     sp <<  "    #     # #      ###### #      #  #    #####   #     # # ###### #    # #    # #  # # #    #    # #    #     #  # # #  # #     \n";
+     sp <<  "    #     # #      #    # #    # #   #    ###    #     # # #    # #    # #    # #   ## #    #   #   #   #     #   ## #   ##     \n";
+     sp <<  "    ######  ###### #    #  ####  #    #    #     ######  # #    # #    #  ####  #    # #####   #     # ###    #    # #    #     \n\n";
 
 
   return sp.str();
@@ -195,13 +196,13 @@ const std::string splash() {
      stringstream sp;
 
      sp << FontColor::engine << "\n\n\n";
-     sp <<  "    ######                                             #    #       .-'`````'-.   #     # ###            #####    \n";
-     sp <<  "    #     # #####  ####   ####  #    # ###### #  ####  #    #  (\\  /   \\   /   \\   #   #   #     #####  #     #    \n";
-     sp <<  "    #         #   #    # #    # #   #  #      # #      #    #  ) \\/   (@) (@)   \\   # #    #     #    #       #    \n";
-     sp <<  "     #####    #   #    # #      ####   #####  #  ####  ###### (__(       W       )   #     # ### #    #  #####     \n";
-     sp <<  "          #   #   #    # #      #  #   #      #      # #    #    (  V v V V v V  )  # #    #     #####        #    \n";
-     sp <<  "    #     #   #   #    # #    # #   #  #      # #    # #    #     \\  A A A A A  /  #   #   #     #   #  #     #    \n";
-     sp <<  "     #####    #    ####   ####  #    # #      #  ####  #    #      \\/\\-.,,,.-/\\/  #     # ###    #    #  #####     \n\n";
+     sp <<  "    ######                                             #    #       .-'`````'-.   #     # ###                      \n";
+     sp <<  "    #     # #####  ####   ####  #    # ###### #  ####  #    #  (\\  /   \\   /   \\   #   #   #     #    # #    #     \n";
+     sp <<  "    #         #   #    # #    # #   #  #      # #      #    #  ) \\/   (@) (@)   \\   # #    #     ##   # ##   #     \n";
+     sp <<  "     #####    #   #    # #      ####   #####  #  ####  ###### (__(       W       )   #     # ### # #  # # #  #     \n";
+     sp <<  "          #   #   #    # #      #  #   #      #      # #    #    (  V v V V v V  )  # #    #     #  # # #  # #     \n";
+     sp <<  "    #     #   #   #    # #    # #   #  #      # #    # #    #     \\  A A A A A  /  #   #   #     #   ## #   ##     \n";
+     sp <<  "     #####    #    ####   ####  #    # #      #  ####  #    #      \\/\\-.,,,.-/\\/  #     # ###    #    # #    #     \n\n";
 
   return sp.str();
 }
@@ -214,14 +215,14 @@ const std::string splash() {
      stringstream sp;
 
      sp << FontColor::engine << "\n\n\n";
-     sp <<  "                                           __         __                                     \n";
-     sp <<  "    #     #                      #     #  /  \\.-'''-./  \\  #     # ###            #####     \n";
-     sp <<  "    #     #  ####  #    # ######  #   #   \\    \\   /    /   #   #   #     #####  #     #    \n";
-     sp <<  "    #     # #    # ##   # #        # #     (   o   o   )     # #    #     #    #       #    \n";
-     sp <<  "    ####### #    # # #  # #####     #      |     w     |      #     # ### #    #  #####     \n";
-     sp <<  "    #     # #    # #  # # #         #      \\  .-'''-.  /     # #    #     #####        #   \n";
-     sp <<  "    #     # #    # #   ## #         #       '-\\__Y__/-'     #   #   #     #   #  #     #   \n";
-     sp <<  "    #     #  ####  #    # ######    #          `---`       #     # ###    #    #  #####    \n\n";
+     sp <<  "                                           __         __                                    \n";
+     sp <<  "    #     #                      #     #  /  \\.-'''-./  \\  #     # ###                      \n";
+     sp <<  "    #     #  ####  #    # ######  #   #   \\    \\   /    /   #   #   #     #    # #    #     \n";
+     sp <<  "    #     # #    # ##   # #        # #     (   o   o   )     # #    #     ##   # ##   #     \n";
+     sp <<  "    ####### #    # # #  # #####     #      |     w     |      #     # ### # #  # # #  #     \n";
+     sp <<  "    #     # #    # #  # # #         #      \\  .-'''-.  /     # #    #     #  # # #  # #     \n";
+     sp <<  "    #     # #    # #   ## #         #       '-\\__Y__/-'     #   #   #     #   ## #   ##     \n";
+     sp <<  "    #     #  ####  #    # ######    #          `---`       #     # ###    #    # #    #     \n\n";
 
   return sp.str();
 }
@@ -233,14 +234,14 @@ const std::string splash() {
      stringstream sp;
 
      sp << FontColor::engine << "\n\n";
-     sp <<  "                                                           |\\/\\/\\/|                                     \n";
-     sp <<  "    #      #                                      #    #   |      |  #     # ###             #####      \n";
-     sp <<  "    #      # ######   ##   #    # ###### #  ####  #    #   |  / \\ |   #   #   #      #####  #     #    \n";
-     sp <<  "    #      # #       #  #  #   #  #      # #      #    #   | (-)(-)    # #    #      #    #       #    \n";
-     sp <<  "    #   #  # #####  #    # ####   #####  #  ####  ######  c      _)     #     #  ### #    #  #####     \n";
-     sp <<  "    #   #  # #      ###### #  #   #      #      # #    #   | ,___|     # #    #      #####        #    \n";
-     sp <<  "    #   #  # #      #    # #   #  #      # #    # #    #   |   /      #   #   #      #   #  #     #    \n";
-     sp <<  "    ### ###  ###### #    # #    # #      #  ####  #    #  /____\\     #     # ###     #    #  #####     \n\n";
+     sp <<  "                                                           |\\/\\/\\/|                                    \n";
+     sp <<  "    #      #                                      #    #   |      |  #     # ###                       \n";
+     sp <<  "    #      # ######   ##   #    # ###### #  ####  #    #   |  / \\ |   #   #   #      #    # #    #     \n";
+     sp <<  "    #      # #       #  #  #   #  #      # #      #    #   | (-)(-)    # #    #      ##   # ##   #     \n";
+     sp <<  "    #   #  # #####  #    # ####   #####  #  ####  ######  c      _)     #     #  ### # #  # # #  #     \n";
+     sp <<  "    #   #  # #      ###### #  #   #      #      # #    #   | ,___|     # #    #      #  # # #  # #     \n";
+     sp <<  "    #   #  # #      #    # #   #  #      # #    # #    #   |   /      #   #   #      #   ## #   ##     \n";
+     sp <<  "    ### ###  ###### #    # #    # #      #  ####  #    #  /____\\     #     # ###     #    # #    #     \n\n";
 
   return sp.str();
 }
@@ -355,7 +356,33 @@ const std::string compiler_info() {
      compiler += " on unknown system";
   #endif
 
-  compiler += "\n __VERSION__ macro expands to: ";
+  compiler += "\nCompilation settings include: ";
+  compiler += (Is64Bit ? " 64bit" : " 32bit");
+  #if defined(USE_AVX512)
+    compiler += " AVX512";
+  #endif
+  #if defined(USE_AVX2)
+    compiler += " AVX2";
+  #endif
+  #if defined(USE_SSE42)
+    compiler += " SSE42";
+  #endif
+  #if defined(USE_SSE41)
+    compiler += " SSE41";
+  #endif
+  #if defined(USE_SSSE3)
+    compiler += " SSSE3";
+  #endif
+  #if defined(USE_SSE3)
+    compiler += " SSE3";
+  #endif
+    compiler += (HasPext ? " BMI2" : "");
+    compiler += (HasPopCnt ? " POPCNT" : "");
+  #if !defined(NDEBUG)
+    compiler += " DEBUG";
+  #endif
+
+  compiler += "\n__VERSION__ macro expands to: ";
   #ifdef __VERSION__
      compiler += __VERSION__;
   #else
@@ -432,6 +459,29 @@ void prefetch(void* addr) {
 
 #endif
 
+/// Wrappers for systems where the c++17 implementation doesn't guarantee the availability of aligned_alloc.
+/// Memory allocated with std_aligned_alloc must be freed with std_aligned_free.
+///
+
+void* std_aligned_alloc(size_t alignment, size_t size) {
+#if defined(__APPLE__)
+  return aligned_alloc(alignment, size);
+#elif defined(_WIN32)
+  return _mm_malloc(size, alignment);
+#else
+  return std::aligned_alloc(alignment, size);
+#endif
+}
+
+void std_aligned_free(void* ptr) {
+#if defined(__APPLE__)
+  free(ptr);
+#elif defined(_WIN32)
+  _mm_free(ptr);
+#else
+  free(ptr);
+#endif
+}
 
 /// aligned_ttmem_alloc() will return suitably aligned memory, and if possible use large pages.
 /// The returned pointer is the aligned one, while the mem argument is the one that needs

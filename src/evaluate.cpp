@@ -31,6 +31,10 @@
 #include "thread.h"
 #include "uci.h"
 
+namespace Eval {
+   bool useNNUE = true;
+}
+
 namespace Trace {
 
   enum Tracing { NO_TRACE, TRACE };
@@ -311,13 +315,15 @@ namespace {
 
         if (Pt == BISHOP || Pt == KNIGHT)
         {
-            // Bonus if piece is on an outpost square or can reach one
+            // Bonus if the piece is on an outpost square or can reach one
+            // Reduced bonus for knights (BadOutpost) if few relevant targets
             bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
+            Bitboard targets = pos.pieces(Them) & ~pos.pieces(PAWN);
+
             if (   Pt == KNIGHT
-                && bb & s & ~CenterFiles
-                && !(b & pos.pieces(Them) & ~pos.pieces(PAWN))
-                && !conditional_more_than_two(
-                      pos.pieces(Them) & ~pos.pieces(PAWN) & (s & QueenSide ? QueenSide : KingSide)))
+                && bb & s & ~CenterFiles // on a side outpost
+                && !(b & targets)        // no relevant attacks
+                && (!more_than_one(targets & (s & QueenSide ? QueenSide : KingSide))))
                 score += BadOutpost;
             else if (bb & s)
                 score += Outpost[Pt == BISHOP];
@@ -578,17 +584,21 @@ namespace {
     // Bonus for threats on the next moves against enemy queen
     if (pos.count<QUEEN>(Them) == 1)
     {
+        bool queenImbalance = pos.count<QUEEN>() == 1;
+
         Square s = pos.square<QUEEN>(Them);
-        safe = mobilityArea[Us] & ~stronglyProtected;
+        safe =   mobilityArea[Us]
+              & ~pos.pieces(Us, PAWN)
+              & ~stronglyProtected;
 
         b = attackedBy[Us][KNIGHT] & attacks_bb<KNIGHT>(s);
 
-        score += KnightOnQueen * popcount(b & safe);
+        score += KnightOnQueen * popcount(b & safe) * (1 + queenImbalance);
 
         b =  (attackedBy[Us][BISHOP] & attacks_bb<BISHOP>(s, pos.pieces()))
            | (attackedBy[Us][ROOK  ] & attacks_bb<ROOK  >(s, pos.pieces()));
 
-        score += SliderOnQueen * popcount(b & safe & attackedBy2[Us]);
+        score += SliderOnQueen * popcount(b & safe & attackedBy2[Us]) * (1 + queenImbalance);
     }
 
     if (T)
@@ -907,47 +917,62 @@ make_v:
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
-  return Evaluation<NO_TRACE>(pos).value();
+  if (Eval::useNNUE)
+    return NNUE::evaluate(pos);
+  else
+    return Evaluation<NO_TRACE>(pos).value();
 }
-
 
 /// trace() is like evaluate(), but instead of returning a value, it returns
 /// a string (suitable for outputting to stdout) that contains the detailed
 /// descriptions and values of each evaluation term. Useful for debugging.
+/// Trace scores are from white's point of view
 
 std::string Eval::trace(const Position& pos) {
 
   if (pos.checkers())
-      return "Total evaluation: none (in check)";
-
-  std::memset(scores, 0, sizeof(scores));
-
-  pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
-
-  Value v = Evaluation<TRACE>(pos).value();
-
-  v = pos.side_to_move() == WHITE ? v : -v; // Trace scores are from white's point of view
+      return "Final evaluation: none (in check)";
 
   std::stringstream ss;
-  ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
-     << "     Term    |    White    |    Black    |    Total   \n"
-     << "             |   MG    EG  |   MG    EG  |   MG    EG \n"
-     << " ------------+-------------+-------------+------------\n"
-     << "    Material | " << Term(MATERIAL)
-     << "   Imbalance | " << Term(IMBALANCE)
-     << "       Pawns | " << Term(PAWN)
-     << "     Knights | " << Term(KNIGHT)
-     << "     Bishops | " << Term(BISHOP)
-     << "       Rooks | " << Term(ROOK)
-     << "      Queens | " << Term(QUEEN)
-     << "    Mobility | " << Term(MOBILITY)
-     << " King safety | " << Term(KING)
-     << "     Threats | " << Term(THREAT)
-     << "      Passed | " << Term(PASSED)
-     << "       Space | " << Term(SPACE)
-     << "    Winnable | " << Term(WINNABLE)
-     << " ------------+-------------+-------------+------------\n"
-     << "       Total | " << Term(TOTAL);
+  ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2);
+
+  Value v;
+
+  if (Eval::useNNUE)
+  {
+    v = NNUE::evaluate(pos);
+  }
+  else
+  {
+    std::memset(scores, 0, sizeof(scores));
+
+    pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
+
+    v = Evaluation<TRACE>(pos).value();
+
+    ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
+       << "     Term    |    White    |    Black    |    Total   \n"
+       << "             |   MG    EG  |   MG    EG  |   MG    EG \n"
+       << " ------------+-------------+-------------+------------\n"
+       << "    Material | " << Term(MATERIAL)
+       << "   Imbalance | " << Term(IMBALANCE)
+       << "       Pawns | " << Term(PAWN)
+       << "     Knights | " << Term(KNIGHT)
+       << "     Bishops | " << Term(BISHOP)
+       << "       Rooks | " << Term(ROOK)
+       << "      Queens | " << Term(QUEEN)
+       << "    Mobility | " << Term(MOBILITY)
+       << " King safety | " << Term(KING)
+       << "     Threats | " << Term(THREAT)
+       << "      Passed | " << Term(PASSED)
+       << "       Space | " << Term(SPACE)
+       << "    Winnable | " << Term(WINNABLE)
+       << " ------------+-------------+-------------+------------\n"
+       << "       Total | " << Term(TOTAL);
+
+  }
+
+  v = pos.side_to_move() == WHITE ? v : -v;
 
   ss << "\nFinal evaluation: " << to_cp(v) << " (white side)\n";
 

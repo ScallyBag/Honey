@@ -86,6 +86,17 @@ namespace {
     }
   }
 
+  // trace_eval() prints the evaluation for the current position, consistent with the UCI
+  // options set so far.
+
+  void trace_eval(Position& pos) {
+
+    StateListPtr states(new std::deque<StateInfo>(1));
+    Position p;
+    p.set(pos.fen(), Options["UCI_Chess960"], &states->back(), Threads.main());
+    sync_cout << "\n" << Eval::trace(p) << sync_endl;
+  }
+
 
   // setoption() is called when engine receives the "setoption" UCI command. The
   // function updates the UCI option ("name") to the given value ("value").
@@ -156,6 +167,11 @@ void set(istringstream& is) {
       Options["MultiPV"] = {value};
       sync_cout << FontColor::engine << "Confirmation: "<< "MultiPV" << " set to " << value << FontColor::reset << sync_endl;
     }
+    else if (name == "nn")
+    {
+      Options["UseNN"] = {value};
+      sync_cout << FontColor::engine << "Confirmation: "<< "UseNN" << " set to " << value << FontColor::reset << sync_endl;
+    }
     else if (name == "proa")
     {
       Options["Pro Analysis"] = {value};
@@ -206,6 +222,7 @@ void set(istringstream& is) {
       sync_cout << FontColor::reset << "  Note: 'mt' is in seconds, while" << sync_endl;
       sync_cout << "  movetime is in milliseconds"  << sync_endl;
       sync_cout << FontColor::engine << "    'p f' -> shortcut for 'position fen'" << sync_endl;
+      sync_cout << "    'nn'  ->  shortcut for 'UseNN'"  << sync_endl;
       sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
       sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
       sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" << FontColor::reset << sync_endl;
@@ -310,7 +327,7 @@ void set(istringstream& is) {
                    cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
             }
             else
-               sync_cout << "\n" << Eval::trace(pos) << sync_endl;
+               trace_eval(pos);
         }
         else if (token == "setoption")  setoption(is);
 #ifdef Add_Features
@@ -327,7 +344,12 @@ void set(istringstream& is) {
               Search::clear();
         }
 #endif
-        else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take some while
+else if (token == "ucinewgame")
+{
+    init_nnue(Options["EvalFile"]);
+    Search::clear();
+    elapsed = now(); // initialization may take some time
+}
     }
 
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
@@ -368,6 +390,17 @@ void set(istringstream& is) {
 } // namespace
 
 
+void UCI::init_nnue(const std::string& evalFile)
+{
+  if (Options["UseNN"] && !UCI::load_eval_finished)
+  {
+      // Load evaluation function from a file
+      Eval::NNUE::load_eval(evalFile);
+      UCI::load_eval_finished = true;
+  }
+}
+
+
 /// UCI::loop() waits for a command from stdin, parses it and calls the appropriate
 /// function. Also intercepts EOF from stdin to ensure gracefully exiting if the
 /// GUI dies unexpectedly. When called with some command line arguments, e.g. to
@@ -381,6 +414,9 @@ void UCI::loop(int argc, char* argv[]) {
   StateListPtr states(new std::deque<StateInfo>(1));
 
   pos.set(StartFEN, false, &states->back(), Threads.main());
+
+  if (argc > 1)
+     init_nnue(Options["EvalFile"]);
 
   for (int i = 1; i < argc; ++i)
       cmd += std::string(argv[i]) + " ";
@@ -424,7 +460,7 @@ void UCI::loop(int argc, char* argv[]) {
 
         else if (token == "setoption")  setoption(is);
         else if (token == "go")         go(pos, is, states);
-        else if (token == "b")     bench(pos, is, states);
+        else if (token == "b")          bench(pos, is, states);
         else if (token == "so")         setoption(is);
         else if (token == "set")        set(is);
         else if (token == "s")          set(is);
@@ -443,8 +479,16 @@ void UCI::loop(int argc, char* argv[]) {
             if (Options["Clean_Search"])
                 Search::clear();
         }
-        else if (token == "ucinewgame") Search::clear();
-        else if (token == "isready")    sync_cout << "readyok" << sync_endl;
+        else if (token == "ucinewgame")
+        {
+            init_nnue(Options["EvalFile"]);
+            Search::clear();
+        }
+        else if (token == "isready")
+        {
+            init_nnue(Options["EvalFile"]);
+            sync_cout << "readyok" << sync_endl;
+        }
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
@@ -454,7 +498,10 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "eval")  sync_cout << Eval::trace(pos) << sync_endl;
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else if (token == "c++") sync_cout << compiler_info() << sync_endl;
-      else if (token == "") sync_cout << sync_endl;
+      else if (token == "")  {
+        init_nnue(Options["EvalFile"]);
+        sync_cout << sync_endl;
+      }
       else
           sync_cout << FontColor::error << "Unknown command: " << cmd << FontColor::reset << sync_endl;
 

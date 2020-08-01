@@ -200,6 +200,9 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
   std::fill_n(&pieceList[0][0], sizeof(pieceList) / sizeof(Square), SQ_NONE);
   st = si;
 
+  // Each piece on board gets a unique ID used to track the piece later
+  PieceId piece_id, next_piece_id = PIECE_ID_ZERO;
+
   ss >> std::noskipws;
 
   // 1. Piece placement
@@ -213,7 +216,19 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 
       else if ((idx = PieceToChar.find(token)) != string::npos)
       {
-          put_piece(Piece(idx), sq);
+          auto pc = Piece(idx);
+          put_piece(pc, sq);
+
+          if (Eval::useNNUE)
+          {
+            // Kings get a fixed ID, other pieces get ID in order of placement
+            piece_id =
+              (idx == W_KING) ? PIECE_ID_WKING :
+              (idx == B_KING) ? PIECE_ID_BKING :
+              next_piece_id++;
+            evalList.put_piece(piece_id, sq, pc);
+          }
+
           ++sq;
       }
   }
@@ -706,6 +721,14 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   ++st->rule50;
   ++st->pliesFromNull;
 
+  // Used by NNUE
+  st->accumulator.computed_accumulation = false;
+  st->accumulator.computed_score = false;
+  PieceId dp0 = PIECE_ID_NONE;
+  PieceId dp1 = PIECE_ID_NONE;
+  auto& dp = st->dirtyPiece;
+  dp.dirty_num = 1;
+
   Color us = sideToMove;
   Color them = ~us;
   Square from = from_sq(m);
@@ -753,11 +776,23 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
       else
           st->nonPawnMaterial[them] -= PieceValue[MG][captured];
 
+      if (Eval::useNNUE)
+      {
+          dp.dirty_num = 2; // 2 pieces moved
+          dp1 = piece_id_on(capsq);
+          dp.pieceId[1] = dp1;
+          dp.old_piece[1] = evalList.piece_with_id(dp1);
+          evalList.put_piece(dp1, capsq, NO_PIECE);
+          dp.new_piece[1] = evalList.piece_with_id(dp1);
+      }
+
       // Update board and piece lists
       remove_piece(capsq);
 
       if (type_of(m) == ENPASSANT)
+      {
           board[capsq] = NO_PIECE;
+      }
 
       // Update material hash key and prefetch access to materialTable
       k ^= Zobrist::psq[captured][capsq];
@@ -787,8 +822,17 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   }
 
   // Move the piece. The tricky Chess960 castling is handled earlier
-  if (type_of(m) != CASTLING)
-      move_piece(from, to);
+  if (type_of(m) != CASTLING) {
+    if (Eval::useNNUE)
+    {
+        dp0 = piece_id_on(from);
+        dp.pieceId[0] = dp0;
+        dp.old_piece[0] = evalList.piece_with_id(dp0);
+        evalList.put_piece(dp0, to, pc);
+        dp.new_piece[0] = evalList.piece_with_id(dp0);
+    }
+    move_piece(from, to);
+  }
 
   // If the moving piece is a pawn do some special extra work
   if (type_of(pc) == PAWN)
@@ -810,6 +854,13 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
 
           remove_piece(to);
           put_piece(promotion, to);
+
+          if (Eval::useNNUE)
+          {
+              dp0 = piece_id_on(to);
+              evalList.put_piece(dp0, to, promotion);
+              dp.new_piece[0] = evalList.piece_with_id(dp0);
+          }
 
           // Update hash keys
           k ^= Zobrist::psq[pc][to] ^ Zobrist::psq[promotion][to];
@@ -902,6 +953,12 @@ void Position::undo_move(Move m) {
   {
       move_piece(to, from); // Put the piece back at the source square
 
+      if (Eval::useNNUE)
+      {
+          PieceId dp0 = st->dirtyPiece.pieceId[0];
+          evalList.put_piece(dp0, from, pc);
+      }
+
       if (st->capturedPiece)
       {
           Square capsq = to;
@@ -918,6 +975,14 @@ void Position::undo_move(Move m) {
           }
 
           put_piece(st->capturedPiece, capsq); // Restore the captured piece
+
+          if (Eval::useNNUE)
+          {
+              PieceId dp1 = st->dirtyPiece.pieceId[1];
+              assert(evalList.piece_with_id(dp1).from[WHITE] == PS_NONE);
+              assert(evalList.piece_with_id(dp1).from[BLACK] == PS_NONE);
+              evalList.put_piece(dp1, capsq, st->capturedPiece);
+          }
       }
   }
 
@@ -939,6 +1004,32 @@ void Position::do_castling(Color us, Square from, Square& to, Square& rfrom, Squ
   rto = relative_square(us, kingSide ? SQ_F1 : SQ_D1);
   to = relative_square(us, kingSide ? SQ_G1 : SQ_C1);
 
+  if (Eval::useNNUE)
+  {
+    PieceId dp0, dp1;
+    auto& dp = st->dirtyPiece;
+    dp.dirty_num = 2; // 2 pieces moved
+
+    if (Do) {
+      dp0 = piece_id_on(from);
+      dp1 = piece_id_on(rfrom);
+      dp.pieceId[0] = dp0;
+      dp.old_piece[0] = evalList.piece_with_id(dp0);
+      evalList.put_piece(dp0, to, make_piece(us, KING));
+      dp.new_piece[0] = evalList.piece_with_id(dp0);
+      dp.pieceId[1] = dp1;
+      dp.old_piece[1] = evalList.piece_with_id(dp1);
+      evalList.put_piece(dp1, rto, make_piece(us, ROOK));
+      dp.new_piece[1] = evalList.piece_with_id(dp1);
+    }
+    else {
+      dp0 = piece_id_on(to);
+      dp1 = piece_id_on(rto);
+      evalList.put_piece(dp0, from, make_piece(us, KING));
+      evalList.put_piece(dp1, rfrom, make_piece(us, ROOK));
+    }
+  }
+
   // Remove both pieces first since squares could overlap in Chess960
   remove_piece(Do ? from : to);
   remove_piece(Do ? rfrom : rto);
@@ -956,7 +1047,14 @@ void Position::do_null_move(StateInfo& newSt) {
   assert(!checkers());
   assert(&newSt != st);
 
-  std::memcpy(&newSt, st, sizeof(StateInfo));
+  if (Eval::useNNUE)
+  {
+    std::memcpy(&newSt, st, sizeof(StateInfo));
+    st->accumulator.computed_score = false;
+  }
+  else
+    std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
+
   newSt.previous = st;
   st = &newSt;
 
@@ -1573,3 +1671,19 @@ bool Position::pos_is_ok() const {
   return true;
 }
 #endif
+
+StateInfo* Position::state() const {
+  return st;
+}
+
+const EvalList* Position::eval_list() const {
+  return &evalList;
+}
+
+PieceId Position::piece_id_on(Square sq) const
+{
+  assert(piece_on(sq) != NO_PIECE);
+  PieceId pid = evalList.piece_id_list[sq];
+  assert(is_ok(pid));
+  return pid;
+}
