@@ -133,7 +133,7 @@ void init(OptionsMap& o) {
 	  o["FastPlay"]                 << Option(false);
 	  o["Min Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
-    o["Score Output"]             << Option("Centipawn var ScorPct-GUI var ScorPct var Centipawn"
+    o["Score Output"]             << Option("Centipawn var ScorPct-GUI var Centipawn"
                                            ,"Centipawn");
 #ifdef Weakfish
     o["Level"]               << Option(10, 1, 20);
