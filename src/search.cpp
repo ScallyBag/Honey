@@ -106,7 +106,7 @@ namespace {
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
-      return (3 + depth * depth) / (2 - improving);
+    return (3 + depth * depth) / (2 - improving);
   }
 
   // History and stats update bonus, based on depth
@@ -1108,11 +1108,9 @@ namespace {
         &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
-//#endif
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
-//#ifndef Weakfish
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
         &&  depth < 6

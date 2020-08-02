@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cassert>
 
@@ -58,10 +58,10 @@ Thread::~Thread() {
 
 int Thread::best_move_count(Move move) const {
 
-    auto rm = std::find(rootMoves.begin() + pvIdx,
-                        rootMoves.begin() + pvLast, move);
+  auto rm = std::find(rootMoves.begin() + pvIdx,
+                      rootMoves.begin() + pvLast, move);
 
-    return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
+  return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
 }
 
 
@@ -179,6 +179,8 @@ void ThreadPool::clear() {
       main()->iterValue[i] = VALUE_ZERO;
 #endif
 }
+
+
 /// ThreadPool::start_thinking() wakes up main thread waiting in idle_loop() and
 /// returns immediately. Main thread will wake up other threads and start the search.
 

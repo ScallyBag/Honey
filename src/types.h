@@ -233,18 +233,18 @@ enum Value : int {
 
 #endif
 
-PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
-KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
-BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
-RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
-QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
-Tempo = 28,
+  PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
+  KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
+  BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
+  RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
+  QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
+  Tempo = 28,
 
 #ifdef Noir
-VALUE_TB_WIN    = 101 * PawnValueEg,
+  VALUE_TB_WIN    = 101 * PawnValueEg,
 #endif
 
-MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
+  MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
 
 };
 

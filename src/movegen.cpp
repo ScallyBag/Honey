@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cassert>
 
@@ -263,11 +263,10 @@ namespace {
         while (b)
             *moveList++ = make_move(ksq, pop_lsb(&b));
 
-          if ((Type != CAPTURES) && pos.can_castle(Us & ANY_CASTLING))
-              for(CastlingRights cr : { Us & KING_SIDE, Us & QUEEN_SIDE } )
-                  if (!pos.castling_impeded(cr) && pos.can_castle(cr))
-                      *moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));
-
+        if ((Type != CAPTURES) && pos.can_castle(Us & ANY_CASTLING))
+            for(CastlingRights cr : { Us & KING_SIDE, Us & QUEEN_SIDE } )
+                if (!pos.castling_impeded(cr) && pos.can_castle(cr))
+                    *moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));
     }
 
     return moveList;

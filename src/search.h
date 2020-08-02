@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef SEARCH_H_INCLUDED
 #define SEARCH_H_INCLUDED
@@ -71,7 +71,6 @@ struct RootMove {
   Value score = -VALUE_INFINITE;
   Value previousScore = -VALUE_INFINITE;
   int selDepth = 0;
-
   int tbRank = 0;
   int bestMoveCount = 0;
   Value tbScore;
@@ -100,7 +99,6 @@ struct LimitsType {
   TimePoint time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
   int movestogo, depth, mate, perft, infinite;
   int64_t nodes;
-
 };
 
 extern LimitsType Limits;

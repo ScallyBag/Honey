@@ -1047,16 +1047,16 @@ icc-profile-make:
 ### Honey-XI-r3.exe.bench:Nodes/second    : 2557791
 ### Stockfish-XI-r3.exe.bench:Nodes searched  : 4578298
 ### Stockfish-XI-r3.exe.bench:Nodes/second    : 2588071
-### Based on commits through 08/01/2020:
+### Based on commits through 08/02/2020:
 ### ======================================================
 ### Black-Diamond-XIr4.exe.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4.exe.bench:Nodes/second    : 2478215
+### Black-Diamond-XIr4.exe.bench:Nodes/second    : 1310548
 ### Bluefish-XIr4.exe.bench:Nodes searched  : 5031934
-### Bluefish-XIr4.exe.bench:Nodes/second    : 2443872
+### Bluefish-XIr4.exe.bench:Nodes/second    : 1465754
 ### Honey-XIr4.exe.bench:Nodes searched  : 4561802
-### Honey-XIr4.exe.bench:Nodes/second    : 2457867
+### Honey-XIr4.exe.bench:Nodes/second    : 1375279
 ### Stockfish-XIr4.exe.bench:Nodes searched  : 5136479
-### Stockfish-XIr4.exe.bench:Nodes/second    : 2473027
+### Stockfish-XIr4.exe.bench:Nodes/second    : 1440807
 ### Weakfish-XIr4.exe.bench:Nodes searched  : 3676
-### Weakfish-XIr4.exe.bench:Nodes/second    : 147040
+### Weakfish-XIr4.exe.bench:Nodes/second    : 99351
 ### ======================================================

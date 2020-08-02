@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <cassert>
 
@@ -629,17 +629,17 @@ string UCI::value(Value v, Value v2) {
   if (abs(v) < VALUE_MATE_IN_MAX_PLY)
   {
       if (   abs(vs) < 95 * PawnValueEg
-          && abs(vs - vs2) < PawnValueEg)
-          vs = (vs + vs2) / 2;
+           && abs(vs - vs2) < PawnValueEg)
+           vs = (vs + vs2) / 2;
       if ( Options["Score Output"] == "ScorPct-GUI")
-          ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
-              / (pow(sf,(sf * vs /1000)) + 1);
+           ss << "cp " << fixed << setprecision(0) << 10000 * (pow (sf,(sf * vs /1000)))
+           / (pow(sf,(sf * vs /1000)) + 1);
 
       else
-          ss << "cp " << fixed << setprecision(0) << vs * vf;
+           ss << "cp " << fixed << setprecision(0) << vs * vf;
   }
   else
-      ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+       ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
   return ss.str();
 }

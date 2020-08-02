@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifdef _WIN32
 #if _WIN32_WINNT < 0x0601
@@ -30,7 +30,6 @@
 #endif
 
 #include <windows.h>
-
 // The needed Windows API for processor groups could be missed from old Windows
 // versions, so instead of calling them directly (forcing the linker to resolve
 // the calls at compile time), try to load them at runtime. To do this we need
@@ -390,8 +389,9 @@ const std::string compiler_info() {
   #endif
   compiler += "\n";
 
-	return compiler;
+  return compiler;
 }
+
 
 /// Debug functions used mainly to collect run-time statistics
 static std::atomic<int64_t> hits[2], means[2];

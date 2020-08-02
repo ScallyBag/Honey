@@ -19,168 +19,168 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- #include <cassert>
+#include <cassert>
 
- #include "bitboard.h"
- #include "endgame.h"
- #include "movegen.h"
+#include "bitboard.h"
+#include "endgame.h"
+#include "movegen.h"
 
- namespace {
+namespace {
 
-   // Used to drive the king towards the edge of the board
-   // in KX vs K and KQ vs KR endgames.
-   // Values range from 27 (center squares) to 90 (in the corners)
-   inline int push_to_edge(Square s) {
-       int rd = edge_distance(rank_of(s)), fd = edge_distance(file_of(s));
-       return 90 - (7 * fd * fd / 2 + 7 * rd * rd / 2);
-   }
+  // Used to drive the king towards the edge of the board
+  // in KX vs K and KQ vs KR endgames.
+  // Values range from 27 (center squares) to 90 (in the corners)
+  inline int push_to_edge(Square s) {
+      int rd = edge_distance(rank_of(s)), fd = edge_distance(file_of(s));
+      return 90 - (7 * fd * fd / 2 + 7 * rd * rd / 2);
+  }
 
-   // Used to drive the king towards A1H8 corners in KBN vs K endgames.
-   // Values range from 0 on A8H1 diagonal to 7 in A1H8 corners
-   inline int push_to_corner(Square s) {
-       return abs(7 - rank_of(s) - file_of(s));
-   }
+  // Used to drive the king towards A1H8 corners in KBN vs K endgames.
+  // Values range from 0 on A8H1 diagonal to 7 in A1H8 corners
+  inline int push_to_corner(Square s) {
+      return abs(7 - rank_of(s) - file_of(s));
+  }
 
-   // Drive a piece close to or away from another piece
-   inline int push_close(Square s1, Square s2) { return 140 - 20 * distance(s1, s2); }
-   inline int push_away(Square s1, Square s2) { return 120 - push_close(s1, s2); }
+  // Drive a piece close to or away from another piece
+  inline int push_close(Square s1, Square s2) { return 140 - 20 * distance(s1, s2); }
+  inline int push_away(Square s1, Square s2) { return 120 - push_close(s1, s2); }
 
- #ifndef NDEBUG
-   bool verify_material(const Position& pos, Color c, Value npm, int pawnsCnt) {
-     return pos.non_pawn_material(c) == npm && pos.count<PAWN>(c) == pawnsCnt;
-   }
- #endif
+#ifndef NDEBUG
+  bool verify_material(const Position& pos, Color c, Value npm, int pawnsCnt) {
+    return pos.non_pawn_material(c) == npm && pos.count<PAWN>(c) == pawnsCnt;
+  }
+#endif
 
-   // Map the square as if strongSide is white and strongSide's only pawn
-   // is on the left half of the board.
-   Square normalize(const Position& pos, Color strongSide, Square sq) {
+  // Map the square as if strongSide is white and strongSide's only pawn
+  // is on the left half of the board.
+  Square normalize(const Position& pos, Color strongSide, Square sq) {
 
-     assert(pos.count<PAWN>(strongSide) == 1);
+    assert(pos.count<PAWN>(strongSide) == 1);
 
-     if (file_of(pos.square<PAWN>(strongSide)) >= FILE_E)
-         sq = flip_file(sq);
+    if (file_of(pos.square<PAWN>(strongSide)) >= FILE_E)
+        sq = flip_file(sq);
 
-     return strongSide == WHITE ? sq : flip_rank(sq);
-   }
+    return strongSide == WHITE ? sq : flip_rank(sq);
+  }
 
- } // namespace
-
-
- namespace Endgames {
-
-   std::pair<Map<Value>, Map<ScaleFactor>> maps;
-
-   void init() {
-
-     add<KPK>("KPK");
-     add<KNNK>("KNNK");
-     add<KBNK>("KBNK");
-     add<KRKP>("KRKP");
-     add<KRKB>("KRKB");
-     add<KRKN>("KRKN");
-     add<KQKP>("KQKP");
-     add<KQKR>("KQKR");
-     add<KNNKP>("KNNKP");
-
-     add<KRPKR>("KRPKR");
-     add<KRPKB>("KRPKB");
-     add<KBPKB>("KBPKB");
-     add<KBPKN>("KBPKN");
-     add<KBPPKB>("KBPPKB");
-     add<KRPPKRP>("KRPPKRP");
-   }
- }
+} // namespace
 
 
- /// Mate with KX vs K. This function is used to evaluate positions with
- /// king and plenty of material vs a lone king. It simply gives the
- /// attacking side a bonus for driving the defending king towards the edge
- /// of the board, and for keeping the distance between the two kings small.
- template<>
- Value Endgame<KXK>::operator()(const Position& pos) const {
+namespace Endgames {
 
-   assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
-   assert(!pos.checkers()); // Eval is never called when in check
+  std::pair<Map<Value>, Map<ScaleFactor>> maps;
 
-   // Stalemate detection with lone king
-   if (pos.side_to_move() == weakSide && !MoveList<LEGAL>(pos).size())
-       return VALUE_DRAW;
+  void init() {
+
+    add<KPK>("KPK");
+    add<KNNK>("KNNK");
+    add<KBNK>("KBNK");
+    add<KRKP>("KRKP");
+    add<KRKB>("KRKB");
+    add<KRKN>("KRKN");
+    add<KQKP>("KQKP");
+    add<KQKR>("KQKR");
+    add<KNNKP>("KNNKP");
+
+    add<KRPKR>("KRPKR");
+    add<KRPKB>("KRPKB");
+    add<KBPKB>("KBPKB");
+    add<KBPKN>("KBPKN");
+    add<KBPPKB>("KBPPKB");
+    add<KRPPKRP>("KRPPKRP");
+  }
+}
+
+
+/// Mate with KX vs K. This function is used to evaluate positions with
+/// king and plenty of material vs a lone king. It simply gives the
+/// attacking side a bonus for driving the defending king towards the edge
+/// of the board, and for keeping the distance between the two kings small.
+template<>
+Value Endgame<KXK>::operator()(const Position& pos) const {
+
+  assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
+  assert(!pos.checkers()); // Eval is never called when in check
+
+  // Stalemate detection with lone king
+  if (pos.side_to_move() == weakSide && !MoveList<LEGAL>(pos).size())
+      return VALUE_DRAW;
 #ifndef Noir
-   Square strongKing = pos.square<KING>(strongSide);
-   Square weakKing   = pos.square<KING>(weakSide);
+  Square strongKing = pos.square<KING>(strongSide);
+  Square weakKing   = pos.square<KING>(weakSide);
 
-   Value result =  pos.non_pawn_material(strongSide)
-                 + pos.count<PAWN>(strongSide) * PawnValueEg
-                 + push_to_edge(weakKing)
-                 + push_close(strongKing, weakKing);
+  Value result =  pos.non_pawn_material(strongSide)
+                + pos.count<PAWN>(strongSide) * PawnValueEg
+                + push_to_edge(weakKing)
+                + push_close(strongKing, weakKing);
 
-   if (   pos.count<QUEEN>(strongSide)
-       || pos.count<ROOK>(strongSide)
-       ||(pos.count<BISHOP>(strongSide) && pos.count<KNIGHT>(strongSide))
-       || (   (pos.pieces(strongSide, BISHOP) & ~DarkSquares)
-           && (pos.pieces(strongSide, BISHOP) &  DarkSquares)))
-       result = std::min(result + VALUE_KNOWN_WIN, VALUE_TB_WIN_IN_MAX_PLY - 1);
+  if (   pos.count<QUEEN>(strongSide)
+      || pos.count<ROOK>(strongSide)
+      ||(pos.count<BISHOP>(strongSide) && pos.count<KNIGHT>(strongSide))
+      || (   (pos.pieces(strongSide, BISHOP) & ~DarkSquares)
+          && (pos.pieces(strongSide, BISHOP) &  DarkSquares)))
+      result = std::min(result + VALUE_KNOWN_WIN, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
-   return strongSide == pos.side_to_move() ? result : -result;
- }
-
-
- /// Mate with KBN vs K. This is similar to KX vs K, but we have to drive the
- /// defending king towards a corner square that our bishop attacks.
- template<>
- Value Endgame<KBNK>::operator()(const Position& pos) const {
-
-   assert(verify_material(pos, strongSide, KnightValueMg + BishopValueMg, 0));
-   assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
-
-   Square strongKing   = pos.square<KING>(strongSide);
-   Square strongBishop = pos.square<BISHOP>(strongSide);
-   Square weakKing     = pos.square<KING>(weakSide);
-
-   // If our bishop does not attack A1/H8, we flip the enemy king square
-   // to drive to opposite corners (A8/H1).
-
-   Value result =  (VALUE_KNOWN_WIN + 3520)
-                 + push_close(strongKing, weakKing)
-                 + 420 * push_to_corner(opposite_colors(strongBishop, SQ_A1) ? flip_file(weakKing) : weakKing);
-
-   assert(abs(result) < VALUE_TB_WIN_IN_MAX_PLY);
-   return strongSide == pos.side_to_move() ? result : -result;
- }
+  return strongSide == pos.side_to_move() ? result : -result;
+}
 
 
- /// KP vs K. This endgame is evaluated with the help of a bitbase
- template<>
- Value Endgame<KPK>::operator()(const Position& pos) const {
+/// Mate with KBN vs K. This is similar to KX vs K, but we have to drive the
+/// defending king towards a corner square that our bishop attacks.
+template<>
+Value Endgame<KBNK>::operator()(const Position& pos) const {
 
-   assert(verify_material(pos, strongSide, VALUE_ZERO, 1));
-   assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
+  assert(verify_material(pos, strongSide, KnightValueMg + BishopValueMg, 0));
+  assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
 
-   // Assume strongSide is white and the pawn is on files A-D
-   Square strongKing = normalize(pos, strongSide, pos.square<KING>(strongSide));
-   Square strongPawn = normalize(pos, strongSide, pos.square<PAWN>(strongSide));
-   Square weakKing   = normalize(pos, strongSide, pos.square<KING>(weakSide));
+  Square strongKing   = pos.square<KING>(strongSide);
+  Square strongBishop = pos.square<BISHOP>(strongSide);
+  Square weakKing     = pos.square<KING>(weakSide);
 
-   Color us = strongSide == pos.side_to_move() ? WHITE : BLACK;
+  // If our bishop does not attack A1/H8, we flip the enemy king square
+  // to drive to opposite corners (A8/H1).
 
-   if (!Bitbases::probe(strongKing, strongPawn, weakKing, us))
-       return VALUE_DRAW;
+  Value result =  (VALUE_KNOWN_WIN + 3520)
+                + push_close(strongKing, weakKing)
+                + 420 * push_to_corner(opposite_colors(strongBishop, SQ_A1) ? flip_file(weakKing) : weakKing);
 
-   Value result = VALUE_KNOWN_WIN + PawnValueEg + Value(rank_of(strongPawn));
+  assert(abs(result) < VALUE_TB_WIN_IN_MAX_PLY);
+  return strongSide == pos.side_to_move() ? result : -result;
+}
 
-   return strongSide == pos.side_to_move() ? result : -result;
- }
+
+/// KP vs K. This endgame is evaluated with the help of a bitbase
+template<>
+Value Endgame<KPK>::operator()(const Position& pos) const {
+
+  assert(verify_material(pos, strongSide, VALUE_ZERO, 1));
+  assert(verify_material(pos, weakSide, VALUE_ZERO, 0));
+
+  // Assume strongSide is white and the pawn is on files A-D
+  Square strongKing = normalize(pos, strongSide, pos.square<KING>(strongSide));
+  Square strongPawn = normalize(pos, strongSide, pos.square<PAWN>(strongSide));
+  Square weakKing   = normalize(pos, strongSide, pos.square<KING>(weakSide));
+
+  Color us = strongSide == pos.side_to_move() ? WHITE : BLACK;
+
+  if (!Bitbases::probe(strongKing, strongPawn, weakKing, us))
+      return VALUE_DRAW;
+
+  Value result = VALUE_KNOWN_WIN + PawnValueEg + Value(rank_of(strongPawn));
+
+  return strongSide == pos.side_to_move() ? result : -result;
+}
 
 
- /// KR vs KP. This is a somewhat tricky endgame to evaluate precisely without
- /// a bitbase. The function below returns drawish scores when the pawn is
- /// far advanced with support of the king, while the attacking king is far
- /// away.
- template<>
- Value Endgame<KRKP>::operator()(const Position& pos) const {
+/// KR vs KP. This is a somewhat tricky endgame to evaluate precisely without
+/// a bitbase. The function below returns drawish scores when the pawn is
+/// far advanced with support of the king, while the attacking king is far
+/// away.
+template<>
+Value Endgame<KRKP>::operator()(const Position& pos) const {
 
-   assert(verify_material(pos, strongSide, RookValueMg, 0));
-   assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
+  assert(verify_material(pos, strongSide, RookValueMg, 0));
+  assert(verify_material(pos, weakSide, VALUE_ZERO, 1));
 
   Square strongKing = pos.square<KING>(strongSide);
   Square weakKing   = pos.square<KING>(weakSide);

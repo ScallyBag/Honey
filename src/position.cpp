@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <algorithm>
 #include <cassert>
@@ -705,7 +705,6 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   assert(&newSt != st);
 
   thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
-
   Key k = st->key ^ Zobrist::side;
 
   // Copy some fields of the old state to our new StateInfo object except the
@@ -1301,7 +1300,6 @@ bool Position::has_game_cycle(int ply) const {
       if (   (j = H1(moveKey), cuckoo[j] == moveKey)
           || (j = H2(moveKey), cuckoo[j] == moveKey))
       {
-
           Move move = cuckooMove[j];
           Square s1 = from_sq(move);
           Square s2 = to_sq(move);

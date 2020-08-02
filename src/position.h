@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef POSITION_H_INCLUDED
 #define POSITION_H_INCLUDED
@@ -144,12 +144,12 @@ public:
   bool opposite_bishops() const;
   int  pawns_on_same_color_squares(Color c, Square s) const;
 
-    // Doing and undoing moves
-    void do_move(Move m, StateInfo& newSt);
-    void do_move(Move m, StateInfo& newSt, bool givesCheck);
-    void undo_move(Move m);
-    void do_null_move(StateInfo& newSt);
-    void undo_null_move();
+  // Doing and undoing moves
+  void do_move(Move m, StateInfo& newSt);
+  void do_move(Move m, StateInfo& newSt, bool givesCheck);
+  void undo_move(Move m);
+  void do_null_move(StateInfo& newSt);
+  void undo_null_move();
 
   // Static Exchange Evaluation
   bool see_ge(Move m, Value threshold = VALUE_ZERO) const;

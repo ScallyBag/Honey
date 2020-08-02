@@ -15,9 +15,9 @@
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef THREAD_H_INCLUDED
 #define THREAD_H_INCLUDED
@@ -61,9 +61,7 @@ public:
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
-
   size_t pvIdx, pvLast;
-
   uint64_t ttHitAverage;
 #ifndef Noir
   int selDepth, nmpMinPly;
@@ -84,7 +82,6 @@ public:
   ContinuationHistory continuationHistory[2][2];
   Score contempt;
   bool profound_test;
-
 };
 
 
