@@ -20,18 +20,49 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <cstring>   // For std::memset
 #include <iomanip>
 #include <sstream>
+#include <iostream>
 
 #include "bitboard.h"
 #include "evaluate.h"
 #include "material.h"
 #include "pawns.h"
 #include "thread.h"
+#include "uci.h"
 
 namespace Eval {
-   bool useNNUE = true;
+
+  bool useNNUE;
+  std::string eval_file_loaded="None";
+
+  void init_NNUE() {
+
+    useNNUE = Options["Use NNUE"];
+    std::string eval_file = std::string(Options["EvalFile"]);
+    if (useNNUE && eval_file_loaded != eval_file)
+        if (Eval::NNUE::load_eval_file(eval_file))
+            eval_file_loaded = eval_file;
+  }
+
+  void verify_NNUE() {
+
+    std::string eval_file = std::string(Options["EvalFile"]);
+    if (useNNUE && eval_file_loaded != eval_file)
+    {
+        std::cerr << "Use of NNUE evaluation, but the file " << eval_file << " was not loaded successfully. "
+                  << "These network evaluation parameters must be available, compatible with this version of the code. "
+                  << "The UCI option EvalFile might need to specify the full path, including the directory/folder name, to the file." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    if (useNNUE)
+        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled." << sync_endl;
+    else
+        sync_cout << "info string classical evaluation enabled." << sync_endl;
+  }
 }
 
 namespace Trace {
@@ -910,10 +941,11 @@ make_v:
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
+
   if (Eval::useNNUE)
-    return NNUE::evaluate(pos);
+      return NNUE::evaluate(pos);
   else
-    return Evaluation<NO_TRACE>(pos).value();
+      return Evaluation<NO_TRACE>(pos).value();
 }
 
 /// trace() is like evaluate(), but instead of returning a value, it returns
@@ -933,36 +965,35 @@ std::string Eval::trace(const Position& pos) {
 
   if (Eval::useNNUE)
   {
-    v = NNUE::evaluate(pos);
+      v = NNUE::evaluate(pos);
   }
   else
   {
-    std::memset(scores, 0, sizeof(scores));
+      std::memset(scores, 0, sizeof(scores));
 
-    pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
+      pos.this_thread()->contempt = SCORE_ZERO; // Reset any dynamic contempt
 
-    v = Evaluation<TRACE>(pos).value();
+      v = Evaluation<TRACE>(pos).value();
 
-    ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
-       << "     Term    |    White    |    Black    |    Total   \n"
-       << "             |   MG    EG  |   MG    EG  |   MG    EG \n"
-       << " ------------+-------------+-------------+------------\n"
-       << "    Material | " << Term(MATERIAL)
-       << "   Imbalance | " << Term(IMBALANCE)
-       << "       Pawns | " << Term(PAWN)
-       << "     Knights | " << Term(KNIGHT)
-       << "     Bishops | " << Term(BISHOP)
-       << "       Rooks | " << Term(ROOK)
-       << "      Queens | " << Term(QUEEN)
-       << "    Mobility | " << Term(MOBILITY)
-       << " King safety | " << Term(KING)
-       << "     Threats | " << Term(THREAT)
-       << "      Passed | " << Term(PASSED)
-       << "       Space | " << Term(SPACE)
-       << "    Winnable | " << Term(WINNABLE)
-       << " ------------+-------------+-------------+------------\n"
-       << "       Total | " << Term(TOTAL);
-
+      ss << std::showpoint << std::noshowpos << std::fixed << std::setprecision(2)
+         << "     Term    |    White    |    Black    |    Total   \n"
+         << "             |   MG    EG  |   MG    EG  |   MG    EG \n"
+         << " ------------+-------------+-------------+------------\n"
+         << "    Material | " << Term(MATERIAL)
+         << "   Imbalance | " << Term(IMBALANCE)
+         << "       Pawns | " << Term(PAWN)
+         << "     Knights | " << Term(KNIGHT)
+         << "     Bishops | " << Term(BISHOP)
+         << "       Rooks | " << Term(ROOK)
+         << "      Queens | " << Term(QUEEN)
+         << "    Mobility | " << Term(MOBILITY)
+         << " King safety | " << Term(KING)
+         << "     Threats | " << Term(THREAT)
+         << "      Passed | " << Term(PASSED)
+         << "       Space | " << Term(SPACE)
+         << "    Winnable | " << Term(WINNABLE)
+         << " ------------+-------------+-------------+------------\n"
+         << "       Total | " << Term(TOTAL);
   }
 
   v = pos.side_to_move() == WHITE ? v : -v;
