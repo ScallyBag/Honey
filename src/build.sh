@@ -32,7 +32,7 @@ BUILD="profile-build"
 
 #make function
 function mke() {
-CXXFLAGS='-flto -mbmi ' make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS=' -mbmi ' make -j30 $BUILD $ARCH $COMP "$@"
 }
 
 mke WEAK=yes && wait
