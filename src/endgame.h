@@ -58,9 +58,6 @@ enum EndgameCode {
   KBPKB,   // KBP vs KB
   KBPPKB,  // KBPP vs KB
   KBPKN,   // KBP vs KN
-#if defined (Sullivan) || (Blau) || (Noir)
-  KNPK,    // KNP vs K
-#endif
   KPKP     // KP vs KP
 };
 

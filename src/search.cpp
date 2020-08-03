@@ -1907,15 +1907,6 @@ moves_loop: // When in check, search starts from here
        }
     }
 
-        if (!adaptive  && (bestValue + (255 * PawnValueEg / (uci_elo/10)) >= 0 ))
-        {
-            //int o_value = bestValue;// for debug
-            //sync_cout << "Value " << bestValue << sync_endl;// for debug
-            bestValue += (rand() % 64 * 2001/uci_elo + 1);
-            //sync_cout << "Random Value " << bestValue << sync_endl;// for debug
-            //sync_cout << "Change " << bestValue - o_value << sync_endl;// for debug
-        }
-
     // All legal moves have been searched. A special case: If we're in check
     // and no legal moves were found, it is checkmate.
     if (ss->inCheck && bestValue == -VALUE_INFINITE)
