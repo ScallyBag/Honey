@@ -136,7 +136,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string threads   = (is >> token) ? token  : "1";
   string limit     = (is >> token) ? token  : "13";
   string limitNN  =  (is >> token) ? token  : "false";
-  string limitEvF  =  (is >> token) ? token : "";
+  string limitEvF  =  (is >> token) ? token : "eval.bin";
   string fenFile   = (is >> token) ? token  : "default";
   string limitType = (is >> token) ? token  : "depth";
 

@@ -56,7 +56,7 @@ sed -i.bak -e '1050,1172d' ../src/Makefile
 sed '1049r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 rm *.bench
-strip Black* Blue* Honey* Weak* Stock*
+#strip Black* Blue* Honey* Weak* Stock*
 
 end=`date +%s`
 runtime=$((end-start))

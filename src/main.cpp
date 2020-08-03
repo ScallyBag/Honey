@@ -61,6 +61,7 @@ int main(int argc, char* argv[]) {
   Threads.set(size_t(Options["Threads"]));
 #endif
   Search::clear(); // After threads are up
+  Eval::init_NNUE();
 
   UCI::loop(argc, argv);
 

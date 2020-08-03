@@ -280,6 +280,7 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
+  Eval::verify_NNUE();
 #ifndef Noir
   if (rootMoves.empty())
   {

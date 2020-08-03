@@ -94,6 +94,9 @@ namespace {
     StateListPtr states(new std::deque<StateInfo>(1));
     Position p;
     p.set(pos.fen(), Options["UCI_Chess960"], &states->back(), Threads.main());
+
+    Eval::verify_NNUE();
+
     sync_cout << "\n" << Eval::trace(p) << sync_endl;
   }
 
@@ -171,6 +174,10 @@ void set(istringstream& is) {
     {
       Options["UseNN"] = {value};
       sync_cout << FontColor::engine << "Confirmation: "<< "UseNN" << " set to " << value << FontColor::reset << sync_endl;
+      if (Options["UseNN"])
+          sync_cout << "info string: NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+      else
+          sync_cout << "info string: Classical evaluation enabled." << FontColor::reset << sync_endl;
     }
     else if (name == "proa")
     {
@@ -325,6 +332,10 @@ void set(istringstream& is) {
                    cerr << "Nodes/Second: " << (lap_nodes * 1000) / lap_time_elapsed << endl;
                else
                    cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
+               if (Options["UseNN"])
+                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+                else
+                   cerr << "Classical evaluation enabled." << FontColor::reset << sync_endl;
             }
             else
                trace_eval(pos);
@@ -344,12 +355,7 @@ void set(istringstream& is) {
               Search::clear();
         }
 #endif
-else if (token == "ucinewgame")
-{
-    init_nnue(Options["EvalFile"]);
-    Search::clear();
-    elapsed = now(); // initialization may take some time
-}
+        else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take some while
     }
 
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
@@ -390,17 +396,6 @@ else if (token == "ucinewgame")
 } // namespace
 
 
-void UCI::init_nnue(const std::string& evalFile)
-{
-  if (Options["UseNN"] && !UCI::load_eval_finished)
-  {
-      // Load evaluation function from a file
-      Eval::NNUE::load_eval(evalFile);
-      UCI::load_eval_finished = true;
-  }
-}
-
-
 /// UCI::loop() waits for a command from stdin, parses it and calls the appropriate
 /// function. Also intercepts EOF from stdin to ensure gracefully exiting if the
 /// GUI dies unexpectedly. When called with some command line arguments, e.g. to
@@ -414,9 +409,6 @@ void UCI::loop(int argc, char* argv[]) {
   StateListPtr states(new std::deque<StateInfo>(1));
 
   pos.set(StartFEN, false, &states->back(), Threads.main());
-
-  if (argc > 1)
-     init_nnue(Options["EvalFile"]);
 
   for (int i = 1; i < argc; ++i)
       cmd += std::string(argv[i]) + " ";
@@ -479,16 +471,6 @@ void UCI::loop(int argc, char* argv[]) {
             if (Options["Clean_Search"])
                 Search::clear();
         }
-      else if (token == "ucinewgame")
-      {
-          init_nnue(Options["EvalFile"]);
-          Search::clear();
-      }
-      else if (token == "isready")
-      {
-          init_nnue(Options["EvalFile"]);
-          sync_cout << "readyok" << sync_endl;
-      }
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!
@@ -499,7 +481,8 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else if (token == "c++") sync_cout << compiler_info() << sync_endl;
       else if (token == "")  {
-        init_nnue(Options["EvalFile"]);
+        Eval::init_NNUE();
+        Eval::verify_NNUE();
         sync_cout << sync_endl;
       }
       else

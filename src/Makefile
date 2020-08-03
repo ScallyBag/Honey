@@ -89,14 +89,16 @@ ifeq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),no)
 		ifeq ($(TEST),no)
 			ifeq ($(COMP),mingw)
-				EXE = $(NAME)-dev-$(DATE).exe
+				EXE  = $(NAME)-dev-$(DATE).exe
+				EXE2 = $(NAME)-dev-$(DATE)
 			else
 				EXE = $(NAME)-dev-$(DATE)
 			endif
 		endif
 		ifeq ($(TEST),yes)
 		        ifeq ($(COMP),mingw)
-			        EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
+			        EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+							EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
 		        else
 			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
                         endif
@@ -105,7 +107,8 @@ ifeq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION).exe
+			EXE  = $(NAME)-$(RELVERSION).exe
+			EXE2 = $(NAME)-$(RELVERSION)
 		else
 			EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -131,27 +134,30 @@ ifneq ($(HONEY),yes)
 			CXXFLAGS += -DStockfish
 		endif
 	NAME=$(PRE)fish$(SUF)
-endif
+  endif
 	ifeq ($(RELEASEVER),no)
-                ifeq ($(TEST),no)
+      ifeq ($(TEST),no)
 		  ifeq ($(COMP),mingw)
-			  EXE = $(NAME)-dev-$(DATE).exe
+			  EXE  = $(NAME)-dev-$(DATE).exe
+				EXE2 = $(NAME)-dev-$(DATE)
 		  else
 			  EXE = $(NAME)-dev-$(DATE)
-    		  endif
-                endif
-		ifeq ($(TEST),yes)
+    	endif
+      endif
+		  ifeq ($(TEST),yes)
 		  ifeq ($(COMP),mingw)
-			  EXE = $(NAME)-$(TESTv1)-$(TESTv2).exe
-                  else
+			  EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+				EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+      else
 			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-                  endif
-                endif
+      endif
+      endif
 	endif
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE = $(NAME)-$(RELVERSION).exe
+			EXE  = $(NAME)-$(RELVERSION).exe
+			EXE2 = $(NAME)-$(RELVERSION)
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -166,23 +172,23 @@ BINDIR = $(PREFIX)/bin
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 8
-PGOBENCH  = ./$(EXE) bench 16 1 11 true
+PGOBENCH  = ./$(EXE) bench 16 1 11 true eval.bin
 endif
 ifeq  ($(NOIR),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
 endif
 ifeq  ($(STOCKFISH),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
 endif
 ifeq  ($(HONEY),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
 endif
 ifeq  ($(BLAU),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
 endif
 ifeq  ($(RASPBERRY),Pi)
 PGOBENCH  = ./$(EXE) bench 16 1 6
@@ -235,6 +241,7 @@ endif
 # prefetch = yes/no   --- -DUSE_PREFETCH   --- Use prefetch asm-instruction
 # popcnt = yes/no     --- -DUSE_POPCNT     --- Use popcnt asm-instruction
 # sse = yes/no        --- -msse            --- Use Intel Streaming SIMD Extensions
+# sse3 = yes/no       --- -msse3           --- Use Intel Streaming SIMD Extensions 3
 # ssse3 = yes/no      --- -mssse3          --- Use Intel Supplemental Streaming SIMD Extensions 3
 # sse41 = yes/no      --- -msse4.1         --- Use Intel Streaming SIMD Extensions 4.1
 # sse42 = yes/no      --- -msse4.2         --- Use Intel Streaming SIMD Extensions 4.2
@@ -259,13 +266,10 @@ ssse3 = no
 sse41 = no
 sse42 = no
 avx2 = no
-mbmi= no
 pext = no
-threadripper = no
 avx512 = no
 
 ### 2.2 Architecture specific
-
 ### native
 ifeq ($(native),yes)
 CXXFLAGS += -march=native
@@ -296,17 +300,6 @@ ifeq ($(ARCH),x86-64)
 	arch = x86_64
 	prefetch = yes
 	sse = yes
-	threadripper = no
-endif
-
-ifeq ($(ARCH),x86-64-modern)
-	arch = x86_64
-	prefetch = yes
-	popcnt = yes
-	sse = yes
-	threadripper = no
-	sse3 = yes
-	ssse3 = yes
 endif
 
 ifeq ($(ARCH),x86-64-sse3)
@@ -314,16 +307,14 @@ ifeq ($(ARCH),x86-64-sse3)
 	prefetch = yes
 	sse = yes
 	sse3 = yes
-	ssse3 = yes
 endif
 
 ifeq ($(ARCH),x86-64-sse3-popcnt)
 	arch = x86_64
 	prefetch = yes
-	popcnt = yes
 	sse = yes
 	sse3 = yes
-	ssse3 = yes
+	popcnt = yes
 endif
 
 ifeq ($(ARCH),x86-64-ssse3)
@@ -337,6 +328,17 @@ endif
 ifeq ($(ARCH),x86-64-sse41)
 	arch = x86_64
 	prefetch = yes
+	popcnt = yes
+	sse = yes
+	sse3 = yes
+	ssse3 = yes
+	sse41 = yes
+endif
+
+ifeq ($(ARCH),x86-64-modern)
+	arch = x86_64
+	prefetch = yes
+	popcnt = yes
 	sse = yes
 	sse3 = yes
 	ssse3 = yes
@@ -356,7 +358,6 @@ endif
 
 ifeq ($(ARCH),x86-64-avx2)
 	arch = x86_64
-	bits = 64
 	prefetch = yes
 	popcnt = yes
 	sse = yes
@@ -381,7 +382,6 @@ ifeq ($(ARCH),x86-64-amd)
 	avx2 = yes
 endif
 
-
 ifeq ($(ARCH),x86-64-bmi2)
 	arch = x86_64
 	prefetch = yes
@@ -397,7 +397,6 @@ endif
 
 ifeq ($(ARCH),x86-64-avx512)
 	arch = x86_64
-	bits = 64
 	prefetch = yes
 	popcnt = yes
 	sse = yes
@@ -474,13 +473,11 @@ ifeq ($(COMP),gcc)
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
-
-	gccversion=$(shell gcc --version)
-	gccmasqueraded=$(findstring clang,$(gccversion))
 endif
 
 ifeq ($(COMP),mingw)
 	comp=mingw
+
 	ifeq ($(KERNEL),Linux)
 		ifeq ($(bits),64)
 			ifeq ($(shell which x86_64-w64-mingw32-c++-posix),)
@@ -519,9 +516,8 @@ ifeq ($(COMP),clang)
 		LDFLAGS += -latomic
 	endif
 	endif
-endif
 
-ifeq ($(ARCH),armv7)
+	ifeq ($(ARCH),armv7)
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -529,9 +525,9 @@ ifeq ($(ARCH),armv7)
 	else
 		CXXFLAGS += -m$(bits)
 		LDFLAGS += -m$(bits)
-endif
+	endif
 
-ifeq ($(ARCH),armv8)
+	ifeq ($(ARCH),armv8)
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -539,8 +535,8 @@ ifeq ($(ARCH),armv8)
 	else
 		CXXFLAGS += -m$(bits)
 		LDFLAGS += -m$(bits)
+	endif
 endif
-
 ### Using NDK pass the path to the NDK using NDK=/path_to_ndk when invoking the makefile
 ifeq ($(COMP),ndk)
 	comp=clang
@@ -581,6 +577,7 @@ ifeq ($(COMP),msys2)
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
+
 	LDFLAGS += -static -Wl,-s
 endif
 
@@ -629,7 +626,7 @@ endif
 ifeq ($(debug),no)
 	CXXFLAGS += -DNDEBUG
 else
-	CXXFLAGS += -g -Wall -Wextra
+	CXXFLAGS += -g
 endif
 
 ### 3.2.2 Debugging with undefined behavior sanitizers
@@ -676,18 +673,9 @@ ifeq ($(popcnt),yes)
 	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a))
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
-		CXXFLAGS += -msse4 -DUSE_POPCNT
+		CXXFLAGS += -msse3 -DUSE_POPCNT
 	else
-		CXXFLAGS += -msse4 -mpopcnt -DUSE_POPCNT
-	endif
-endif
-
-### 3.6a tr -AMD -LargePages
-ifeq ($(threadripper),yes)
-	CXXFLAGS += --param l1-cache-line-size=2048 -l2-cache-size=16384 -l3-cache-size=131072
-	### since we do not use native with a Threadripper to avoid bmi2
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -msse4.1 -msse4a -mbmi
+		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT
 	endif
 endif
 
@@ -779,16 +767,6 @@ ifeq ($(OS), Android)
 	CXXFLAGS += -fPIE
 	LDFLAGS += -fPIE -pie
 endif
-ifeq ($(ARCH), $(filter $(ARCH), armv7-a armv8-a))
-	CXXFLAGS += -fPIE
-	LDFLAGS += -fPIE -pie
-endif
-### 3.10 madvise + transparent huge pages
-ifeq ($(KERNEL),Linux)
-	ifneq ($(ARCH), $(filter $(ARCH), armv7-a armv8-a))
-		CXXFLAGS += -DUSE_MADVISE_HUGEPAGE
-	endif
-endif
 
 ### strip executable
 ifeq ($(COMP), ndk)
@@ -830,11 +808,11 @@ help:
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
 	@echo "x86-64-sse42            > x86 64-bit with sse42 support"
+	@echo "x86-64-modern           > x86 64-bit with sse41 support (x86-64-sse41)"
 	@echo "x86-64-sse41            > x86 64-bit with sse41 support"
 	@echo "x86-64-ssse3            > x86 64-bit with ssse3 support"
 	@echo "x86-64-sse3-popcnt      > x86 64-bit with sse3 and popcnt support"
 	@echo "x86-64-sse3             > x86 64-bit with sse3 support"
-	@echo "x86-64-modern           > x86 64-bit with popcnt support (also enables SSSE3)"
 	@echo "x86-64                  > x86 64-bit generic"
 	@echo "x86-32                  > x86 32-bit (also enables SSE)"
 	@echo "x86-32-old              > x86 32-bit fall back for old hardware"
@@ -883,26 +861,27 @@ build: config-sanity
 profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	@$(PGOBENCH)  >/dev/null  && wait
 	@$(PGOBENCH2) >/dev/null  && wait
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_use)
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
-	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
-##ifeq ($(COMP),mingw)
-##	strip $(EXE)
-##else
-##	strip $(EXE)
-##endif
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+ifeq ($(COMP),mingw)
+	strip $(EXE)
+else
+#	strip $(EXE)
+endif
 
 ifeq ($(COMP),mingw)
-	$(EXE) bench >/dev/null 2> $(EXE).bench && wait
+	$(EXE) bench >/dev/null 2> $(EXE2).bench && wait
+	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
@@ -914,7 +893,7 @@ endif
 	@echo ""
 
 strip:
-	$(STRIP) $(EXE)
+	strip $(EXE)
 
 install:
 	-mkdir -p -m 755 $(BINDIR)
@@ -976,7 +955,8 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	@test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || "$(arch)" = "armv7" || test "$(arch)" = "armv8-a"
+	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
+	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
@@ -1000,7 +980,8 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-	/opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
+## /opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
+	llvm-profdata merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \
@@ -1024,6 +1005,11 @@ icc-profile-make:
 	EXTRACXXFLAGS='-prof-gen=srcpos -prof_dir ./profdir' \
 	all
 
+icc-profile-use:
+	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
+	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
+	all
+
 .depend:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
 
@@ -1041,22 +1027,42 @@ icc-profile-make:
 #
 #
 #
-### Based on commits through 07/20/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 08/03/2020:
 ### ======================================================
-### Black-Diamond-XI-r3.exe.bench:Nodes searched  : 16747542
-### Black-Diamond-XI-r3.exe.bench:Nodes/second    : 2578131
-### Bluefish-XI-r3.exe.bench:Nodes searched  : 4792565
-### Bluefish-XI-r3.exe.bench:Nodes/second    : 2541126
-### Based on commits through 08/02/2020:
-### ======================================================
-### Black-Diamond-XIr4.exe.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4.exe.bench:Nodes/second    : 2460523
-### Bluefish-XIr4.exe.bench:Nodes searched  : 5031934
-### Bluefish-XIr4.exe.bench:Nodes/second    : 2426197
-### Honey-XIr4.exe.bench:Nodes searched  : 4561802
-### Honey-XIr4.exe.bench:Nodes/second    : 2438162
-### Stockfish-XIr4.exe.bench:Nodes searched  : 5136479
-### Stockfish-XIr4.exe.bench:Nodes/second    : 2469461
-### Weakfish-XIr4.exe.bench:Nodes searched  : 3676
-### Weakfish-XIr4.exe.bench:Nodes/second    : 131285
+### Bluefish-XIr4.bench:Nodes searched  : 5031934
+### Bluefish-XIr4.bench:Nodes/second    : 2422693
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4497399
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1421877
+### Honey-XIr4.bench:Nodes searched  : 4561802
+### Honey-XIr4.bench:Nodes/second    : 2384632
+### Honey-XIr4-NN.bench:Nodes searched  : 4919195
+### Honey-XIr4-NN.bench:Nodes/second    : 1416818
+### Stockfish-XIr4.bench:Nodes searched  : 5136479
+### Stockfish-XIr4.bench:Nodes/second    : 2399102
+### Stockfish-XIr4-NN.bench:Nodes searched  : 4774729
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1423592
+### Weakfish-XIr4.bench:Nodes searched  : 3676
+### Weakfish-XIr4.bench:Nodes/second    : 147040
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
+### Weakfish-XIr4-NN.bench:Nodes/second    : 142000
 ### ======================================================
