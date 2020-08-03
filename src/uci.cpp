@@ -450,27 +450,30 @@ void UCI::loop(int argc, char* argv[]) {
                     << "\n"       << Options
                     << "\nuciok"  << sync_endl;
 
-        else if (token == "setoption")  setoption(is);
-        else if (token == "go")         go(pos, is, states);
-        else if (token == "b")          bench(pos, is, states);
-        else if (token == "so")         setoption(is);
-        else if (token == "set")        set(is);
-        else if (token == "s")          set(is);
+      else if (token == "setoption")  setoption(is);
+      else if (token == "go")         go(pos, is, states);
+      else if (token == "b")          bench(pos, is, states);
+      else if (token == "so")         setoption(is);
+      else if (token == "set")        set(is);
+      else if (token == "s")          set(is);
 
-        else if (token == "g")          go(pos, is, states);
-        else if (token == "q")          cmd = "quit";
-        else if (token == "position")
-        {
-            position(pos, is, states);
-            if (Options["Clean_Search"])
-                Search::clear();
-        }
-        else if (token == "p")
-        {
-            position(pos, is, states);
-            if (Options["Clean_Search"])
-                Search::clear();
-        }
+      else if (token == "g")          go(pos, is, states);
+      else if (token == "q")          cmd = "quit";
+      else if (token == "position")
+      {
+          position(pos, is, states);
+          if (Options["Clean_Search"])
+              Search::clear();
+      }
+
+      else if (token == "p")
+      {
+          position(pos, is, states);
+          if (Options["Clean_Search"])
+              Search::clear();
+      }
+      else if (token == "ucinewgame") Search::clear();
+      else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 
       // Additional custom non-UCI commands, mainly for debugging.
       // Do not use these commands during a search!

@@ -25,9 +25,9 @@
 #include "endgame.h"
 #include "position.h"
 #include "search.h"
-#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
+/*#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
 #include "evaluate.h"
-#endif
+#endif*/
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
