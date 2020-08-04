@@ -35,7 +35,6 @@ const std::string engine_info(bool to_uci = false);
 const std::string compiler_info();
 
 void prefetch(void* addr);
-void* large_page_alloc(size_t size);
 void start_logger(const std::string& fname);
 void* std_aligned_alloc(size_t alignment, size_t size);
 void std_aligned_free(void* ptr);

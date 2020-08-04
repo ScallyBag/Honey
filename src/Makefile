@@ -171,28 +171,29 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 8
-PGOBENCH  = ./$(EXE) bench 16 1 11 true eval.bin
+PGOBENCH  = ./$(EXE) bench
+PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
 endif
 ifeq  ($(NOIR),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH  = ./$(EXE) bench 16 1 15
+PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH  = ./$(EXE) bench 16 1 15
+PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH  = ./$(EXE) bench 16 1 15
+PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
 endif
 ifeq  ($(RASPBERRY),Pi)
 PGOBENCH  = ./$(EXE) bench 16 1 6
 PGOBENCH2 = ./$(EXE) bench 16 1 10 true
+#endif
 endif
 ### Source and object files
 ifeq ($(FILES),with_c_book)
@@ -880,7 +881,7 @@ else
 endif
 
 ifeq ($(COMP),mingw)
-	$(EXE) bench >/dev/null 2> $(EXE2).bench && wait
+	$(EXE) bench >/dev/null 2> $(EXE2)-classical.bench && wait
 	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
@@ -1046,23 +1047,26 @@ icc-profile-use:
 #
 #
 #
-#
-### Based on commits through 08/03/2020:
+### Based on commits through 08/04/2020:
 ### ======================================================
-### Bluefish-XIr4.bench:Nodes searched  : 5031934
-### Bluefish-XIr4.bench:Nodes/second    : 2422693
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4497399
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1421877
-### Honey-XIr4.bench:Nodes searched  : 4561802
-### Honey-XIr4.bench:Nodes/second    : 2384632
-### Honey-XIr4-NN.bench:Nodes searched  : 4919195
-### Honey-XIr4-NN.bench:Nodes/second    : 1416818
-### Stockfish-XIr4.bench:Nodes searched  : 5136479
-### Stockfish-XIr4.bench:Nodes/second    : 2399102
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4774729
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1423592
-### Weakfish-XIr4.bench:Nodes searched  : 3676
-### Weakfish-XIr4.bench:Nodes/second    : 147040
+### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2414444
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1402368
+### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2402748
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1436305
+### Honey-XIr4-classical.bench:Nodes searched  : 4021494
+### Honey-XIr4-classical.bench:Nodes/second    : 2432845
+### Honey-XIr4-NN.bench:Nodes searched  : 3757150
+### Honey-XIr4-NN.bench:Nodes/second    : 1442284
+### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2471006
+### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1451348
+### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
+### Weakfish-XIr4-classical.bench:Nodes/second    : 147040
 ### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Weakfish-XIr4-NN.bench:Nodes/second    : 142000
+### Weakfish-XIr4-NN.bench:Nodes/second    : 153360
 ### ======================================================

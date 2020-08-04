@@ -135,7 +135,7 @@ namespace {
 
 bool  fide, minOutput, uci_sleep;
 bool limitStrength = false;
-int  intLevel = 40, tactical, uci_elo = 0;
+int  tactical, uci_elo = 0;
 
   // Breadcrumbs are used to mark nodes as being searched by a given thread
   struct Breadcrumb {
@@ -260,7 +260,6 @@ void MainThread::search() {
     ponder = false;
 #endif
     PRNG rng(now());
-    int shallow_adjust = 35; //to roughly anchor 1712 rating to CCRL Shallow  2.0 rating of 1712
 
     adaptive            = Options["Adaptive_Play"];
     defensive           = Options["Defensive"];
@@ -280,7 +279,9 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
+
   Eval::verify_NNUE();
+
 #ifndef Noir
   if (rootMoves.empty())
   {
@@ -330,7 +331,7 @@ void MainThread::search() {
          }
          else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
          {
-             uci_elo = (Options["Engine_Elo"]);
+             uci_elo = (Options["UCI_Elo"]);
              limitStrength = true;
              adaptive=true;
              goto skipLevels;
@@ -385,20 +386,20 @@ skipLevels:
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              benchKnps = 1000 * (Options["Bench_KNPS"]);
 #ifdef Weakfish
-            adaptive  = true;
+             adaptive  = true;
              weakLevel = 100 * weakLevel;
              if (weakFish) uci_elo = 1000 + weakLevel;
 #endif
              int random = (rand() % 20 - 10);
-             uci_elo = uci_elo + random + shallow_adjust;
+             uci_elo = uci_elo + random;
              //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
 
              int ccrlELo = uci_elo;
              if (fide)
                  uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallow adj was only required to get CCRL rating correct
-             uci_elo += 200; //  to offset Elo loss with variety
+             uci_elo += 200; //  to offset Elo loss with adaptive
              uci_elo = std::min(uci_elo, 3200);
-             int NodesToSearch  =  pow(1.00382, (uci_elo - 999)) * 48;
+             int NodesToSearch  =  pow(1.00382, (uci_elo - 900)) * 48;
              //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
              Limits.nodes = NodesToSearch;
              Limits.nodes = (Limits.nodes * Time.optimum()/1000);
@@ -418,7 +419,7 @@ skipLevels:
                    sync_cout << FontColor::reset << sync_endl;
                    std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
                  }
-             uci_elo =  ccrlELo - shallow_adjust;
+             uci_elo =  ccrlELo;
          }
 
       if (mpv > 1)
@@ -582,15 +583,19 @@ void Thread::search() {
 #ifdef Weakfish
   if (weakFish)  multiPV = 1;
 #endif
-  PRNG rng(now());
 
+  // Pick integer skill levels, but non-deterministically round up or down
+  // such that the average integer skill corresponds to the input floating point one.
+  // UCI_Elo is converted to a suitable fractional skill level, using anchoring
+  // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
+  // for match (TC 60+0.6) results spanning a wide range of k values.
+  PRNG rng(now());
+  double floatLevel = Options["UCI_LimitStrength"] ?
+                      Utility::clamp(std::pow((Options["UCI_Elo"] - 946.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
+                        double(Options["Skill Level"]);
+  int intLevel = int(floatLevel) +
+                 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
-#ifdef Weakfish
-if (!weakFish)
-#endif
-    if (tactical) {
-      multiPV = pow(2, tactical);
-      profound = false;}
 
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
@@ -735,7 +740,6 @@ if (!weakFish)
                   if (mainThread)
                       mainThread->stopOnPonderhit = false;
               }
-
               else if (bestValue >= beta)
               {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
@@ -1109,6 +1113,7 @@ namespace {
         &&  !(pos.this_thread()->profound_test)
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
+
     improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
               || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
 
