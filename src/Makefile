@@ -207,17 +207,10 @@ SRCS = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp 
 	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
 	nnue/evaluate_nnue.cpp nnue/features/half_kp.cpp
 endif
-OBJS = $(SRCS:.cpp=.o)
-### Object files
-#ifeq ($(FILES),with_c_book)
-#	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
-#	material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
-#	search.o thread.o timeman.o tt.o uci.o ucioption.o polybook.o tune.o syzygy/tbprobe.o
-#else
-#	OBJS = benchmark.o bitbase.o bitboard.o endgame.o evaluate.o main.o \
-#	material.o misc.o movegen.o movepick.o pawns.o position.o psqt.o \
-#	search.o thread.o timeman.o tt.o uci.o ucioption.o tune.o syzygy/tbprobe.o
-#endif
+
+OBJS = $(notdir $(SRCS:.cpp=.o))
+
+VPATH = syzygy:nnue:nnue/features
 
 ### Establish the operating system name
 KERNEL = $(shell uname -s)
@@ -248,7 +241,7 @@ endif
 # sse42 = yes/no      --- -msse4.2         --- Use Intel Streaming SIMD Extensions 4.2
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
 # pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
-# avx512 = yes/no     --- -mavx512vbmi     --- Use Intel Advanced Vector Extensions 512
+# avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
 #
 # Note that Makefile is space sensitive, so when adding new architectures
 # or modifying existing flags, you have to make sure there are no extra spaces
@@ -560,28 +553,6 @@ ifeq ($(COMP),ndk)
 	LDFLAGS += -static-libstdc++
 endif
 
-ifeq ($(COMP),msys2)
-	comp=gcc
-	CXX=g++
-	CXXFLAGS += -pedantic -Wextra -Wshadow
-
-	ifeq ($(ARCH),armv7)
-		ifeq ($(OS),Android)
-			CXXFLAGS += -m$(bits)
-			LDFLAGS += -m$(bits)
-		endif
-	else
-		CXXFLAGS += -m$(bits)
-		LDFLAGS += -m$(bits)
-	endif
-
-	ifneq ($(KERNEL),Darwin)
-	   LDFLAGS += -Wl,--no-as-needed
-	endif
-
-	LDFLAGS += -static -Wl,-s
-endif
-
 ifeq ($(comp),icc)
 	profile_make = icc-profile-make
 	profile_use = icc-profile-use
@@ -802,6 +773,7 @@ help:
 	@echo "strip                   > Strip executable"
 	@echo "install                 > Install executable"
 	@echo "clean                   > Clean up"
+	@echo "net                     > Download the default nnue net"
 	@echo ""
 	@echo "Supported archs:"
 	@echo ""
@@ -850,7 +822,7 @@ $(directory):
 	mkdir -p $@
 
 
-.PHONY: help build profile-build strip install clean objclean profileclean \
+.PHONY: help build profile-build strip install clean net objclean profileclean \
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
@@ -904,6 +876,13 @@ install:
 #clean all
 clean: objclean profileclean
 	@rm -f .depend *~ core
+
+net:
+	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+	@echo "Default net: $(nnuenet)"
+	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
+	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -sL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
+	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
 
 # clean binaries and objects
 objclean:
@@ -1012,7 +991,7 @@ icc-profile-use:
 	all
 
 .depend:
-	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
+	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
 
 -include .depend
 #
@@ -1068,5 +1047,26 @@ icc-profile-use:
 ### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
 ### Weakfish-XIr4-classical.bench:Nodes/second    : 147040
 ### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Weakfish-XIr4-NN.bench:Nodes/second    : 153360
+### Based on commits through 08/04/2020:
+### ======================================================
+### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2418939
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1397476
+### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2404104
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1435796
+### Honey-XIr4-classical.bench:Nodes searched  : 4021494
+### Honey-XIr4-classical.bench:Nodes/second    : 2431374
+### Honey-XIr4-NN.bench:Nodes searched  : 3757150
+### Honey-XIr4-NN.bench:Nodes/second    : 1448958
+### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2468436
+### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1460394
+### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
+### Weakfish-XIr4-classical.bench:Nodes/second    : 167090
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
+### Weakfish-XIr4-NN.bench:Nodes/second    : 159750
 ### ======================================================
