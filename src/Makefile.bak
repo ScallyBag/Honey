@@ -160,29 +160,29 @@ PREFIX = /opt/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench
-PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
-endif
-ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
-endif
-ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
-endif
-ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
-endif
-ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
-endif
+#ifeq  ($(WEAK),yes)
+#PGOBENCH  = ./$(EXE) bench
+#PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
+#endif
+#ifeq  ($(NOIR),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 10
+#PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
+#endif
+#ifeq  ($(STOCKFISH),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 15
+#PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+#endif
+#ifeq  ($(HONEY),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 15
+#PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+#endif
+#ifeq  ($(BLAU),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 15
+#PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+#endif
 ifeq  ($(RASPBERRY),Pi)
 PGOBENCH  = ./$(EXE) bench 16 1 6
-PGOBENCH2 = ./$(EXE) bench 16 1 10 true
+PGOBENCH2 = ./$(EXE) bench 16 1 6 true
 #endif
 endif
 ### Source and object files
@@ -399,6 +399,7 @@ ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
 	bits = 32
+	neon = yes
 endif
 
 ifeq ($(ARCH),armv8)
@@ -1032,47 +1033,23 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/04/2020:
-### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2414444
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1402368
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2402748
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1436305
-### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 2432845
-### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 1442284
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2471006
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1451348
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
-### Weakfish-XIr4-classical.bench:Nodes/second    : 147040
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Based on commits through 08/04/2020:
-### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2418939
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1397476
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2404104
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1435796
-### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 2431374
-### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 1448958
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2468436
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1460394
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
-### Weakfish-XIr4-classical.bench:Nodes/second    : 167090
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Weakfish-XIr4-NN.bench:Nodes/second    : 159750
-### ======================================================
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+
+

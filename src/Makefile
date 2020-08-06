@@ -160,29 +160,29 @@ PREFIX = /opt/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench
-PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
-endif
-ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
-endif
-ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
-endif
-ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
-endif
-ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
-endif
+#ifeq  ($(WEAK),yes)
+#PGOBENCH  = ./$(EXE) bench
+#PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
+#endif
+#ifeq  ($(NOIR),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 10
+#PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
+#endif
+#ifeq  ($(STOCKFISH),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 15
+#PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+#endif
+#ifeq  ($(HONEY),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 15
+#PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+#endif
+#ifeq  ($(BLAU),yes)
+#PGOBENCH  = ./$(EXE) bench 16 1 15
+#PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+#endif
 ifeq  ($(RASPBERRY),Pi)
 PGOBENCH  = ./$(EXE) bench 16 1 6
-PGOBENCH2 = ./$(EXE) bench 16 1 10 true
+PGOBENCH2 = ./$(EXE) bench 16 1 6 true
 #endif
 endif
 ### Source and object files
@@ -399,6 +399,7 @@ ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
 	bits = 32
+	neon = yes
 endif
 
 ifeq ($(ARCH),armv8)
@@ -1032,41 +1033,20 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/04/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 08/06/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2414444
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1402368
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2402748
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1436305
-### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 2432845
-### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 1442284
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Based on commits through 08/05/2020:
-### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 1321831
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 760578
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 1353263
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 805885
-### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 1375810
-### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 801439
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Stockfish-XIr4-classical.bench:Nodes/second    : 1401891
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
-### Stockfish-XIr4-NN.bench:Nodes/second    : 804428
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
-### Weakfish-XIr4-classical.bench:Nodes/second    : 105028
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Weakfish-XIr4-NN.bench:Nodes/second    : 103621
 ### ======================================================

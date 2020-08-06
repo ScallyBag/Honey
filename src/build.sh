@@ -17,14 +17,14 @@ start=`date +%s`
 #ARCH="ARCH=x86-64-modern"
 #ARCH="ARCH=x86-64-amd"
 #ARCH="ARCH=x86-64-bmi2"
-ARCH="ARCH=x86-64-avx2"
-#ARCH="ARCH=armv7"
+#ARCH="ARCH=x86-64-avx2"
+ARCH="ARCH=armv7"
 #ARCH="ARCH=ppc-32"
 #ARCH="ARCH=ppc-64comp"
 
 #COMP="COMP=clang"
-COMP="COMP=mingw"
-#COMP="COMP=gcc"
+#COMP="COMP=mingw"
+COMP="COMP=gcc"
 #COMP="COMP=icc"
 
 #BUILD="build"
@@ -32,7 +32,7 @@ BUILD="profile-build"
 
 #make function
 function mke() {
-CXXFLAGS='-flto -mbmi ' make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS=' ' make -j 1 $BUILD $ARCH $COMP RASPBERRY=Pi "$@"
 }
 rm *bench
 mke WEAK=yes && wait
