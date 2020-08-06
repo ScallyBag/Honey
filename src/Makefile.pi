@@ -1,25 +1,15 @@
+### Honey, a UCI chess playing engine derived from Glaurung 2.1
+### Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-### ==========================================================================
-### Copyright Notice and License Information
-### ==========================================================================
-###   Honey, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
-###   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
-###   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
-###   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
-###   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
-
-###   Honey is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
-###   it under the terms of the GNU General Public License as published by
-###   the Free Software Foundation, either version 3 of the License, or
-###   (at your option) any later version.
-
-###   Honey is distributed in the hope that it will be useful,
-###   but WITHOUT ANY WARRANTY; without even the implied warranty of
-###   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-###   GNU General Public License for more details.
-
-###   You should have received a copy of the GNU General Public License
-###   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+### Honey is free software: you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation, either version 3 of the License, or
+### (at your option) any later version.
+###
+### Honey is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
 ### ==========================================================================
 ### Section 1. General Configuration
 ### ==========================================================================
@@ -247,7 +237,8 @@ endif
 # sse42 = yes/no      --- -msse4.2         --- Use Intel Streaming SIMD Extensions 4.2
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
 # pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
-# avx512 = yes/no     --- -mavx512vbmi     --- Use Intel Advanced Vector Extensions 512
+# avx512 = yes/no     --- -mavx512         --- Use Intel Advanced Vector Extensions 512
+# neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
 #
 # Note that Makefile is space sensitive, so when adding new architectures
 # or modifying existing flags, you have to make sure there are no extra spaces
@@ -268,6 +259,7 @@ sse42 = no
 avx2 = no
 pext = no
 avx512 = no
+neon = no
 
 ### 2.2 Architecture specific
 ### native
@@ -413,12 +405,21 @@ ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
 	bits = 32
+        neon=yes
 endif
 
 ifeq ($(ARCH),armv8)
 	arch = armv8-a
 	prefetch = yes
 	popcnt = yes
+	neon = yes
+endif
+
+ifeq ($(ARCH),apple-silicon)
+	arch = arm64
+	prefetch = yes
+	popcnt = yes
+	neon = yes
 endif
 
 ifeq ($(ARCH),armv7-a)
@@ -559,28 +560,6 @@ ifeq ($(COMP),ndk)
 	LDFLAGS += -static-libstdc++
 endif
 
-ifeq ($(COMP),msys2)
-	comp=gcc
-	CXX=g++
-	CXXFLAGS += -pedantic -Wextra -Wshadow
-
-	ifeq ($(ARCH),armv7)
-		ifeq ($(OS),Android)
-			CXXFLAGS += -m$(bits)
-			LDFLAGS += -m$(bits)
-		endif
-	else
-		CXXFLAGS += -m$(bits)
-		LDFLAGS += -m$(bits)
-	endif
-
-	ifneq ($(KERNEL),Darwin)
-	   LDFLAGS += -Wl,--no-as-needed
-	endif
-
-	LDFLAGS += -static -Wl,-s
-endif
-
 ifeq ($(comp),icc)
 	profile_make = icc-profile-make
 	profile_use = icc-profile-use
@@ -670,7 +649,7 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a))
+	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a arm64))
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse3 -DUSE_POPCNT
@@ -681,44 +660,48 @@ endif
 
 ifeq ($(avx2),yes)
 	CXXFLAGS += -DUSE_AVX2
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mavx2
 	endif
 endif
 
 ifeq ($(avx512),yes)
 	CXXFLAGS += -DUSE_AVX512
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mavx512bw
 	endif
 endif
 
 ifeq ($(sse42),yes)
 	CXXFLAGS += -DUSE_SSE42
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse4.2
 	endif
 endif
 
 ifeq ($(sse41),yes)
 	CXXFLAGS += -DUSE_SSE41
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse4.1
 	endif
 endif
 
 ifeq ($(ssse3),yes)
 	CXXFLAGS += -DUSE_SSSE3
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mssse3
 	endif
 endif
 
 ifeq ($(sse3),yes)
 	CXXFLAGS += -DUSE_SSE3
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse3
 	endif
+endif
+
+ifeq ($(neon),yes)
+	CXXFLAGS += -DUSE_NEON
 endif
 
 ifeq ($(arch),x86_64)
@@ -728,7 +711,7 @@ endif
 ### 3.7 pext
 ifeq ($(pext),yes)
 	CXXFLAGS += -DUSE_PEXT
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mbmi2
 	endif
 endif
@@ -801,6 +784,7 @@ help:
 	@echo "strip                   > Strip executable"
 	@echo "install                 > Install executable"
 	@echo "clean                   > Clean up"
+	@echo "net                     > Download the default nnue net"
 	@echo ""
 	@echo "Supported archs:"
 	@echo ""
@@ -820,6 +804,7 @@ help:
 	@echo "ppc-32                  > PPC 32-bit"
 	@echo "armv7                   > ARMv7 32-bit"
 	@echo "armv8                   > ARMv8 64-bit"
+	@echo "apple-silicon           > Apple silicon ARM64"
 	@echo "general-64              > unspecified 64-bit"
 	@echo "general-32              > unspecified 32-bit"
 	@echo ""
@@ -829,7 +814,6 @@ help:
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo "clang                   > LLVM Clang compiler"
 	@echo "icc                     > Intel compiler"
-	@echo "msys2                   > MSYS2"
 	@echo ""
 	@echo "Simple examples. If you don't know what to do, you likely want to run: "
 	@echo ""
@@ -849,7 +833,7 @@ $(directory):
 	mkdir -p $@
 
 
-.PHONY: help build profile-build strip install clean objclean profileclean \
+.PHONY: help build profile-build strip install clean net objclean profileclean \
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
@@ -880,7 +864,7 @@ else
 endif
 
 ifeq ($(COMP),mingw)
-	$(EXE) bench >/dev/null 2> $(EXE2).bench && wait
+	$(EXE) bench >/dev/null 2> $(EXE2)-classical.bench && wait
 	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
@@ -903,6 +887,13 @@ install:
 #clean all
 clean: objclean profileclean
 	@rm -f .depend *~ core
+
+net:
+	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+	@echo "Default net: $(nnuenet)"
+	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
+	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -sL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
+	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
 
 # clean binaries and objects
 objclean:
@@ -943,32 +934,34 @@ config-sanity:
 	@echo "avx2: '$(avx2)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
+	@echo "neon: '$(neon)'"
 	@echo ""
 	@echo "Flags:"
 	@echo "CXX: $(CXX)"
 	@echo "CXXFLAGS: $(CXXFLAGS)"
 	@echo "LDFLAGS: $(LDFLAGS)"
 	@echo ""
-	#@echo "Testing config sanity. If this fails, try 'make help' ..."
-	#@echo ""
-	#@test "$(debug)" = "yes" || test "$(debug)" = "no"
-	#@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
-	##@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
-	#@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	# test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
-	# test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a"
-	#@test "$(bits)" = "32" || test "$(bits)" = "64"
-	#@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
-	#@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
-	#@test "$(sse)" = "yes" || test "$(sse)" = "no"
-	#@test "$(sse3)" = "yes" || test "$(sse3)" = "no"
-	#@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
-	#@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
-	#@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
-	#@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
-	#@test "$(pext)" = "yes" || test "$(pext)" = "no"
-	#@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
-	#@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
+	@echo "Testing config sanity. If this fails, try 'make help' ..."
+	@echo ""
+	@test "$(debug)" = "yes" || test "$(debug)" = "no"
+	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
+	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
+	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
+	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
+	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a" || test "$(arch)" = "arm64"
+	@test "$(bits)" = "32" || test "$(bits)" = "64"
+	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
+	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
+	@test "$(sse)" = "yes" || test "$(sse)" = "no"
+	@test "$(sse3)" = "yes" || test "$(sse3)" = "no"
+	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
+	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
+	@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
+	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
+	@test "$(pext)" = "yes" || test "$(pext)" = "no"
+	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
+	@test "$(neon)" = "yes" || test "$(neon)" = "no"
+	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
 $(EXE): $(OBJS)
 	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
@@ -1011,7 +1004,7 @@ icc-profile-use:
 	all
 
 .depend:
-	-@$(CXX) $(DEPENDFLAGS) -MM $(OBJS:.o=.cpp) > $@ 2> /dev/null
+	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
 
 -include .depend
 #
@@ -1047,26 +1040,47 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/03/2020:
-### ======================================================
-### Black-Diamond-XIr4.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4.bench:Nodes/second    : 2405502
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 19974532
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1419553
-### Bluefish-XIr4.bench:Nodes searched  : 5031934
-### Bluefish-XIr4.bench:Nodes/second    : 2425028
-### Stockfish-XIr4.bench:Nodes searched  : 5136479
-### Stockfish-XIr4.bench:Nodes/second    : 2422867
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3901718
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1187376
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3901718
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1200898
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3901718
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1209835
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3901718
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1200528
-### Weakfish-XIr4.bench:Nodes searched  : 3676
-### Weakfish-XIr4.bench:Nodes/second    : 141384
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3203
-### Weakfish-XIr4-NN.bench:Nodes/second    : 114392
-### ======================================================
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#

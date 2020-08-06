@@ -1,25 +1,15 @@
+### Honey, a UCI chess playing engine derived from Glaurung 2.1
+### Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-### ==========================================================================
-### Copyright Notice and License Information
-### ==========================================================================
-###   Honey, a UCI chess playing engine derived from SugaR, Stockfish and Glaurung 2.1
-###   Copyright (C) 2004-2008 Tord Romstad (Glaurung Author)
-###   Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad (Stockfish Authors)
-###   Copyright (C) 2015-2016 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Stockfish Authors)
-###   Copyright (C) 2017-2018 Michael Byrne, Marco Zerbinati, Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad (Honey Authors)
-
-###   Honey is free software: you can redistri/Volumes/Macintosh_1.5TBbute it and/or modify
-###   it under the terms of the GNU General Public License as published by
-###   the Free Software Foundation, either version 3 of the License, or
-###   (at your option) any later version.
-
-###   Honey is distributed in the hope that it will be useful,
-###   but WITHOUT ANY WARRANTY; without even the implied warranty of
-###   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-###   GNU General Public License for more details.
-
-###   You should have received a copy of the GNU General Public License
-###   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+### Honey is free software: you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation, either version 3 of the License, or
+### (at your option) any later version.
+###
+### Honey is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
 ### ==========================================================================
 ### Section 1. General Configuration
 ### ==========================================================================
@@ -242,6 +232,7 @@ endif
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
 # pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
 # avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
+# neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
 #
 # Note that Makefile is space sensitive, so when adding new architectures
 # or modifying existing flags, you have to make sure there are no extra spaces
@@ -262,6 +253,7 @@ sse42 = no
 avx2 = no
 pext = no
 avx512 = no
+neon = no
 
 ### 2.2 Architecture specific
 ### native
@@ -413,6 +405,14 @@ ifeq ($(ARCH),armv8)
 	arch = armv8-a
 	prefetch = yes
 	popcnt = yes
+	neon = yes
+endif
+
+ifeq ($(ARCH),apple-silicon)
+	arch = arm64
+	prefetch = yes
+	popcnt = yes
+	neon = yes
 endif
 
 ifeq ($(ARCH),armv7-a)
@@ -642,7 +642,7 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a))
+	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a arm64))
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse3 -DUSE_POPCNT
@@ -653,44 +653,48 @@ endif
 
 ifeq ($(avx2),yes)
 	CXXFLAGS += -DUSE_AVX2
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mavx2
 	endif
 endif
 
 ifeq ($(avx512),yes)
 	CXXFLAGS += -DUSE_AVX512
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mavx512bw
 	endif
 endif
 
 ifeq ($(sse42),yes)
 	CXXFLAGS += -DUSE_SSE42
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse4.2
 	endif
 endif
 
 ifeq ($(sse41),yes)
 	CXXFLAGS += -DUSE_SSE41
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse4.1
 	endif
 endif
 
 ifeq ($(ssse3),yes)
 	CXXFLAGS += -DUSE_SSSE3
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mssse3
 	endif
 endif
 
 ifeq ($(sse3),yes)
 	CXXFLAGS += -DUSE_SSE3
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -msse3
 	endif
+endif
+
+ifeq ($(neon),yes)
+	CXXFLAGS += -DUSE_NEON
 endif
 
 ifeq ($(arch),x86_64)
@@ -700,7 +704,7 @@ endif
 ### 3.7 pext
 ifeq ($(pext),yes)
 	CXXFLAGS += -DUSE_PEXT
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw msys2))
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
 		CXXFLAGS += -mbmi2
 	endif
 endif
@@ -793,6 +797,7 @@ help:
 	@echo "ppc-32                  > PPC 32-bit"
 	@echo "armv7                   > ARMv7 32-bit"
 	@echo "armv8                   > ARMv8 64-bit"
+	@echo "apple-silicon           > Apple silicon ARM64"
 	@echo "general-64              > unspecified 64-bit"
 	@echo "general-32              > unspecified 32-bit"
 	@echo ""
@@ -802,7 +807,6 @@ help:
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo "clang                   > LLVM Clang compiler"
 	@echo "icc                     > Intel compiler"
-	@echo "msys2                   > MSYS2"
 	@echo ""
 	@echo "Simple examples. If you don't know what to do, you likely want to run: "
 	@echo ""
@@ -923,6 +927,7 @@ config-sanity:
 	@echo "avx2: '$(avx2)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
+	@echo "neon: '$(neon)'"
 	@echo ""
 	@echo "Flags:"
 	@echo "CXX: $(CXX)"
@@ -936,7 +941,7 @@ config-sanity:
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
-	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a"
+	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a" || test "$(arch)" = "arm64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
@@ -948,6 +953,7 @@ config-sanity:
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
 	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
+	@test "$(neon)" = "yes" || test "$(neon)" = "no"
 	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
 $(EXE): $(OBJS)
@@ -1041,32 +1047,26 @@ icc-profile-use:
 ### Honey-XIr4-NN.bench:Nodes searched  : 3757150
 ### Honey-XIr4-NN.bench:Nodes/second    : 1442284
 ### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2471006
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1451348
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
-### Weakfish-XIr4-classical.bench:Nodes/second    : 147040
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Based on commits through 08/04/2020:
+### Based on commits through 08/05/2020:
 ### ======================================================
 ### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2418939
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 1321831
 ### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1397476
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 760578
 ### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2404104
+### Bluefish-XIr4-classical.bench:Nodes/second    : 1353263
 ### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1435796
+### Bluefish-XIr4-NN.bench:Nodes/second    : 805885
 ### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 2431374
+### Honey-XIr4-classical.bench:Nodes/second    : 1375810
 ### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 1448958
+### Honey-XIr4-NN.bench:Nodes/second    : 801439
 ### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2468436
+### Stockfish-XIr4-classical.bench:Nodes/second    : 1401891
 ### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1460394
+### Stockfish-XIr4-NN.bench:Nodes/second    : 804428
 ### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
-### Weakfish-XIr4-classical.bench:Nodes/second    : 167090
+### Weakfish-XIr4-classical.bench:Nodes/second    : 105028
 ### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Weakfish-XIr4-NN.bench:Nodes/second    : 159750
+### Weakfish-XIr4-NN.bench:Nodes/second    : 103621
 ### ======================================================
