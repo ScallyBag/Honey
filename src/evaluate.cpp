@@ -12,9 +12,9 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details..
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <algorithm>
 #include <cassert>
@@ -110,8 +110,9 @@ namespace {
   constexpr Value LazyThreshold1 =  Value(1400);
   constexpr Value LazyThreshold2 =  Value(1300);
   constexpr Value SpaceThreshold = Value(12222);
+#ifdef Stockfish
   constexpr Value NNUEThreshold  =   Value(500);
-
+#endif
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
 
@@ -181,6 +182,9 @@ namespace {
   constexpr Score MinorBehindPawn     = S( 18,  3);
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
+#ifndef Stockfish
+  constexpr Score QueenInfiltration   = S( -2, 14);
+#endif
   constexpr Score ReachableOutpost    = S( 31, 22);
   constexpr Score RestrictedPiece     = S(  7,  7);
   constexpr Score RookOnKingRing      = S( 16,  0);
@@ -422,6 +426,11 @@ namespace {
             Bitboard queenPinners;
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners))
                 score -= WeakQueen;
+                // Bonus for queen on weak square in enemy camp
+#ifndef Stockfish
+            if (relative_rank(Us, s) > RANK_4 && (~pe->pawn_attacks_span(Them) & s))
+                score += QueenInfiltration;
+#endif
         }
     }
     if (T)
@@ -943,6 +952,11 @@ make_v:
 Value Eval::evaluate(const Position& pos) {
 
   if (Eval::useNNUE)
+#ifndef Stockfish
+      return NNUE::evaluate(pos);
+  else
+      return Evaluation<NO_TRACE>(pos).value();
+#else
   {
       Value balance = pos.non_pawn_material(WHITE) - pos.non_pawn_material(BLACK);
       balance += 200 * (pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK));
@@ -951,6 +965,7 @@ Value Eval::evaluate(const Position& pos) {
          return NNUE::evaluate(pos) + Tempo;
   }
   return Evaluation<NO_TRACE>(pos).value();
+#endif
 }
 
 /// trace() is like evaluate(), but instead of returning a value, it returns

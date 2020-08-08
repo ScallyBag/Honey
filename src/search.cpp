@@ -288,13 +288,13 @@ void MainThread::search() {
                 << sync_endl;
   }
 #else
-   if (rootMoves.empty())
-   {
-       rootMoves.emplace_back(MOVE_NONE);
-       sync_cout << "info depth 0 score "
-                 << UCI::value(rootPos.checkers() ? -VALUE_MATE, -VALUE_MATE : VALUE_DRAW, VALUE_DRAW)
-                 << sync_endl;
-   }
+  if (rootMoves.empty())
+  {
+      rootMoves.emplace_back(MOVE_NONE);
+      sync_cout << "info depth 0 score "
+                << UCI::value(rootPos.checkers() ? -VALUE_MATE, -VALUE_MATE : VALUE_DRAW, VALUE_DRAW)
+                << sync_endl;
+  }
 #endif
   else
   {
@@ -466,7 +466,7 @@ skipLevels:
 
   if (   int(Options["MultiPV"]) == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || (Options["UCI_LimitStrength"]) || limitStrength)
+      && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]) || limitStrength)
       && rootMoves[0].pv[0] != MOVE_NONE)
       bestThread = Threads.get_best_thread();
 
@@ -693,7 +693,7 @@ void Thread::search() {
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
           }
-#ifndef Noir  //Noir starts at line 2270
+#ifndef Noir  //Noir starts at line 2294
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
@@ -1298,11 +1298,11 @@ moves_loop: // When in check, search starts from here
       if (rootNode && !std::count(thisThread->rootMoves.begin() + thisThread->pvIdx,
                                   thisThread->rootMoves.begin() + thisThread->pvLast, move))
           continue;
-
+#ifdef Stockfish
       // Check for legality
       if (!rootNode && !pos.legal(move))
           continue;
-
+#endif
       ss->moveCount = ++moveCount;
 
       if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 5000)
@@ -1453,7 +1453,14 @@ moves_loop: // When in check, search starts from here
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
-
+#ifndef Stockfish
+// Check for legality just before making the move
+      if (!rootNode && !pos.legal(move))
+      {
+          ss->moveCount = --moveCount;
+          continue;
+      }
+#endif
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
