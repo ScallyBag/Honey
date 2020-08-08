@@ -28,6 +28,9 @@ else
 EXE = stockfish
 endif
 
+gcc=gcc-10.1
+g++=g++-10.1 
+
 ### Installation dir definitions
 PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
@@ -223,7 +226,8 @@ endif
 ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
-	bits = 32
+	neon = yes
+#	bits = 64
 endif
 
 ifeq ($(ARCH),armv8)
@@ -263,19 +267,16 @@ LDFLAGS += $(EXTRALDFLAGS)
 ifeq ($(COMP),)
 	COMP=gcc
 endif
-
-ifeq ($(COMP),gcc)
+ifeq ($(COMP),gcc))
 	comp=gcc
-	CXX=g++
-	CXXFLAGS += -pedantic -Wextra -Wshadow
-
+	CXX=g++-10.1
+	CXXFLAGS += -pedantic -Wextra -Wshadow  -latomic -lm -lpthread -mfpu=neon
+	LCFLAGS   = $(CXXFLAGS) 
 	ifeq ($(ARCH),$(filter $(ARCH),armv7 armv8))
-		ifeq ($(OS),Android)
-			CXXFLAGS += -m$(bits)
-			LDFLAGS += -m$(bits)
-		endif
+			CXXFLAGS +=    -march=armv7-a+mp -mfloat-abi=hard -mfpu=neon-fp-armv8 
+			LDFLAGS += 
 	else
-		CXXFLAGS += -m$(bits)
+		CXXFLAGS += -m$(bits) 
 		LDFLAGS += -m$(bits)
 	endif
 
@@ -497,7 +498,7 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),$(filter $(comp),gcc clang))
-		CXXFLAGS += -flto
+#		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
 
