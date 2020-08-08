@@ -1049,24 +1049,24 @@ icc-profile-use:
 #
 ### Based on commits through 08/08/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 17382453
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2496402
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 18020940
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1550455
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4236306
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2443083
-### Bluefish-XIr4-NN.bench:Nodes searched  : 3864776
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1434586
-### Honey-XIr4-classical.bench:Nodes searched  : 4133150
-### Honey-XIr4-classical.bench:Nodes/second    : 2467552
-### Honey-XIr4-NN.bench:Nodes searched  : 3988631
-### Honey-XIr4-NN.bench:Nodes/second    : 1463717
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4770979
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2456734
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3624270
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1718477
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3755
-### Weakfish-XIr4-classical.bench:Nodes/second    : 134107
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3575
-### Weakfish-XIr4-NN.bench:Nodes/second    : 132407
+### Black-Diamond-XIr4-classical.bench:Nodes searched  : 17181111
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2446754
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 19121412
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1495379
+### Bluefish-XIr4-classical.bench:Nodes searched  : 4367314
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2482839
+### Bluefish-XIr4-NN.bench:Nodes searched  : 3872699
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1469714
+### Honey-XIr4-classical.bench:Nodes searched  : 4233025
+### Honey-XIr4-classical.bench:Nodes/second    : 2528688
+### Honey-XIr4-NN.bench:Nodes searched  : 4129471
+### Honey-XIr4-NN.bench:Nodes/second    : 1452504
+### Stockfish-XIr4-classical.bench:Nodes searched  : 4150588
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2335727
+### Stockfish-XIr4-NN.bench:Nodes searched  : 3758895
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1665438
+### Weakfish-XIr4-classical.bench:Nodes searched  : 3741
+### Weakfish-XIr4-classical.bench:Nodes/second    : 143884
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3654
+### Weakfish-XIr4-NN.bench:Nodes/second    : 130500
 ### ======================================================
