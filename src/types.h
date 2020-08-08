@@ -3,7 +3,7 @@
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
-  itfHEAD under the terms of the GNU General Public License as published by
+  it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
@@ -207,12 +207,12 @@ enum Value : int {
 #elif (defined Sullivan)
   #define PVM 100/100
   #define PVE 100/100
-  #define NVM  98/100
-  #define NVE  98/100
-  #define BVM  98/100
-  #define BVE  98/100
-  #define RVM  98/100
-  #define RVE  98/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
   #define QVM 100/100
   #define QVE 100/100
 
@@ -439,11 +439,11 @@ inline Value mg_value(Score s) {
   return Value(mg.s);
 }
 
-#define ENABLE_BASE_OPERATORS_ON(T)                             \
-constexpr T operator+(T d1, int d2) { return T(int(d1) + d2); } \
-constexpr T operator-(T d1, int d2) { return T(int(d1) - d2); } \
-constexpr T operator-(T d) { return T(-int(d)); }               \
-inline T& operator+=(T& d1, int d2) { return d1 = d1 + d2; }    \
+#define ENABLE_BASE_OPERATORS_ON(T)                                \
+constexpr T operator+(T d1, int d2) { return T(int(d1) + d2); }    \
+constexpr T operator-(T d1, int d2) { return T(int(d1) - d2); }    \
+constexpr T operator-(T d) { return T(-int(d)); }                  \
+inline T& operator+=(T& d1, int d2) { return d1 = d1 + d2; }       \
 inline T& operator-=(T& d1, int d2) { return d1 = d1 - d2; }
 
 #define ENABLE_INCR_OPERATORS_ON(T)                             \
