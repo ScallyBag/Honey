@@ -251,9 +251,11 @@ ssse3 = no
 sse41 = no
 sse42 = no
 avx2 = no
+bmi = no
 pext = no
 avx512 = no
 neon = no
+ARCH = x86-64-modern
 
 ### 2.2 Architecture specific
 ### native
@@ -364,7 +366,7 @@ ifeq ($(ARCH),x86-64-amd)
 	ssse3 = yes
 	sse41 = yes
 	sse42 = yes
-	mbmi = yes
+	amd = yes
 	avx2 = yes
 endif
 
@@ -413,15 +415,6 @@ ifeq ($(ARCH),apple-silicon)
 	prefetch = yes
 	popcnt = yes
 	neon = yes
-endif
-
-ifeq ($(ARCH),armv7-a)
-	arch = any
-endif
-
-ifeq ($(ARCH),armv8-a)
-	arch = any
-	bits = 64
 endif
 
 ifeq ($(ARCH),ppc-32)
@@ -658,6 +651,14 @@ ifeq ($(avx2),yes)
 	endif
 endif
 
+ifeq ($(amd),yes)
+	CXXFLAGS += -DUSE_AVX2
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -mavx2
+		CXXFLAGS += -mbmi
+	endif
+endif
+
 ifeq ($(avx512),yes)
 	CXXFLAGS += -DUSE_AVX512
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -721,17 +722,13 @@ ifeq ($(debug), no)
 
 	ifeq ($(comp),gcc)
 		CXXFLAGS += -flto
-	ifeq ($(gccmasqueraded),)
-		LDFLAGS += $(CXXFLAGS) -flto=jobserver
-	else
 		LDFLAGS += $(CXXFLAGS)
-	endif
 	endif
 
 	ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
 		CXXFLAGS += -flto
-		LDFLAGS += $(CXXFLAGS) -flto=jobserver
+		LDFLAGS += $(CXXFLAGS)
 	endif
 	endif
 endif
@@ -783,6 +780,7 @@ help:
 	@echo ""
 	@echo "x86-64-avx512           > x86 64-bit with avx512 support"
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
+	@echo "x86-64-amd           >    x86 64-bit with avx2 amd mbmi support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
 	@echo "x86-64-sse42            > x86 64-bit with sse42 support"
 	@echo "x86-64-modern           > x86 64-bit with sse41 support (x86-64-sse41)"
@@ -810,15 +808,18 @@ help:
 	@echo ""
 	@echo "Simple examples. If you don't know what to do, you likely want to run: "
 	@echo ""
-	@echo "make build ARCH=x86-64    (This is for 64-bit systems)"
-	@echo "make build ARCH=x86-32    (This is for 32-bit systems)"
+	@echo "make -j build ARCH=x86-64    (This is for 64-bit systems)"
+	@echo "make -j build ARCH=x86-32    (This is for 32-bit systems)"
 	@echo ""
 	@echo "Advanced examples, for experienced users: "
 	@echo ""
 	@echo "make build ARCH=x86-64 COMP=clang"
 	@echo "make build ARCH=armv8-a COMP=ndk NDK=~/android-ndk-r21"
-	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-4.8"
+	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc"
 	@echo ""
+	@echo "The selected architecture $(ARCH) enables the following configuration: "
+	@echo ""
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
 
 directory = ../bench_nodes
 all: | $(directory)
@@ -830,12 +831,12 @@ $(directory):
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
-build: config-sanity
+build:
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	@$(STRIP) $(EXE)
 	@rm -f *.o syzygy/*.o
 
-profile-build: config-sanity objclean profileclean
+profile-build: objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
@@ -890,7 +891,7 @@ net:
 
 # clean binaries and objects
 objclean:
-	@rm -f $(EXE) *.o ./syzygy/*.o ./nnue/*.o ./nnue/features/*.o  ./nnue/evaluate_nnue.o ./nnue/features/half_kp.o
+	@rm -f $(EXE) *.o ./syzygy/*.o ./nnue/*.o ./nnue/features/*.o
 
 # clean auxiliary profiling files
 profileclean:
@@ -925,6 +926,7 @@ config-sanity:
 	@echo "sse41: '$(sse41)'"
 	@echo "sse42: '$(sse42)'"
 	@echo "avx2: '$(avx2)'"
+	@echo "amd: '$(amd)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
 	@echo "neon: '$(neon)'"
@@ -940,7 +942,7 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
+	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" ||  test "$(arch)" = "amd" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a" || test "$(arch)" = "arm64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
@@ -951,6 +953,7 @@ config-sanity:
 	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
 	@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
+	@test "$(bmi)" = "yes" || test "$(bmi)" = "no"
 	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
@@ -1032,41 +1035,46 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/04/2020:
-### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2414444
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1402368
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2402748
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1436305
-### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 2432845
-### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 1442284
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Based on commits through 08/05/2020:
-### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 16889036
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 1321831
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 30448223
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 760578
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4260073
-### Bluefish-XIr4-classical.bench:Nodes/second    : 1353263
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4050381
-### Bluefish-XIr4-NN.bench:Nodes/second    : 805885
-### Honey-XIr4-classical.bench:Nodes searched  : 4021494
-### Honey-XIr4-classical.bench:Nodes/second    : 1375810
-### Honey-XIr4-NN.bench:Nodes searched  : 3757150
-### Honey-XIr4-NN.bench:Nodes/second    : 801439
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4746804
-### Stockfish-XIr4-classical.bench:Nodes/second    : 1401891
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4217618
-### Stockfish-XIr4-NN.bench:Nodes/second    : 804428
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3676
-### Weakfish-XIr4-classical.bench:Nodes/second    : 105028
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3834
-### Weakfish-XIr4-NN.bench:Nodes/second    : 103621
-### ======================================================
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
