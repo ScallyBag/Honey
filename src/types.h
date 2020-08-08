@@ -1,20 +1,20 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef TYPES_H_INCLUDED
 #define TYPES_H_INCLUDED
@@ -178,14 +178,71 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
-  PawnValueMg   = 126,   PawnValueEg   = 208,
-  KnightValueMg = 781,   KnightValueEg = 854,
-  BishopValueMg = 825,   BishopValueEg = 915,
-  RookValueMg   = 1276,  RookValueEg   = 1380,
-  QueenValueMg  = 2538,  QueenValueEg  = 2682,
+//Code idea below by Ed Schröder
+#if defined (Weakfish)
+  #define PVM 80/100
+  #define PVE 80/100
+  #define NVM 70/100
+  #define NVE 70/100
+  #define BVM 60/100
+  #define BVE 60/100
+  #define RVM 50/100
+  #define RVE 50/100
+  #define QVM 40/100
+  #define QVE 40/100
+
+
+#elif (defined Blau)
+  #define PVM 78/100
+  #define PVE 78/100
+  #define NVM 78/100
+  #define NVE 78/100
+  #define BVM 78/100
+  #define BVE 78/100
+  #define RVM 78/100
+  #define RVE 78/100
+  #define QVM 78/100
+  #define QVE 78/100
+
+#elif (defined Sullivan)
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+
+#else
+  #define PVM 100/100
+  #define PVE 100/100
+  #define NVM 100/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 100/100
+  #define RVM 100/100
+  #define RVE 100/100
+  #define QVM 100/100
+  #define QVE 100/100
+
+#endif
+
+  PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
+  KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
+  BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
+  RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
+  QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
   Tempo = 28,
 
-  MidgameLimit  = 15258, EndgameLimit  = 3915
+#ifdef Noir
+  VALUE_TB_WIN    = 101 * PawnValueEg,
+#endif
+
+  MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
+
 };
 
 enum PieceType {
@@ -389,15 +446,15 @@ constexpr T operator-(T d) { return T(-int(d)); }                  \
 inline T& operator+=(T& d1, int d2) { return d1 = d1 + d2; }       \
 inline T& operator-=(T& d1, int d2) { return d1 = d1 - d2; }
 
-#define ENABLE_INCR_OPERATORS_ON(T)                                \
-inline T& operator++(T& d) { return d = T(int(d) + 1); }           \
+#define ENABLE_INCR_OPERATORS_ON(T)                             \
+inline T& operator++(T& d) { return d = T(int(d) + 1); }        \
 inline T& operator--(T& d) { return d = T(int(d) - 1); }
 
-#define ENABLE_FULL_OPERATORS_ON(T)                                \
-ENABLE_BASE_OPERATORS_ON(T)                                        \
-constexpr T operator*(int i, T d) { return T(i * int(d)); }        \
-constexpr T operator*(T d, int i) { return T(int(d) * i); }        \
-constexpr T operator/(T d, int i) { return T(int(d) / i); }        \
+#define ENABLE_FULL_OPERATORS_ON(T)                             \
+ENABLE_BASE_OPERATORS_ON(T)                                     \
+constexpr T operator*(int i, T d) { return T(i * int(d)); }     \
+constexpr T operator*(T d, int i) { return T(int(d) * i); }     \
+constexpr T operator/(T d, int i) { return T(int(d) / i); }     \
 constexpr int operator/(T d1, T d2) { return int(d1) / int(d2); }  \
 inline T& operator*=(T& d, int i) { return d = T(int(d) * i); }    \
 inline T& operator/=(T& d, int i) { return d = T(int(d) / i); }
@@ -463,10 +520,18 @@ constexpr Square flip_file(Square s) { // Swap A1 <-> H1
   return Square(s ^ SQ_H1);
 }
 
+constexpr Square operator~(Square s) {
+  return Square(s ^ SQ_A8); // Vertical flip SQ_A1 -> SQ_A8
+}
+
 constexpr Piece operator~(Piece pc) {
   return Piece(pc ^ 8); // Swap color of piece B_KNIGHT <-> W_KNIGHT
 }
-
+#ifndef Stockfish
+inline File map_to_queenside(File f) {
+  return std::min(f, File(FILE_H - f)); // Map files ABCDEFGH to files ABCDDCBA
+}
+#endif
 constexpr CastlingRights operator&(Color c, CastlingRights cr) {
   return CastlingRights((c == WHITE ? WHITE_CASTLING : BLACK_CASTLING) & cr);
 }

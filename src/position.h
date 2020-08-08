@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -118,17 +118,23 @@ public:
   // Attacks to/from a given square
   Bitboard attackers_to(Square s) const;
   Bitboard attackers_to(Square s, Bitboard occupied) const;
+  Bitboard attacks_from(PieceType pt, Square s) const;
+  template<PieceType> Bitboard attacks_from(Square s) const;
+  template<PieceType> Bitboard attacks_from(Square s, Color c) const;
   Bitboard slider_blockers(Bitboard sliders, Square s, Bitboard& pinners) const;
 
-  // Properties of moves
-  bool legal(Move m) const;
-  bool pseudo_legal(const Move m) const;
-  bool capture(Move m) const;
-  bool capture_or_promotion(Move m) const;
-  bool gives_check(Move m) const;
-  bool advanced_pawn_push(Move m) const;
-  Piece moved_piece(Move m) const;
-  Piece captured_piece() const;
+    // Properties of moves
+    bool legal(Move m) const;
+    bool pseudo_legal(const Move m) const;
+    bool capture(Move m) const;
+    bool capture_or_promotion(Move m) const;
+    bool gives_check(Move m) const;
+    bool advanced_pawn_push(Move m) const;
+#if defined (Sullivan) || (Blau)
+    bool promotion_pawn_push(Move m) const;
+#endif
+    Piece moved_piece(Move m) const;
+    Piece captured_piece() const;
 
   // Piece specific
   bool pawn_passed(Color c, Square s) const;
@@ -158,6 +164,12 @@ public:
   Thread* this_thread() const;
   bool is_draw(int ply) const;
   bool has_game_cycle(int ply) const;
+#if defined (Sullivan) || (Blau) || (Noir)
+  bool king_danger() const;
+#endif
+#ifdef Noir
+  bool is_scb(Color c) const;
+#endif
   bool has_repeated() const;
   int rule50_count() const;
   Score psq_score() const;
@@ -297,6 +309,24 @@ inline Square Position::castling_rook_square(CastlingRights cr) const {
   return castlingRookSquare[cr];
 }
 
+template<PieceType Pt>
+inline Bitboard Position::attacks_from(Square s) const {
+  static_assert(Pt != PAWN, "Pawn attacks need color");
+
+  return  Pt == BISHOP || Pt == ROOK ? attacks_bb<Pt>(s, pieces())
+        : Pt == QUEEN  ? attacks_from<ROOK>(s) | attacks_from<BISHOP>(s)
+        : PseudoAttacks[Pt][s];
+}
+
+template<>
+inline Bitboard Position::attacks_from<PAWN>(Square s, Color c) const {
+  return PawnAttacks[c][s];
+}
+
+inline Bitboard Position::attacks_from(PieceType pt, Square s) const {
+  return attacks_bb(pt, s, pieces());
+}
+
 inline Bitboard Position::attackers_to(Square s) const {
   return attackers_to(s, pieces());
 }
@@ -325,6 +355,13 @@ inline bool Position::advanced_pawn_push(Move m) const {
   return   type_of(moved_piece(m)) == PAWN
         && relative_rank(sideToMove, to_sq(m)) > RANK_5;
 }
+
+#if defined (Sullivan) || (Blau)
+inline bool Position::promotion_pawn_push(Move m) const {
+    return   type_of(moved_piece(m)) == PAWN
+             && relative_rank(sideToMove, from_sq(m)) > RANK_5;
+}
+#endif
 
 inline int Position::pawns_on_same_color_squares(Color c, Square s) const {
   return popcount(pieces(c, PAWN) & ((DarkSquares & s) ? DarkSquares : ~DarkSquares));

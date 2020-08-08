@@ -1,20 +1,20 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
-  You should have received a copy of the GNU General Public License
-  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include <algorithm>
 #include <atomic>
@@ -65,6 +65,7 @@ enum TBType { WDL, DTZ }; // Used as template parameter
 enum TBFlag { STM = 1, Mapped = 2, WinPlies = 4, LossPlies = 8, Wide = 16, SingleValue = 128 };
 
 inline WDLScore operator-(WDLScore d) { return WDLScore(-int(d)); }
+//inline Square operator^=(Square& s, int i) { return s = Square(int(s) ^ i);
 inline Square operator^(Square s, int i) { return Square(int(s) ^ i); }
 
 const std::string PieceToChar = " PNBRQK  pnbrqk";
@@ -81,7 +82,7 @@ int LeadPawnsSize[6][4];       // [leadPawnsCnt][FILE_A..FILE_D]
 // Comparison function to sort leading pawns in ascending MapPawns[] order
 bool pawns_comp(Square i, Square j) { return MapPawns[i] < MapPawns[j]; }
 int off_A1H8(Square sq) { return int(rank_of(sq)) - file_of(sq); }
-
+#ifndef Noir
 constexpr Value WDL_to_value[] = {
    -VALUE_MATE + MAX_PLY + 1,
     VALUE_DRAW - 2,
@@ -89,6 +90,15 @@ constexpr Value WDL_to_value[] = {
     VALUE_DRAW + 2,
     VALUE_MATE - MAX_PLY - 1
 };
+#else
+constexpr Value WDL_to_value[] = {
+   -VALUE_TB_WIN + 6 * PawnValueEg,
+    VALUE_DRAW - 2,
+    VALUE_DRAW,
+    VALUE_DRAW + 2,
+    VALUE_TB_WIN - 6 * PawnValueEg
+};
+#endif
 
 template<typename T, int Half = sizeof(T) / 2, int End = sizeof(T) - 1>
 inline void swap_endian(T& x)
@@ -713,8 +723,11 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
         leadPawnsCnt = size;
 
         std::swap(squares[0], *std::max_element(squares, squares + leadPawnsCnt, pawns_comp));
-
+//#ifndef Stockfish
+//        tbFile = map_to_queenside(file_of(squares[0]));
+//#else
         tbFile = File(edge_distance(file_of(squares[0])));
+//#endif
     }
 
     // DTZ tables are one-sided, i.e. they store positions only for white to
@@ -770,7 +783,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     // piece is below RANK_5.
     if (rank_of(squares[0]) > RANK_4)
         for (int i = 0; i < size; ++i)
-            squares[i] = flip_rank(squares[i]);
+             squares[i] = flip_rank(squares[i]);
 
     // Look for the first piece of the leading group not on the A1-D4 diagonal
     // and ensure it is mapped below the diagonal.
@@ -1558,7 +1571,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
                : dtz < 0 ? (-dtz * 2 + cnt50 < 100 ? -1000 : -1000 + (-dtz + cnt50))
                : 0;
         m.tbRank = r;
-
+#ifndef Noir
         // Determine the score to be displayed for this move. Assign at least
         // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
         // closer to a real win.
@@ -1567,8 +1580,18 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
                    : r == 0     ? VALUE_DRAW
                    : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
                    :             -VALUE_MATE + MAX_PLY + 1;
-    }
 
+#else
+        // Determine the score to be displayed for this move. Assign at least
+        // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
+        // closer to a real win.
+        m.tbScore =  r >= bound ? VALUE_TB_WIN - PawnValueEg * (1 + popcount(pos.pieces(~pos.side_to_move())))
+                   : r >  0     ? Value((std::max( 3, r - 800) * int(PawnValueEg)) / 200)
+                   : r == 0     ? VALUE_DRAW
+                   : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
+                   :             -VALUE_TB_WIN + PawnValueEg * (1 + popcount(pos.pieces( pos.side_to_move())));
+#endif
+    }
     return true;
 }
 

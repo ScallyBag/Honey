@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -27,8 +27,10 @@
 
 #include "types.h"
 
+const std::string splash();
 const std::string engine_info(bool to_uci = false);
 const std::string compiler_info();
+
 void prefetch(void* addr);
 void start_logger(const std::string& fname);
 void* std_aligned_alloc(size_t alignment, size_t size);
@@ -52,8 +54,11 @@ inline TimePoint now() {
 
 template<class Entry, int Size>
 struct HashTable {
+#ifndef Noir
   Entry* operator[](Key key) { return &table[(uint32_t)key & (Size - 1)]; }
-
+#else
+  Entry* operator[](Key key) { return &table[key & (Size - 1)]; }
+#endif
 private:
   std::vector<Entry> table = std::vector<Entry>(Size); // Allocate on the heap
 };
@@ -133,5 +138,97 @@ inline uint64_t mul_hi64(uint64_t a, uint64_t b) {
 namespace WinProcGroup {
   void bindThisThread(size_t idx);
 }
+
+namespace FontColor {
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & black( std::basic_ostream< CharT, Traits > &os )
+  {
+    return os << "\033[1;107m\033[1;90m";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & red( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[1;91m";
+  }
+    template < class CharT, class Traits >
+    constexpr
+    std::basic_ostream< CharT, Traits > & green( std::basic_ostream< CharT, Traits > &os )
+    {
+       return os << "\033[40m\033[1;92m";  //green
+    }
+#ifdef Stockfish
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[1;92m";  //green
+  }
+#endif
+#ifdef Sullivan
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[1;93m";  //yellow
+  }
+#endif
+#ifdef Blau
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[1;106m\033[1;94m";  //blue & cyan
+  }
+#endif
+#ifdef Weakfish
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[1;97m"; //white
+  }
+#endif
+#ifdef Noir
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[1;107m\033[1;90m";  //black
+  }
+#endif
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & blue( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[1;94m";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & white( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[1;90m";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & error( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[1;107m\033[1;91m";
+  }
+
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & reset( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[0m";
+  }
+
+} // FontColor
+
 
 #endif // #ifndef MISC_H_INCLUDED
