@@ -3,7 +3,7 @@
 ### all builds have added features, 4 opening books can be used, adaptive ply,
 ### play by FIDE Elo ratings or CCRL Elo ratings
 ###
-
+export PATH=.:$PATH
 ### time the compile process
 set echo on
 #DATE=$(shell date +"%m/%d/%y")
@@ -18,7 +18,7 @@ start=`date +%s`
 #ARCH="ARCH=x86-64-amd"
 #ARCH="ARCH=x86-64-bmi2"
 #ARCH="ARCH=x86-64-avx2"
-ARCH="ARCH=armv7"
+ARCH="ARCH=armv8"
 #ARCH="ARCH=ppc-32"
 #ARCH="ARCH=ppc-64comp"
 
@@ -27,12 +27,12 @@ ARCH="ARCH=armv7"
 COMP="COMP=gcc"
 #COMP="COMP=icc"
 RASP="RASPBERRY=Pi"
-BUILD="build"
-#BUILD="profile-build"
+#BUILD="build"
+BUILD="profile-build"
 
 #make function
 function mke() {
-CXXFLAGS='' make -j3 $BUILD $ARCH $COMP $RASP "$@"
+CXXFLAGS='' make -j4 $BUILD $ARCH $COMP $RASP CPPFLAGS="-flto" "$@"
 }
 rm *bench
 mke WEAK=yes && wait

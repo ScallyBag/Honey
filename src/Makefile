@@ -164,29 +164,28 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench
-PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
+	PGOBENCH  = ./$(EXE) bench
+	PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
+	PGOBENCH  = ./$(EXE) bench 16 1 10
+	PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+	PGOBENCH  = ./$(EXE) bench 16 1 15
+	PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+	PGOBENCH  = ./$(EXE) bench 16 1 15
+	PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+	PGOBENCH  = ./$(EXE) bench 16 1 15
+	PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
 endif
 ifeq  ($(RASPBERRY),Pi)
-PGOBENCH  = ./$(EXE) bench 16 1 6
-PGOBENCH2 = ./$(EXE) bench 16 1 10 true
-#endif
+	PGOBENCH  = ./$(EXE) bench 16 1 10
+	PGOBENCH2 = ./$(EXE) bench 16 1 13 true
 endif
 ### Source and object files
 ifeq ($(FILES),with_c_book)
@@ -407,6 +406,7 @@ ifeq ($(ARCH),armv7)
 #	bits = 64
 endif
 
+
 ifeq ($(ARCH),armv8)
 	arch = armv8-a
 	prefetch = yes
@@ -444,14 +444,14 @@ LDFLAGS += $(EXTRALDFLAGS)
 ifeq ($(COMP),)
 	COMP=gcc
 endif
-ifeq ($(COMP),gcc))
+ifeq ($(COMP),gcc)
 	comp=gcc
 
 	CXX=g++-10.1
-	CXXFLAGS += -pedantic -Wextra -Wshadow  -latomic -lm -lpthread -mfpu=neon
+	CXXFLAGS += -pedantic -Wextra -Wshadow  -latomic -lm -lpthread 
 	LCFLAGS   = $(CXXFLAGS) 
 	ifeq ($(ARCH),$(filter $(ARCH),armv7 armv8))
-			CXXFLAGS += -mcpu=cortex-a53  -mfloat-abi=hard -mfpu=neon-fp-armv8 -mtune=cortex-a53 
+			CXXFLAGS += -Os  -mfloat-abi=hard -mfpu=neon-vfpv4 -funsafe-math-optimizations -mcpu=cortex-a53 -mtune=cortex-a53
 			LDFLAGS += 
 	else
 		CXXFLAGS += -m$(bits) 
@@ -641,7 +641,7 @@ ifeq ($(popcnt),yes)
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse3 -DUSE_POPCNT
 	else
-		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT
+		CXXFLAGS += -msss4 -mpopcnt -DUSE_POPCNT
 	endif
 endif
 
@@ -723,7 +723,7 @@ ifeq ($(debug), no)
 	endif
 
 	ifeq ($(comp),gcc)
-		CXXFLAGS += -flto
+		CXXFLAGS += #-flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
 
@@ -1046,7 +1046,7 @@ icc-profile-use:
 #
 #
 #
-#
-### Based on commits through 08/08/2020:
+### Based on commits through 08/09/2020:
+### Based on commits through 08/09/2020:
 ### ======================================================
 ### ======================================================
