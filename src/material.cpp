@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -58,7 +58,7 @@ namespace {
   Endgame<KQKRPs> ScaleKQKRPs[] = { Endgame<KQKRPs>(WHITE), Endgame<KQKRPs>(BLACK) };
   Endgame<KPsK>   ScaleKPsK[]   = { Endgame<KPsK>(WHITE),   Endgame<KPsK>(BLACK) };
   Endgame<KPKP>   ScaleKPKP[]   = { Endgame<KPKP>(WHITE),   Endgame<KPKP>(BLACK) };
-
+#ifndef Noir
   // Helper used to detect a given material distribution
   bool is_KXK(const Position& pos, Color us) {
     return  !more_than_one(pos.pieces(~us))
@@ -69,6 +69,17 @@ namespace {
     return   pos.non_pawn_material(us) == BishopValueMg
           && pos.count<PAWN  >(us) >= 1;
   }
+#else
+  bool is_KXK(const Position& pos, Color us) {
+    return  !more_than_one(pos.pieces(~us))
+          && pos.non_pawn_material(us) >= KnightValueMg;
+  }
+
+  bool is_KBPsK(const Position& pos, Color us) {
+    return    pos.is_scb(us)
+          &&  pos.count<PAWN  >(us) >= 1;
+  }
+#endif
 
   bool is_KQKRPs(const Position& pos, Color us) {
     return  !pos.count<PAWN>(us)
@@ -100,7 +111,13 @@ namespace {
             v +=  QuadraticOurs[pt1][pt2] * pieceCount[Us][pt2]
                 + QuadraticTheirs[pt1][pt2] * pieceCount[Them][pt2];
 
+#ifdef Blue
+        bonus += pieceCount[Us][pt1] * (100 * v / 128);
+#elif (defined Sullivan)
+        bonus += pieceCount[Us][pt1] * (100 * v / 116);
+#else
         bonus += pieceCount[Us][pt1] * v;
+#endif
     }
 
     return bonus;

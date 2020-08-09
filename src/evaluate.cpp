@@ -1,16 +1,16 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU General Public License for more details..
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -38,7 +38,7 @@ namespace Eval {
 
   void init_NNUE() {
 
-    useNNUE = Options["Use NNUE"];
+    useNNUE = Options["UseNN"];
     std::string eval_file = std::string(Options["EvalFile"]);
     if (useNNUE && eval_file_loaded != eval_file)
         if (Eval::NNUE::load_eval_file(eval_file))
@@ -50,9 +50,13 @@ namespace Eval {
     std::string eval_file = std::string(Options["EvalFile"]);
     if (useNNUE && eval_file_loaded != eval_file)
     {
-        std::cerr << "Use of NNUE evaluation, but the file " << eval_file << " was not loaded successfully. "
-                  << "These network evaluation parameters must be available, compatible with this version of the code. "
-                  << "The UCI option EvalFile might need to specify the full path, including the directory/folder name, to the file." << std::endl;
+        UCI::OptionsMap defaults;
+        UCI::init(defaults);
+
+        std::cerr << "NNUE evaluation used, but the network file " << eval_file << " was not loaded successfully. "
+                  << "These network evaluation parameters must be available, and compatible with this version of the code. "
+                  << "The UCI option EvalFile might need to specify the full path, including the directory/folder name, to the file. "
+                  << "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/"+std::string(defaults["EvalFile"]) << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
@@ -110,8 +114,11 @@ namespace {
   constexpr Value LazyThreshold1 =  Value(1400);
   constexpr Value LazyThreshold2 =  Value(1300);
   constexpr Value SpaceThreshold = Value(12222);
-  constexpr Value NNUEThreshold  =   Value(500);
-
+#ifdef Stockfish
+  constexpr Value NNUEThreshold  =   Value(460);
+#else
+  constexpr Value NNUEThreshold  =   Value(460)/2;
+#endif
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
 
@@ -181,6 +188,9 @@ namespace {
   constexpr Score MinorBehindPawn     = S( 18,  3);
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
+#ifndef Stockfish
+  constexpr Score QueenInfiltration   = S( -2, 14);
+#endif
   constexpr Score ReachableOutpost    = S( 31, 22);
   constexpr Score RestrictedPiece     = S(  7,  7);
   constexpr Score RookOnKingRing      = S( 16,  0);
@@ -345,7 +355,8 @@ namespace {
         {
             // Bonus if the piece is on an outpost square or can reach one
             // Reduced bonus for knights (BadOutpost) if few relevant targets
-            bb = OutpostRanks & attackedBy[Us][PAWN] & ~pe->pawn_attacks_span(Them);
+            bb = OutpostRanks & (attackedBy[Us][PAWN] | shift<Down>(pos.pieces(PAWN)))
+                              & ~pe->pawn_attacks_span(Them);
             Bitboard targets = pos.pieces(Them) & ~pos.pieces(PAWN);
 
             if (   Pt == KNIGHT
@@ -422,6 +433,11 @@ namespace {
             Bitboard queenPinners;
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners))
                 score -= WeakQueen;
+                // Bonus for queen on weak square in enemy camp
+#ifndef Stockfish
+            if (relative_rank(Us, s) > RANK_4 && (~pe->pawn_attacks_span(Them) & s))
+                score += QueenInfiltration;
+#endif
         }
     }
     if (T)
@@ -820,6 +836,9 @@ namespace {
         }
         else if (  pos.non_pawn_material(WHITE) == RookValueMg
                 && pos.non_pawn_material(BLACK) == RookValueMg
+#ifndef Stockfish
+                && !pe->passed_pawns(strongSide)
+#endif
                 && pos.count<PAWN>(strongSide) - pos.count<PAWN>(~strongSide) <= 1
                 && bool(KingSide & pos.pieces(strongSide, PAWN)) != bool(QueenSide & pos.pieces(strongSide, PAWN))
                 && (attacks_bb<KING>(pos.square<KING>(~strongSide)) & pos.pieces(~strongSide, PAWN)))
@@ -915,7 +934,7 @@ make_v:
         Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
-
+#ifdef Stockfish
     // Evaluation grain
     v = (v / 16) * 16;
 
@@ -926,6 +945,9 @@ make_v:
     v = v * (100 - pos.rule50_count()) / 100;
 
     return v;
+#else
+    return (pos.side_to_move() == WHITE ? v : -v) + Tempo;
+#endif
   }
 
 } // namespace
@@ -937,14 +959,19 @@ make_v:
 Value Eval::evaluate(const Position& pos) {
 
   if (Eval::useNNUE)
+#ifndef Stockfish
+      return NNUE::evaluate(pos);
+  else
+      return Evaluation<NO_TRACE>(pos).value();
+#else
   {
-      Value balance = pos.non_pawn_material(WHITE) - pos.non_pawn_material(BLACK);
-      balance += 200 * (pos.count<PAWN>(WHITE) - pos.count<PAWN>(BLACK));
+      Value v = eg_value(pos.psq_score());
       // Take NNUE eval only on balanced positions
-      if (abs(balance) < NNUEThreshold)
+      if (abs(v) < NNUEThreshold + 20 * pos.count<PAWN>())
          return NNUE::evaluate(pos) + Tempo;
   }
   return Evaluation<NO_TRACE>(pos).value();
+#endif
 }
 
 /// trace() is like evaluate(), but instead of returning a value, it returns

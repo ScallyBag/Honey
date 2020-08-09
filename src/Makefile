@@ -1,48 +1,205 @@
-# Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-# Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-# Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
-# Copyright (C) 2015-2019 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
-#
-# Stockfish is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Stockfish is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+### Honey, a UCI chess playing engine derived from Glaurung 2.1
+### Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-
+### Honey is free software: you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation, either version 3 of the License, or
+### (at your option) any later version.
+###
+### Honey is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
 ### ==========================================================================
 ### Section 1. General Configuration
 ### ==========================================================================
 
-### Executable name
-ifeq ($(COMP),mingw)
-EXE = stockfish.exe
-else
-EXE = stockfish
+DATE=$(shell date +"%m%d%y")
+DATE2=$(shell date +"%m%d")
+
+### Fortress Detection code that will help in positions such as this:
+### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
+### Fortress Detection code by Joe Ellis:
+### https://github.com/jhellis3/Stockfish/tree/game_cycle
+###	FORT = yes
+
+### HONEY=yes
+
+### Diamond evaluation based on Crystal by Joe Ellis
+### https://github.com/jhellis3/Stockfish/tree/crystal
+###	NOIR = yes
+
+### Bluefish evaluation by Eelco de Groot
+### http://talkchess.com/forum3/viewtopic.php?f=2&t=71929
+###	BLAU = yes
+
+### Weakfish has about 90% of the search code Elo improvements removed
+### WEAK = yes
+
+### Release versions , enter yes and release version below foor releases
+RELEASEVER = yes
+RELVERSION = XIr4
+
+### TEST versions, enter yes and labels below to build named test exe's
+TEST = no
+TESTv1 = $(DATE2)
+TESTv2 = NO_PROF
+ifeq ($(TEST),yes)
+	CXXFLAGS += -DTest
+endif
+
+### Uncomment for use with Raspberry Pi -  a slower NPS UCI option setting used in Play
+### by Elo and personalities
+###	RASPBERRY=Pi
+
+### Features include : Cerebellum book functionality, play by Elo (UCI limit strength), keyboard shortcuts and a few other items. Comment out to eliminate
+	FEATURE1=yes
+
+### should be no reason to change anything below here!
+### Only Honey with feature 1 will be publicly distributed at this time
+
+ifeq ($(FEATURE1),yes)
+	CXXFLAGS += -DAdd_Features
+	FILES = with_c_book
+	SUF =
+endif
+
+###  to reduce NPS setting using "setoption" command, to enable more similiar play when
+###  playimg at reduced strength on hardware
+ifeq ($(RASPBERRY),Pi)
+	CXXFLAGS += -DPi
+endif
+ifeq ($(HONEY),yes)
+    NAME=$(PRE)Honey$(SUF)
+    CXXFLAGS += -DSullivan
+	ifeq ($(BLAU),yes)
+		CXXFLAGS += -DBlau
+		PRE=Blue-
+	endif
+	ifeq ($(RELEASEVER),no)
+		ifeq ($(TEST),no)
+			ifeq ($(COMP),mingw)
+				EXE  = $(NAME)-dev-$(DATE).exe
+				EXE2 = $(NAME)-dev-$(DATE)
+			else
+				EXE = $(NAME)-dev-$(DATE)
+			endif
+		endif
+		ifeq ($(TEST),yes)
+		        ifeq ($(COMP),mingw)
+			        EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+							EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+		        else
+			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+                        endif
+		endif
+	endif
+	ifeq ($(RELEASEVER),yes)
+        CXXFLAGS += -DReleaseVer
+		ifeq ($(COMP),mingw)
+			EXE  = $(NAME)-$(RELVERSION).exe
+			EXE2 = $(NAME)-$(RELVERSION)
+		else
+			EXE = $(NAME)-$(RELVERSION)
+		endif
+	endif
+endif
+
+### Note:  For building cur-dev stockfish with the features added.
+ifeq ($(NOIR),yes)
+	CXXFLAGS += -DNoir
+	NAME=Black-Diamond
+endif
+ifneq ($(HONEY),yes)
+	ifneq ($(NOIR),yes)
+		ifeq ($(BLAU),yes)
+			CXXFLAGS += -DBlau
+			PRE=Blue
+		else ifeq ($(WEAK),yes)
+			CXXFLAGS += -DWeakfish
+			PRE=Weak
+		else
+			PRE=Stock
+			STOCKFISH = yes
+			CXXFLAGS += -DStockfish
+		endif
+	NAME=$(PRE)fish$(SUF)
+  endif
+	ifeq ($(RELEASEVER),no)
+      ifeq ($(TEST),no)
+		  ifeq ($(COMP),mingw)
+			  EXE  = $(NAME)-dev-$(DATE).exe
+				EXE2 = $(NAME)-dev-$(DATE)
+		  else
+			  EXE = $(NAME)-dev-$(DATE)
+    	endif
+      endif
+		  ifeq ($(TEST),yes)
+		  ifeq ($(COMP),mingw)
+			  EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+				EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+      else
+			  EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+      endif
+      endif
+	endif
+	ifeq ($(RELEASEVER),yes)
+		CXXFLAGS += -DReleaseVer
+		ifeq ($(COMP),mingw)
+			EXE  = $(NAME)-$(RELVERSION).exe
+			EXE2 = $(NAME)-$(RELVERSION)
+		else
+		EXE = $(NAME)-$(RELVERSION)
+		endif
+	endif
 endif
 
 gcc=gcc-10.1
 g++=g++-10.1 
 
 ### Installation dir definitions
-PREFIX = /usr/local
+PREFIX = /opt/local
+#PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-PGOBENCH = ./$(EXE) bench
-
+ifeq  ($(WEAK),yes)
+PGOBENCH  = ./$(EXE) bench
+PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
+endif
+ifeq  ($(NOIR),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 10
+PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
+endif
+ifeq  ($(STOCKFISH),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 15
+PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+endif
+ifeq  ($(HONEY),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 15
+PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+endif
+ifeq  ($(BLAU),yes)
+PGOBENCH  = ./$(EXE) bench 16 1 15
+PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+endif
+ifeq  ($(RASPBERRY),Pi)
+PGOBENCH  = ./$(EXE) bench 16 1 6
+PGOBENCH2 = ./$(EXE) bench 16 1 10 true
+#endif
+endif
 ### Source and object files
+ifeq ($(FILES),with_c_book)
+SRCS = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp \
+	material.cpp misc.cpp movegen.cpp movepick.cpp pawns.cpp polybook.cpp position.cpp psqt.cpp \
+	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
+	nnue/evaluate_nnue.cpp nnue/features/half_kp.cpp
+else
 SRCS = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp \
 	material.cpp misc.cpp movegen.cpp movepick.cpp pawns.cpp position.cpp psqt.cpp \
 	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
 	nnue/evaluate_nnue.cpp nnue/features/half_kp.cpp
+endif
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
@@ -97,12 +254,18 @@ ssse3 = no
 sse41 = no
 sse42 = no
 avx2 = no
+bmi = no
 pext = no
 avx512 = no
 neon = no
 ARCH = x86-64-modern
 
 ### 2.2 Architecture specific
+### native
+ifeq ($(native),yes)
+CXXFLAGS += -march=native
+endif
+
 ifeq ($(ARCH),general-32)
 	arch = any
 	bits = 32
@@ -196,6 +359,20 @@ ifeq ($(ARCH),x86-64-avx2)
 	avx2 = yes
 endif
 
+ifeq ($(ARCH),x86-64-amd)
+	arch = x86_64
+	bits = 64
+	prefetch = yes
+	popcnt = yes
+	sse = yes
+	sse3 = yes
+	ssse3 = yes
+	sse41 = yes
+	sse42 = yes
+	amd = yes
+	avx2 = yes
+endif
+
 ifeq ($(ARCH),x86-64-bmi2)
 	arch = x86_64
 	prefetch = yes
@@ -283,6 +460,9 @@ ifeq ($(COMP),gcc))
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
+
+	gccversion = $(shell $(CXX) --version)
+	gccisclang = $(findstring clang,$(gccversion))
 endif
 
 ifeq ($(COMP),mingw)
@@ -327,7 +507,7 @@ ifeq ($(COMP),clang)
 	endif
 	endif
 
-	ifeq ($(ARCH),$(filter $(ARCH),armv7 armv8))
+	ifeq ($(ARCH),armv7)
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -336,6 +516,37 @@ ifeq ($(COMP),clang)
 		CXXFLAGS += -m$(bits)
 		LDFLAGS += -m$(bits)
 	endif
+
+	ifeq ($(ARCH),armv8)
+		ifeq ($(OS),Android)
+			CXXFLAGS += -m$(bits)
+			LDFLAGS += -m$(bits)
+		endif
+	else
+		CXXFLAGS += -m$(bits)
+		LDFLAGS += -m$(bits)
+	endif
+endif
+### Using NDK pass the path to the NDK using NDK=/path_to_ndk when invoking the makefile
+ifeq ($(COMP),ndk)
+	comp=clang
+	ifeq ($(KERNEL),Linux)
+		HOST=linux-x86_64
+	endif
+	ifeq ($(KERNEL),Darwin)
+		HOST=darwin-x86_64
+	endif
+	CXX=$(NDK)/toolchains/llvm/prebuilt/$(HOST)/bin/clang++
+
+	ifeq ($(ARCH),armv7-a)
+		CXXFLAGS += -target armv7a-linux-androideabi21
+	endif
+	ifeq ($(ARCH),armv8-a)
+		CXXFLAGS += -target aarch64-linux-android21
+	endif
+
+	CXXFLAGS += -pedantic -Wextra -Wshadow
+	LDFLAGS += -static-libstdc++
 endif
 
 ifeq ($(comp),icc)
@@ -352,8 +563,8 @@ endif
 endif
 
 ifeq ($(KERNEL),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.15
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.15
+	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
+	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
@@ -370,10 +581,12 @@ endif
 ifneq ($(comp),mingw)
 	# On Android Bionic's C library comes with its own pthread implementation bundled in
 	ifneq ($(OS),Android)
+	ifneq ($(COMP),ndk)
 		# Haiku has pthreads in its libroot, so only link it in on other platforms
 		ifneq ($(KERNEL),Haiku)
 			LDFLAGS += -lpthread
 		endif
+	endif
 	endif
 endif
 
@@ -441,6 +654,14 @@ ifeq ($(avx2),yes)
 	endif
 endif
 
+ifeq ($(amd),yes)
+	CXXFLAGS += -DUSE_AVX2
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -mavx2
+		CXXFLAGS += -mbmi
+	endif
+endif
+
 ifeq ($(avx512),yes)
 	CXXFLAGS += -DUSE_AVX512
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -501,19 +722,18 @@ ifeq ($(debug), no)
 #		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
-
+  endif
 # To use LTO and static linking on windows, the tool chain requires a recent gcc:
 # gcc version 10.1 in msys2 or TDM-GCC version 9.2 are know to work, older might not.
 # So, only enable it for a cross from Linux by default.
 	ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
-		CXXFLAGS += -flto
-		LDFLAGS += $(CXXFLAGS)
+		CXXFLAGS += -flto-thin
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
 	endif
 	endif
 endif
 endif
-
 ### 3.9 Android 5 can only run position independent executables. Note that this
 ### breaks Android 4.0 and earlier.
 ifeq ($(OS), Android)
@@ -521,15 +741,31 @@ ifeq ($(OS), Android)
 	LDFLAGS += -fPIE -pie
 endif
 
+### strip executable
+ifeq ($(COMP), ndk)
+	ifeq ($(ARCH),armv7-a)
+		SUB_DIR=arm-linux-androideabi
+	endif
+	ifeq ($(ARCH),armv8-a)
+		SUB_DIR=aarch64-linux-android
+	endif
+	STRIP=$(NDK)/toolchains/llvm/prebuilt/$(HOST)/$(SUB_DIR)/bin/strip
+else
+	STRIP=strip
+endif
 ### ==========================================================================
 ### Section 4. Public Targets
 ### ==========================================================================
 
 help:
 	@echo ""
-	@echo "To compile stockfish, type: "
+	@echo "To compile Honey, type: "
+	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
+	@echo "<target> would be 'build' or 'profile-build'"
 	@echo ""
-	@echo "make target ARCH=arch [COMP=compiler] [COMPCXX=cxx]"
+	@echo "To compile stockfish, uncomment this line in the makefile: "
+	@echo "'### HONEY=yes' by remvoing the 3 #(pound signs)"
+	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
 	@echo ""
 	@echo "Supported targets:"
 	@echo ""
@@ -544,6 +780,7 @@ help:
 	@echo ""
 	@echo "x86-64-avx512           > x86 64-bit with avx512 support"
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
+	@echo "x86-64-amd           >    x86 64-bit with avx2 amd mbmi support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
 	@echo "x86-64-sse42            > x86 64-bit with sse42 support"
 	@echo "x86-64-modern           > x86 64-bit with sse41 support (x86-64-sse41)"
@@ -576,28 +813,37 @@ help:
 	@echo ""
 	@echo "Advanced examples, for experienced users: "
 	@echo ""
-	@echo "make -j build ARCH=x86-64-modern COMP=clang"
-	@echo "make -j profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-4.8"
+	@echo "make build ARCH=x86-64 COMP=clang"
+	@echo "make build ARCH=armv8-a COMP=ndk NDK=~/android-ndk-r21"
+	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc"
 	@echo ""
 	@echo "The selected architecture $(ARCH) enables the following configuration: "
 	@echo ""
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
+
+directory = ../bench_nodes
+all: | $(directory)
+$(directory):
+	mkdir -p $@
 
 
 .PHONY: help build profile-build strip install clean net objclean profileclean \
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
-build: config-sanity
-	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+build:
+	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
+	@$(STRIP) $(EXE)
+	@rm -f *.o syzygy/*.o
 
-profile-build: config-sanity objclean profileclean
+profile-build: objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	$(PGOBENCH) > /dev/null
+	@$(PGOBENCH)  >/dev/null  && wait
+	@$(PGOBENCH2) >/dev/null  && wait
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -605,6 +851,24 @@ profile-build: config-sanity objclean profileclean
 	@echo ""
 	@echo "Step 4/4. Deleting profile data ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
+ifeq ($(COMP),mingw)
+	strip $(EXE)
+else
+#	strip $(EXE)
+endif
+
+ifeq ($(COMP),mingw)
+	$(EXE) bench >/dev/null 2> $(EXE2)-classical.bench && wait
+	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
+endif
+	rm -f *.o syzygy/*.o llvm-profdata
+#	touch * syzygy/*
+#	cp $(EXE) /opt/picochess/engines/armv7l
+	@echo ""
+	@echo "==================================="
+	@echo "$(EXE) build completed..."
+	@echo "==================================="
+	@echo ""
 
 strip:
 	strip $(EXE)
@@ -662,6 +926,7 @@ config-sanity:
 	@echo "sse41: '$(sse41)'"
 	@echo "sse42: '$(sse42)'"
 	@echo "avx2: '$(avx2)'"
+	@echo "amd: '$(amd)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
 	@echo "neon: '$(neon)'"
@@ -677,7 +942,7 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
+	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" ||  test "$(arch)" = "amd" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a" || test "$(arch)" = "arm64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
@@ -688,13 +953,14 @@ config-sanity:
 	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
 	@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
+	@test "$(bmi)" = "yes" || test "$(bmi)" = "no"
 	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
 	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
 $(EXE): $(OBJS)
-	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 clang-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
@@ -703,21 +969,22 @@ clang-profile-make:
 	all
 
 clang-profile-use:
+## /opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
 	llvm-profdata merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata' \
+	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \
 	all
 
 gcc-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate' \
+	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' \
+	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
@@ -736,3 +1003,60 @@ icc-profile-use:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
 
 -include .depend
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 08/09/2020:
+### Based on commits through 08/09/2020:
+### ======================================================
+### Black-Diamond-XIr4-classical.bench:Nodes searched  : 17181111
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2454093
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 19121412
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1607381
+### Bluefish-XIr4-classical.bench:Nodes searched  : 4134585
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2477282
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4064926
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1562831
+### Honey-XIr4-classical.bench:Nodes searched  : 3558081
+### Honey-XIr4-classical.bench:Nodes/second    : 2484693
+### Honey-XIr4-NN.bench:Nodes searched  : 4048045
+### Honey-XIr4-NN.bench:Nodes/second    : 1569009
+### Stockfish-XIr4-classical.bench:Nodes searched  : 3807625
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2436100
+### Stockfish-XIr4-NN.bench:Nodes searched  : 3521534
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1739888
+### Weakfish-XIr4-classical.bench:Nodes searched  : 3741
+### Weakfish-XIr4-classical.bench:Nodes/second    : 133607
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3654
+### Weakfish-XIr4-NN.bench:Nodes/second    : 126000
+### ======================================================

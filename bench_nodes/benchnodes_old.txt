@@ -1,0 +1,15 @@
+### Based on commits through 12/20/2019:
+### ======================================================
+### Black-Diamond-122019.nodes:Nodes searched  : 9311931
+### Blue-Honey-FD-dev-122019.nodes:Nodes searched  : 13276817
+### Blue-Honey-dev-122019.nodes:Nodes searched  : 5455321
+### Bluefish-122019.nodes:Nodes searched  : 5589824
+### Bluefish-FD-122019.nodes:Nodes searched  : 12051099
+### Honey-FD-dev-122019.nodes:Nodes searched  : 11434545
+### Honey-XR7_NODESTEST.nodes:Nodes searched  : 5092260
+### Honey-dev-122019.nodes:Nodes searched  : 5092260
+### Stockfish-122019.nodes:Nodes searched  : 5371271
+### Stockfish-FD-122019.nodes:Nodes searched  : 12914146
+### Stockfish_Test.nodes:Nodes searched  : 5371271
+### Weakfish-122019.nodes:Nodes searched  : 7061019
+### ======================================================
