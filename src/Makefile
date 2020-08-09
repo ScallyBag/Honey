@@ -460,6 +460,9 @@ ifeq ($(COMP),gcc)
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
+
+	gccversion = $(shell $(CXX) --version)
+	gccisclang = $(findstring clang,$(gccversion))
 endif
 
 ifeq ($(COMP),mingw)
@@ -716,24 +719,31 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),clang)
-		CXXFLAGS += -flto
+		CXXFLAGS += -flto=thin
 		LDFLAGS += $(CXXFLAGS)
 	endif
-
+# GCC and CLANG use different methods for parallelizing LTO and CLANG pretends to be
+# GCC on some systems.
 	ifeq ($(comp),gcc)
+	ifeq ($(gccisclang),)
 		CXXFLAGS += -flto
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
+	else
+		CXXFLAGS += -flto=thin
 		LDFLAGS += $(CXXFLAGS)
 	endif
-
+  endif
+# To use LTO and static linking on windows, the tool chain requires a recent gcc:
+# gcc version 10.1 in msys2 or TDM-GCC version 9.2 are know to work, older might not.
+# So, only enable it for a cross from Linux by default.
 	ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
-		CXXFLAGS += -flto
-		LDFLAGS += $(CXXFLAGS)
+		CXXFLAGS += -flto-thin
+		LDFLAGS += $(CXXFLAGS) -flto=jobserver
 	endif
 	endif
 endif
 endif
-
 ### 3.9 Android 5 can only run position independent executables. Note that this
 ### breaks Android 4.0 and earlier.
 ifeq ($(OS), Android)
@@ -960,7 +970,7 @@ config-sanity:
 	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
 $(EXE): $(OBJS)
-	$(CXX) -o $@ $(OBJS) $(LDFLAGS)
+	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
 
 clang-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
@@ -1036,37 +1046,27 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 08/08/2020:
+### Based on commits through 08/09/2020:
+### Based on commits through 08/09/2020:
 ### ======================================================
 ### Black-Diamond-XIr4-classical.bench:Nodes searched  : 17181111
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2446754
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2443970
 ### Black-Diamond-XIr4-NN.bench:Nodes searched  : 19121412
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1495379
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4367314
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2482839
-### Bluefish-XIr4-NN.bench:Nodes searched  : 3872699
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1469714
-### Honey-XIr4-classical.bench:Nodes searched  : 4233025
-### Honey-XIr4-classical.bench:Nodes/second    : 2528688
-### Honey-XIr4-NN.bench:Nodes searched  : 4129471
-### Honey-XIr4-NN.bench:Nodes/second    : 1452504
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4150588
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2335727
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3758895
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1665438
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1491413
+### Bluefish-XIr4-classical.bench:Nodes searched  : 4134585
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2452304
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4064926
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1441974
+### Honey-XIr4-classical.bench:Nodes searched  : 3558081
+### Honey-XIr4-classical.bench:Nodes/second    : 2447098
+### Honey-XIr4-NN.bench:Nodes searched  : 4048045
+### Honey-XIr4-NN.bench:Nodes/second    : 1439049
+### Stockfish-XIr4-classical.bench:Nodes searched  : 3807625
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2412943
+### Stockfish-XIr4-NN.bench:Nodes searched  : 3672884
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1630943
 ### Weakfish-XIr4-classical.bench:Nodes searched  : 3741
-### Weakfish-XIr4-classical.bench:Nodes/second    : 143884
+### Weakfish-XIr4-classical.bench:Nodes/second    : 138555
 ### Weakfish-XIr4-NN.bench:Nodes searched  : 3654
-### Weakfish-XIr4-NN.bench:Nodes/second    : 130500
+### Weakfish-XIr4-NN.bench:Nodes/second    : 135333
 ### ======================================================
