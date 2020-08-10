@@ -117,7 +117,7 @@ namespace {
 #ifdef Stockfish
   constexpr Value NNUEThreshold  =   Value(460);
 #else
-  constexpr Value NNUEThreshold  =   Value(460)/2;
+  constexpr Value NNUEThreshold  =   Value(O);
 #endif
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
@@ -960,7 +960,7 @@ Value Eval::evaluate(const Position& pos) {
 
   if (Eval::useNNUE)
 #ifndef Stockfish
-      return NNUE::evaluate(pos);
+      return NNUE::evaluate(pos) + Tempo;
   else
       return Evaluation<NO_TRACE>(pos).value();
 #else
