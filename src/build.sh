@@ -3,7 +3,9 @@
 ### all builds have added features, 4 opening books can be used, adaptive ply,
 ### play by FIDE Elo ratings or CCRL Elo ratings
 ###
+
 export PATH=.:$PATH
+
 ### time the compile process
 set echo on
 #DATE=$(shell date +"%m/%d/%y")
@@ -32,7 +34,9 @@ BUILD="profile-build"
 
 #make function
 function mke() {
+
 CXXFLAGS='' make -j4 $BUILD $ARCH $COMP $RASP CPPFLAGS="-flto" "$@"
+
 }
 rm *bench
 mke WEAK=yes && wait
