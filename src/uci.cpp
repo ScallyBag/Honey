@@ -316,7 +316,7 @@ void set(istringstream& is) {
         if (token == "go" || token == "eval")
         {
 
-            cerr << FontColor::reset << "\nPosition: " << cnt++ << '/' << num << endl;
+            cerr << "\nPosition: " << cnt++ << '/' << num << endl;
             if (token == "go")
             {
                lap_time_elapsed = now();
@@ -332,7 +332,7 @@ void set(istringstream& is) {
                if (Options["UseNN"])
                    cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
                 else
-                   cerr << "Classical evaluation enabled." << FontColor::reset << sync_endl;
+                   cerr << "Classical evaluation enabled." <<  sync_endl;
             }
             else
                trace_eval(pos);
@@ -358,7 +358,7 @@ void set(istringstream& is) {
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
     dbg_print(); // Just before exiting
-
+    cerr << FontColor::reset  << endl;
     cerr << "\n================================="
          << "\nTotal time (ms) : " << elapsed
          << "\nNodes searched  : " << nodes << endl;
