@@ -400,7 +400,8 @@ endif
 ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
-	bits = 32
+	bits = 64
+	neon = yes
 endif
 
 ifeq ($(ARCH),armv8)
@@ -437,17 +438,17 @@ CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++17 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++17
 LDFLAGS += $(EXTRALDFLAGS)
 
-ifeq ($(COMP),)
+ifeq ($(COMP),gcc)
 	COMP=gcc
 endif
 
 ifeq ($(COMP),gcc)
 	comp=gcc
-	CXX=g++
+	CXX=g++-10.1
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
-	CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
+	CXXFLAGS +=  -mcpu=cortex-a72   -march=armv8-a+crypto  -mtune=cortex-a72 
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -842,6 +843,7 @@ $(directory):
         clang-profile-use clang-profile-make
 
 build:
+#        export COMP=g++-10.1
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	@$(STRIP) $(EXE)
 	@rm -f *.o syzygy/*.o
@@ -867,7 +869,7 @@ else
 #	strip $(EXE)
 endif
 
-ifeq ($(COMP),mingw)
+ifeq ($(COMP),mingw,gcc)
 	$(EXE) bench >/dev/null 2> $(EXE2)-classical.bench && wait
 	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
 endif
@@ -987,12 +989,14 @@ clang-profile-use:
 	all
 
 gcc-profile-make:
+	COMP=gcc-10.1
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
+	COMP=gcc-10.1
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer' \
 	EXTRALDFLAGS='-lgcov' \
@@ -1043,30 +1047,24 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-### Based on commits through 08/09/2020:
-### Based on commits through 08/10/2020:
+### ### ### ### ### ### ### Based on commits through 08/11/2020:
+### ### ### ### ### ### ### ======================================================
+### ### ### ### ### ### ### ======================================================
+### ### ### ### ### ### Based on commits through 08/11/2020:
+### ### ### ### ### ### ======================================================
+### ### ### ### ### ### ======================================================
+### ### ### ### ### Based on commits through 08/11/2020:
+### ### ### ### ### ======================================================
+### ### ### ### ### ======================================================
+### ### ### ### Based on commits through 08/11/2020:
+### ### ### ### ======================================================
+### ### ### ### ======================================================
+### ### ### Based on commits through 08/11/2020:
+### ### ### ======================================================
+### ### ### ======================================================
+### ### Based on commits through 08/11/2020:
+### ### ======================================================
+### ### ======================================================
+### Based on commits through 08/11/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 17181111
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 1315955
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 18761596
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 842233
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4134585
-### Bluefish-XIr4-classical.bench:Nodes/second    : 1367709
-### Bluefish-XIr4-NN.bench:Nodes searched  : 3902559
-### Bluefish-XIr4-NN.bench:Nodes/second    : 842339
-### Honey-XIr4-classical.bench:Nodes searched  : 3558081
-### Honey-XIr4-classical.bench:Nodes/second    : 2445416
-### Honey-XIr4-NN.bench:Nodes searched  : 3518301
-### Honey-XIr4-NN.bench:Nodes/second    : 1562994
-### Stockfish-XIr4-classical.bench:Nodes searched  : 3807625
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2347487
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3521534
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1713641
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3741
-### Weakfish-XIr4-classical.bench:Nodes/second    : 98447
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3348
-### Weakfish-XIr4-NN.bench:Nodes/second    : 81658
 ### ======================================================
