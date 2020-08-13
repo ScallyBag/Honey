@@ -316,7 +316,7 @@ void set(istringstream& is) {
         if (token == "go" || token == "eval")
         {
 
-            cerr << FontColor::reset << "\nPosition: " << cnt++ << '/' << num << endl;
+            cerr << "\nPosition: " << cnt++ << '/' << num << endl;
             if (token == "go")
             {
                lap_time_elapsed = now();
@@ -330,9 +330,9 @@ void set(istringstream& is) {
                else
                    cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
                if (Options["UseNN"])
-                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled" << sync_endl;
                 else
-                   cerr << "Classical evaluation enabled." << FontColor::reset << sync_endl;
+                   cerr << "Classical evaluation enabled" << sync_endl;
             }
             else
                trace_eval(pos);
