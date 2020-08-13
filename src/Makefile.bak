@@ -837,11 +837,12 @@ clean: objclean profileclean
 	@rm -f .depend *~ core
 
 net:
-	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-	@echo "Default net: $(nnuenet)"
-	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
-	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -sL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
-	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
+	$(eval currentNet := $(shell grep make_net ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+	@echo "Default net: $(currentNet)"
+	$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
+	$(eval wget := $(shell echo "wget -O "eval.bin"   "))
+	$(wget) $(sha256nn)
+
 
 # clean binaries and objects
 objclean:
@@ -996,29 +997,10 @@ icc-profile-use:
 #
 #
 #
-#
-#
-### Based on commits through 08/09/2020:
-### Based on commits through 08/10/2020:
+### Based on commits through 08/12/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 17181111
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 1315955
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 18761596
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 842233
-### Bluefish-XIr4-classical.bench:Nodes searched  : 4134585
-### Bluefish-XIr4-classical.bench:Nodes/second    : 1367709
-### Bluefish-XIr4-NN.bench:Nodes searched  : 3902559
-### Bluefish-XIr4-NN.bench:Nodes/second    : 842339
-### Honey-XIr4-classical.bench:Nodes searched  : 3558081
-### Honey-XIr4-classical.bench:Nodes/second    : 2445416
-### Honey-XIr4-NN.bench:Nodes searched  : 3518301
-### Honey-XIr4-NN.bench:Nodes/second    : 1562994
-### Stockfish-XIr4-classical.bench:Nodes searched  : 3807625
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2347487
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3521534
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1713641
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3741
-### Weakfish-XIr4-classical.bench:Nodes/second    : 98447
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3348
-### Weakfish-XIr4-NN.bench:Nodes/second    : 81658
+### Stockfish-XIr4-classical.bench:Nodes searched  : 4964866
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2452997
+### Stockfish-XIr4-NN.bench:Nodes searched  : 3965581
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1769558
 ### ======================================================

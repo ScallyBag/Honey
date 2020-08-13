@@ -837,11 +837,12 @@ clean: objclean profileclean
 	@rm -f .depend *~ core
 
 net:
-	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-	@echo "Default net: $(nnuenet)"
-	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
-	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -sL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
-	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
+	$(eval currentNet := $(shell grep make_net ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+	@echo "Default net: $(currentNet)"
+	$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
+	$(eval wget := $(shell echo "wget -O "eval.bin"   "))
+	$(wget) $(sha256nn)
+
 
 # clean binaries and objects
 objclean:
@@ -996,27 +997,26 @@ icc-profile-use:
 #
 #
 #
-#
-### Based on commits through 08/11/2020:
+### Based on commits through 08/12/2020:
 ### ======================================================
 ### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19602863
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2447604
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 24885402
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1635153
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2439380
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 21764551
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1630669
 ### Bluefish-XIr4-classical.bench:Nodes searched  : 5129521
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2444957
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4405425
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1634666
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2417304
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4731337
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1570829
 ### Honey-XIr4-classical.bench:Nodes searched  : 4768056
-### Honey-XIr4-classical.bench:Nodes/second    : 2447667
-### Honey-XIr4-NN.bench:Nodes searched  : 4247022
-### Honey-XIr4-NN.bench:Nodes/second    : 1596624
+### Honey-XIr4-classical.bench:Nodes/second    : 2469215
+### Honey-XIr4-NN.bench:Nodes searched  : 4629824
+### Honey-XIr4-NN.bench:Nodes/second    : 1553111
 ### Stockfish-XIr4-classical.bench:Nodes searched  : 4964866
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2456638
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4216759
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1800494
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2417169
+### Stockfish-XIr4-NN.bench:Nodes searched  : 3965581
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1755458
 ### Weakfish-XIr4-classical.bench:Nodes searched  : 3838
-### Weakfish-XIr4-classical.bench:Nodes/second    : 159916
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3468
-### Weakfish-XIr4-NN.bench:Nodes/second    : 133384
+### Weakfish-XIr4-classical.bench:Nodes/second    : 132344
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3373
+### Weakfish-XIr4-NN.bench:Nodes/second    : 120464
 ### ======================================================

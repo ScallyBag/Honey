@@ -7,7 +7,7 @@
 ### time the compile process
 set echo on
 #DATE=$(shell date +"%m/%d/%y")
-start=`date +%s`
+starttime=`date +%s`
 
 #ARCH="ARCH=general-32"
 #ARCH="ARCH=x86-32-old"
@@ -31,6 +31,8 @@ COMP="COMP=mingw"
 BUILD="profile-build"
 
 #make function
+make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
+
 function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
 }
@@ -40,7 +42,7 @@ mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
 mke
-
+read
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""
@@ -59,6 +61,6 @@ rm *.bench
 #strip Black* Blue* Honey* Weak* Stock*
 
 end=`date +%s`
-runtime=$((end-start))
+runtime=$((end-starttime))
 echo ""
 echo Processing time $runtime seconds...
