@@ -150,7 +150,7 @@ void init(OptionsMap& o) {
     o["Slow Play"]                << Option(false);
 
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*///
-    o["UCI_Elo"]               << Option(1750, 1000, 2900);
+    o["UCI_Elo"]                  << Option(1750, 1000, 2900);
     o["FIDE_Ratings"]             << Option(true);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
@@ -170,6 +170,7 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(false, on_use_NNUE);
+    o["make_net"]                 << Option("nn-112bb1c8cdb5.nnue");
     o["EvalFile"]                 << Option("eval.bin", on_eval_file);
 }
 

@@ -115,7 +115,7 @@ namespace {
   constexpr Value LazyThreshold2 =  Value(1300);
   constexpr Value SpaceThreshold = Value(12222);
 #ifdef Stockfish
-  constexpr Value NNUEThreshold  =   Value(460);
+  constexpr Value NNUEThreshold  =   Value(575);
 #else
   constexpr Value NNUEThreshold  =   Value(0);
 #endif
@@ -967,7 +967,7 @@ Value Eval::evaluate(const Position& pos) {
   {
       Value v = eg_value(pos.psq_score());
       // Take NNUE eval only on balanced positions
-      if (abs(v) < NNUEThreshold + 20 * pos.count<PAWN>())
+      if (abs(v) < NNUEThreshold)
          return NNUE::evaluate(pos) + Tempo;
   }
   return Evaluation<NO_TRACE>(pos).value();

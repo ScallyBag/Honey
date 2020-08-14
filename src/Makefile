@@ -225,10 +225,8 @@ endif
 # prefetch = yes/no   --- -DUSE_PREFETCH   --- Use prefetch asm-instruction
 # popcnt = yes/no     --- -DUSE_POPCNT     --- Use popcnt asm-instruction
 # sse = yes/no        --- -msse            --- Use Intel Streaming SIMD Extensions
-# sse3 = yes/no       --- -msse3           --- Use Intel Streaming SIMD Extensions 3
 # ssse3 = yes/no      --- -mssse3          --- Use Intel Supplemental Streaming SIMD Extensions 3
 # sse41 = yes/no      --- -msse4.1         --- Use Intel Streaming SIMD Extensions 4.1
-# sse42 = yes/no      --- -msse4.2         --- Use Intel Streaming SIMD Extensions 4.2
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
 # pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
 # avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
@@ -245,11 +243,10 @@ sanitize = no
 bits = 64
 prefetch = no
 popcnt = no
+mmx = no
 sse = no
-sse3 = no
 ssse3 = no
 sse41 = no
-sse42 = no
 avx2 = no
 bmi = no
 pext = no
@@ -277,6 +274,7 @@ ifeq ($(ARCH),x86-32)
 	arch = i386
 	bits = 32
 	prefetch = yes
+	mmx = yes
 	sse = yes
 endif
 
@@ -290,18 +288,10 @@ ifeq ($(ARCH),x86-64)
 	sse = yes
 endif
 
-ifeq ($(ARCH),x86-64-sse3)
-	arch = x86_64
-	prefetch = yes
-	sse = yes
-	sse3 = yes
-endif
-
 ifeq ($(ARCH),x86-64-sse3-popcnt)
 	arch = x86_64
 	prefetch = yes
 	sse = yes
-	sse3 = yes
 	popcnt = yes
 endif
 
@@ -309,18 +299,7 @@ ifeq ($(ARCH),x86-64-ssse3)
 	arch = x86_64
 	prefetch = yes
 	sse = yes
-	sse3 = yes
 	ssse3 = yes
-endif
-
-ifeq ($(ARCH),x86-64-sse41)
-	arch = x86_64
-	prefetch = yes
-	popcnt = yes
-	sse = yes
-	sse3 = yes
-	ssse3 = yes
-	sse41 = yes
 endif
 
 ifeq ($(ARCH),x86-64-modern)
@@ -328,20 +307,17 @@ ifeq ($(ARCH),x86-64-modern)
 	prefetch = yes
 	popcnt = yes
 	sse = yes
-	sse3 = yes
 	ssse3 = yes
 	sse41 = yes
 endif
 
-ifeq ($(ARCH),x86-64-sse42)
+ifeq ($(ARCH),x86-64-sse41-popcnt)
 	arch = x86_64
 	prefetch = yes
 	popcnt = yes
 	sse = yes
-	sse3 = yes
 	ssse3 = yes
 	sse41 = yes
-	sse42 = yes
 endif
 
 ifeq ($(ARCH),x86-64-avx2)
@@ -349,24 +325,8 @@ ifeq ($(ARCH),x86-64-avx2)
 	prefetch = yes
 	popcnt = yes
 	sse = yes
-	sse3 = yes
 	ssse3 = yes
 	sse41 = yes
-	sse42 = yes
-	avx2 = yes
-endif
-
-ifeq ($(ARCH),x86-64-amd)
-	arch = x86_64
-	bits = 64
-	prefetch = yes
-	popcnt = yes
-	sse = yes
-	sse3 = yes
-	ssse3 = yes
-	sse41 = yes
-	sse42 = yes
-	amd = yes
 	avx2 = yes
 endif
 
@@ -375,10 +335,8 @@ ifeq ($(ARCH),x86-64-bmi2)
 	prefetch = yes
 	popcnt = yes
 	sse = yes
-	sse3 = yes
 	ssse3 = yes
 	sse41 = yes
-	sse42 = yes
 	avx2 = yes
 	pext = yes
 endif
@@ -388,10 +346,8 @@ ifeq ($(ARCH),x86-64-avx512)
 	prefetch = yes
 	popcnt = yes
 	sse = yes
-	sse3 = yes
 	ssse3 = yes
 	sse41 = yes
-	sse42 = yes
 	avx2 = yes
 	pext = yes
 	avx512 = yes
@@ -425,8 +381,7 @@ endif
 
 ifeq ($(ARCH),ppc-64)
 	arch = ppc64
-	popcnt = yes
-	prefetch = yes
+	popcnt = yes	prefetch = yes
 endif
 
 ### ==========================================================================
@@ -441,15 +396,14 @@ LDFLAGS += $(EXTRALDFLAGS)
 ifeq ($(COMP),gcc)
 	COMP=gcc
 endif
-
 ifeq ($(COMP),gcc)
 	comp=gcc
 	CXX=g++
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
-	CXXFLAGS +=  -mcpu=cortex-a72   -march=armv8-a+crypto  -mtune=cortex-a72 
-		ifeq ($(OS),Android)
+	CXXFLAGS += -mcpu=cortex-a72 -march=armv8-a+crypto+simd -mtune=cortex-a72   
+ 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
 		endif
@@ -655,25 +609,10 @@ ifeq ($(avx2),yes)
 	endif
 endif
 
-ifeq ($(amd),yes)
-	CXXFLAGS += -DUSE_AVX2
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -mavx2
-		CXXFLAGS += -mbmi
-	endif
-endif
-
 ifeq ($(avx512),yes)
 	CXXFLAGS += -DUSE_AVX512
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -mavx512bw
-	endif
-endif
-
-ifeq ($(sse42),yes)
-	CXXFLAGS += -DUSE_SSE42
-	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -msse4.2
+		CXXFLAGS += -mavx512f -mavx512bw
 	endif
 endif
 
@@ -691,10 +630,10 @@ ifeq ($(ssse3),yes)
 	endif
 endif
 
-ifeq ($(sse3),yes)
-	CXXFLAGS += -DUSE_SSE3
+ifeq ($(mmx),yes)
+	CXXFLAGS += -DUSE_MMX
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
-		CXXFLAGS += -msse3
+		CXXFLAGS += -mmmx
 	endif
 endif
 
@@ -722,29 +661,35 @@ ifeq ($(debug), no)
 	ifeq ($(comp),clang)
 		CXXFLAGS += -flto=thin
 		LDFLAGS += $(CXXFLAGS)
-	endif
+
 # GCC and CLANG use different methods for parallelizing LTO and CLANG pretends to be
 # GCC on some systems.
-	ifeq ($(comp),gcc)
+	else ifeq ($(comp),gcc)
 	ifeq ($(gccisclang),)
 		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS) -flto=jobserver
+		ifneq ($(findstring MINGW,$(KERNEL)),)
+			LDFLAGS += -save-temps
+		else ifneq ($(findstring MSYS,$(KERNEL)),)
+			LDFLAGS += -save-temps
+		endif
 	else
 		CXXFLAGS += -flto=thin
 		LDFLAGS += $(CXXFLAGS)
 	endif
-  endif
+
 # To use LTO and static linking on windows, the tool chain requires a recent gcc:
 # gcc version 10.1 in msys2 or TDM-GCC version 9.2 are know to work, older might not.
 # So, only enable it for a cross from Linux by default.
-	ifeq ($(comp),mingw)
+	else ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
-		CXXFLAGS += -flto-thin
+		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS) -flto=jobserver
 	endif
 	endif
 endif
 endif
+
 ### 3.9 Android 5 can only run position independent executables. Note that this
 ### breaks Android 4.0 and earlier.
 ifeq ($(OS), Android)
@@ -791,16 +736,13 @@ help:
 	@echo ""
 	@echo "x86-64-avx512           > x86 64-bit with avx512 support"
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
-	@echo "x86-64-amd           >    x86 64-bit with avx2 amd mbmi support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
-	@echo "x86-64-sse42            > x86 64-bit with sse42 support"
-	@echo "x86-64-modern           > x86 64-bit with sse41 support (x86-64-sse41)"
-	@echo "x86-64-sse41            > x86 64-bit with sse41 support"
+	@echo "x86-64-sse41-popcnt     > x86 64-bit with sse41 and popcnt support"
+	@echo "x86-64-modern           > the same as previous (x86-64-sse41-popcnt)"
 	@echo "x86-64-ssse3            > x86 64-bit with ssse3 support"
 	@echo "x86-64-sse3-popcnt      > x86 64-bit with sse3 and popcnt support"
-	@echo "x86-64-sse3             > x86 64-bit with sse3 support"
 	@echo "x86-64                  > x86 64-bit generic"
-	@echo "x86-32                  > x86 32-bit (also enables SSE)"
+	@echo "x86-32                  > x86 32-bit (also enables MMX and SSE)"
 	@echo "x86-32-old              > x86 32-bit fall back for old hardware"
 	@echo "ppc-64                  > PPC 64-bit"
 	@echo "ppc-32                  > PPC 32-bit"
@@ -843,7 +785,6 @@ $(directory):
         clang-profile-use clang-profile-make
 
 build:
-#        export COMP=g++-10.1
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 	@$(STRIP) $(EXE)
 	@rm -f *.o syzygy/*.o
@@ -892,11 +833,12 @@ clean: objclean profileclean
 	@rm -f .depend *~ core
 
 net:
-	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-	@echo "Default net: $(nnuenet)"
-	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
-	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -sL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
-	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
+	$(eval currentNet := $(shell grep make_net ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+	@echo "Default net: $(currentNet)"
+	$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
+	$(eval wget := $(shell echo "wget -O "eval.bin"   "))
+	$(wget) $(sha256nn)
+
 
 # clean binaries and objects
 objclean:
@@ -905,7 +847,7 @@ objclean:
 # clean auxiliary profiling files
 profileclean:
 	@rm -rf profdir
-	@rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda
+	@rm -f bench.txt *.gcda *.gcno ./syzygy/*.gcda ./nnue/*.gcda ./nnue/features/*.gcda *.s
 	@rm -f stockfish.profdata *.profraw
 
 default:
@@ -930,12 +872,9 @@ config-sanity:
 	@echo "prefetch: '$(prefetch)'"
 	@echo "popcnt: '$(popcnt)'"
 	@echo "sse: '$(sse)'"
-	@echo "sse3: '$(sse3)'"
 	@echo "ssse3: '$(ssse3)'"
 	@echo "sse41: '$(sse41)'"
-	@echo "sse42: '$(sse42)'"
 	@echo "avx2: '$(avx2)'"
-	@echo "amd: '$(amd)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
 	@echo "neon: '$(neon)'"
@@ -951,18 +890,15 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
-	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" ||  test "$(arch)" = "amd" || \
+	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8-a" || test "$(arch)" = "arm64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
 	@test "$(sse)" = "yes" || test "$(sse)" = "no"
-	@test "$(sse3)" = "yes" || test "$(sse3)" = "no"
 	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
 	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
-	@test "$(sse42)" = "yes" || test "$(sse42)" = "no"
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
-	@test "$(bmi)" = "yes" || test "$(bmi)" = "no"
 	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
@@ -1044,9 +980,38 @@ icc-profile-use:
 #
 #
 #
-### ### ### Based on commits through 08/12/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### ### ### ### Based on commits through 08/13/2020:
+### ### ### ### ======================================================
+### ### ### ### ### Based on commits through 08/13/2020:
+### ### ### ### ### ### Based on commits through 08/13/2020:
+### ### ### ### ### ### ======================================================
+### ### ### ### ### ### ======================================================
+### ### ### ### ### Based on commits through 08/13/2020:
+### ### ### ### ### ======================================================
+### ### ### ### ### ======================================================
+### ### ### ### Based on commits through 08/13/2020:
+### ### ### ### ======================================================
+### ### ### ### ======================================================
+### ### ### Based on commits through 08/13/2020:
 ### ### ### ======================================================
 ### ### ### ======================================================
-### Based on commits through 08/12/2020:
+### ### Based on commits through 08/13/2020:
+### ### ======================================================
+### ### ======================================================
+### Based on commits through 08/13/2020:
 ### ======================================================
 ### ======================================================

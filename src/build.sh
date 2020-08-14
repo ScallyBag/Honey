@@ -7,7 +7,7 @@
 ### time the compile process
 set echo on
 #DATE=$(shell date +"%m/%d/%y")
-start=`date +%s`
+starttime=`date +%s`
 
 #ARCH="ARCH=general-32"
 #ARCH="ARCH=x86-32-old"
@@ -28,9 +28,11 @@ COMP="COMP=gcc"
 #COMP="COMP=icc"
 
 BUILD="build"
-BUILD="profile-build"
+#BUILD="profile-build"
 
 #make function
+make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
+
 function mke() {
 CXXFLAGS='' make -j4 $BUILD $ARCH $COMP "$@"
 }
@@ -40,7 +42,7 @@ mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
 mke
-
+read
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""
@@ -52,14 +54,14 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 ##rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '1050,1172d' ../src/Makefile
-sed '1049r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '1000,1172d' ../src/Makefile
+sed '999r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 #rm *.bench
 strip Black*4 Blue*4 Honey*4 Weak*4 Stock*4
 
 end=`date +%s`
-runtime=$((end-start))
+runtime=$((end-starttime))
 echo ""
 echo Processing time $runtime seconds...
 
