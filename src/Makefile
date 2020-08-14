@@ -230,6 +230,7 @@ endif
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
 # pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
 # avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
+# vnni = yes/no       --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 512
 # neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
 #
 # Note that Makefile is space sensitive, so when adding new architectures
@@ -251,6 +252,7 @@ avx2 = no
 bmi = no
 pext = no
 avx512 = no
+vnni = no
 neon = no
 ARCH = x86-64-modern
 
@@ -351,6 +353,19 @@ ifeq ($(ARCH),x86-64-avx512)
 	avx2 = yes
 	pext = yes
 	avx512 = yes
+endif
+
+ifeq ($(ARCH),x86-64-vnni)
+	arch = x86_64
+	prefetch = yes
+	popcnt = yes
+	sse = yes
+	ssse3 = yes
+	sse41 = yes
+	avx2 = yes
+	pext = yes
+	avx512 = yes
+	vnni = yes
 endif
 
 ifeq ($(ARCH),armv7)
@@ -617,6 +632,13 @@ ifeq ($(avx512),yes)
 	endif
 endif
 
+ifeq ($(vnni),yes)
+	CXXFLAGS += -DUSE_VNNI
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -mavx512vnni -mavx512dq -mavx512vl
+	endif
+endif
+
 ifeq ($(sse41),yes)
 	CXXFLAGS += -DUSE_SSE41
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -643,7 +665,7 @@ ifeq ($(neon),yes)
 endif
 
 ifeq ($(arch),x86_64)
-	CXXFLAGS += -DUSE_SSE2
+	CXXFLAGS += -msse2 -DUSE_SSE2
 endif
 
 ### 3.7 pext
@@ -735,6 +757,7 @@ help:
 	@echo ""
 	@echo "Supported archs:"
 	@echo ""
+	@echo "x86-64-vnni             > x86 64-bit with vnni support"
 	@echo "x86-64-avx512           > x86 64-bit with avx512 support"
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
@@ -881,6 +904,7 @@ config-sanity:
 	@echo "avx2: '$(avx2)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
+	@echo "vnni: '$(vnni)'"
 	@echo "neon: '$(neon)'"
 	@echo ""
 	@echo "Flags:"
@@ -905,6 +929,7 @@ config-sanity:
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
 	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
+	@test "$(vnni)" = "yes" || test "$(vnni)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
 	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
@@ -972,51 +997,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 08/12/2020:
+### Based on commits through 08/14/2020:
 ### ======================================================
 ### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19602863
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2439380
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 21764551
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1630669
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2479491
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 20352292
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1674672
 ### Bluefish-XIr4-classical.bench:Nodes searched  : 5129521
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2417304
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4731337
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1570829
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2478029
+### Bluefish-XIr4-NN.bench:Nodes searched  : 4841038
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1630528
 ### Honey-XIr4-classical.bench:Nodes searched  : 4768056
-### Honey-XIr4-classical.bench:Nodes/second    : 2469215
-### Honey-XIr4-NN.bench:Nodes searched  : 4629824
-### Honey-XIr4-NN.bench:Nodes/second    : 1553111
+### Honey-XIr4-classical.bench:Nodes/second    : 2548399
+### Honey-XIr4-NN.bench:Nodes searched  : 4370098
+### Honey-XIr4-NN.bench:Nodes/second    : 1620956
 ### Stockfish-XIr4-classical.bench:Nodes searched  : 4964866
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2417169
-### Stockfish-XIr4-NN.bench:Nodes searched  : 3965581
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1755458
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2386954
+### Stockfish-XIr4-NN.bench:Nodes searched  : 4171946
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1750711
 ### Weakfish-XIr4-classical.bench:Nodes searched  : 3838
-### Weakfish-XIr4-classical.bench:Nodes/second    : 132344
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3373
-### Weakfish-XIr4-NN.bench:Nodes/second    : 120464
+### Weakfish-XIr4-classical.bench:Nodes/second    : 153520
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3557
+### Weakfish-XIr4-NN.bench:Nodes/second    : 127035
 ### ======================================================

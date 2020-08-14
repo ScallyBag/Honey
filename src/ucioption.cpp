@@ -170,7 +170,7 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(false, on_use_NNUE);
-    o["make_net"]                 << Option("nn-112bb1c8cdb5.nnue");
+    o["make_net"]                 << Option("nn-82215d0fd0df.nnue");
     o["EvalFile"]                 << Option("eval.bin", on_eval_file);
 }
 
