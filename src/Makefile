@@ -128,8 +128,8 @@ ifneq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),no)
       ifeq ($(TEST),no)
 		  ifeq ($(COMP),mingw)
-			  EXE  = $(NAME)-dev-$(DATE).exe
-				EXE2 = $(NAME)-dev-$(DATE)
+                          EXE  = $(NAME)-dev-$(DATE).exe
+                          EXE2 = $(NAME)-dev-$(DATE)
 		  else
 			  EXE = $(NAME)-dev-$(DATE)
     	endif
@@ -249,7 +249,6 @@ sse = no
 ssse3 = no
 sse41 = no
 avx2 = no
-bmi = no
 pext = no
 avx512 = no
 vnni = no
@@ -418,7 +417,7 @@ ifeq ($(COMP),gcc)
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
-	CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
+                CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -998,25 +997,26 @@ icc-profile-use:
 #
 #
 ### Based on commits through 08/14/2020:
+### Based on commits through 08/14/2020:
 ### ======================================================
 ### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19602863
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2479491
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2454960
 ### Black-Diamond-XIr4-NN.bench:Nodes searched  : 20352292
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1674672
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1688846
 ### Bluefish-XIr4-classical.bench:Nodes searched  : 5129521
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2478029
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2443792
 ### Bluefish-XIr4-NN.bench:Nodes searched  : 4841038
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1630528
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1611530
 ### Honey-XIr4-classical.bench:Nodes searched  : 4768056
-### Honey-XIr4-classical.bench:Nodes/second    : 2548399
+### Honey-XIr4-classical.bench:Nodes/second    : 2509503
 ### Honey-XIr4-NN.bench:Nodes searched  : 4370098
-### Honey-XIr4-NN.bench:Nodes/second    : 1620956
+### Honey-XIr4-NN.bench:Nodes/second    : 1594926
 ### Stockfish-XIr4-classical.bench:Nodes searched  : 4964866
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2386954
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2420705
 ### Stockfish-XIr4-NN.bench:Nodes searched  : 4171946
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1750711
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1739760
 ### Weakfish-XIr4-classical.bench:Nodes searched  : 3838
-### Weakfish-XIr4-classical.bench:Nodes/second    : 153520
+### Weakfish-XIr4-classical.bench:Nodes/second    : 147615
 ### Weakfish-XIr4-NN.bench:Nodes searched  : 3557
-### Weakfish-XIr4-NN.bench:Nodes/second    : 127035
+### Weakfish-XIr4-NN.bench:Nodes/second    : 142280
 ### ======================================================
