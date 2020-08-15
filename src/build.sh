@@ -36,7 +36,7 @@ make net   ## pulls down the latest  Nn file from Stockfish and renames it to "e
 function mke() {
 CXXFLAGS=''-flto  make -j4 $BUILD $ARCH $COMP "$@"
 }
-rm *bench
+rm bench*.txt *bench
 mke WEAK=yes && wait
 mke NOIR=yes && wait
 mke BLAU=yes && wait
@@ -46,10 +46,10 @@ read
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""
-#mv benchnodes.txt benchnodes_old.txt
+mv benchnodes.txt benchnodes_old.txt
 echo "$( date +'Based on commits through %m/%d/%Y:')">> benchnodes.txt
 echo "======================================================">> benchnodes.txt
-grep -E 'searched|Nodes/second' include="*.bench"  /dev/null >> benchnodes.txt
+grep -E 'searched|Nodes/second' *.bench  /dev/null >> benchnodes.txt
 echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 ##rm *.nodes benchnodes.txt-e
