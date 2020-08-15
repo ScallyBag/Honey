@@ -128,8 +128,8 @@ ifneq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),no)
       ifeq ($(TEST),no)
 		  ifeq ($(COMP),mingw)
-			  EXE  = $(NAME)-dev-$(DATE).exe
-				EXE2 = $(NAME)-dev-$(DATE)
+                          EXE  = $(NAME)-dev-$(DATE).exe
+                          EXE2 = $(NAME)-dev-$(DATE)
 		  else
 			  EXE = $(NAME)-dev-$(DATE)
     	endif
@@ -230,6 +230,7 @@ endif
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
 # pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
 # avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
+# vnni = yes/no       --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 512
 # neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
 #
 # Note that Makefile is space sensitive, so when adding new architectures
@@ -248,9 +249,9 @@ sse = no
 ssse3 = no
 sse41 = no
 avx2 = no
-bmi = no
 pext = no
 avx512 = no
+vnni = no
 neon = no
 ARCH = x86-64-modern
 
@@ -353,6 +354,19 @@ ifeq ($(ARCH),x86-64-avx512)
 	avx512 = yes
 endif
 
+ifeq ($(ARCH),x86-64-vnni)
+	arch = x86_64
+	prefetch = yes
+	popcnt = yes
+	sse = yes
+	ssse3 = yes
+	sse41 = yes
+	avx2 = yes
+	pext = yes
+	avx512 = yes
+	vnni = yes
+endif
+
 ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
@@ -402,8 +416,10 @@ ifeq ($(COMP),gcc)
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
-	CXXFLAGS += -mcpu=cortex-a72 -march=armv8-a+crypto+simd -mtune=cortex-a72   
- 		ifeq ($(OS),Android)
+		CXXFLAGS += -mcpu=cortex-a72 -march=armv8-a+crypto+simd -mtune=cortex-a72   
+#	        CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53 	
+		ifeq ($(OS),Android)
+
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
 		endif
@@ -616,6 +632,13 @@ ifeq ($(avx512),yes)
 	endif
 endif
 
+ifeq ($(vnni),yes)
+	CXXFLAGS += -DUSE_VNNI
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -mavx512vnni -mavx512dq -mavx512vl
+	endif
+endif
+
 ifeq ($(sse41),yes)
 	CXXFLAGS += -DUSE_SSE41
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -642,7 +665,7 @@ ifeq ($(neon),yes)
 endif
 
 ifeq ($(arch),x86_64)
-	CXXFLAGS += -DUSE_SSE2
+	CXXFLAGS += -msse2 -DUSE_SSE2
 endif
 
 ### 3.7 pext
@@ -734,6 +757,7 @@ help:
 	@echo ""
 	@echo "Supported archs:"
 	@echo ""
+	@echo "x86-64-vnni             > x86 64-bit with vnni support"
 	@echo "x86-64-avx512           > x86 64-bit with avx512 support"
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
@@ -877,6 +901,7 @@ config-sanity:
 	@echo "avx2: '$(avx2)'"
 	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
+	@echo "vnni: '$(vnni)'"
 	@echo "neon: '$(neon)'"
 	@echo ""
 	@echo "Flags:"
@@ -901,6 +926,7 @@ config-sanity:
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
 	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
+	@test "$(vnni)" = "yes" || test "$(vnni)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
 	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
 
@@ -971,47 +997,15 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### ### ### ### Based on commits through 08/13/2020:
-### ### ### ### ======================================================
-### ### ### ### ### Based on commits through 08/13/2020:
-### ### ### ### ### ### Based on commits through 08/13/2020:
-### ### ### ### ### ### ======================================================
-### ### ### ### ### ### ======================================================
-### ### ### ### ### Based on commits through 08/13/2020:
-### ### ### ### ### ======================================================
-### ### ### ### ### ======================================================
-### ### ### ### Based on commits through 08/13/2020:
+### ### ### ### Based on commits through 08/14/2020:
 ### ### ### ### ======================================================
 ### ### ### ### ======================================================
-### ### ### Based on commits through 08/13/2020:
+### ### ### Based on commits through 08/14/2020:
 ### ### ### ======================================================
 ### ### ### ======================================================
-### ### Based on commits through 08/13/2020:
+### ### Based on commits through 08/14/2020:
 ### ### ======================================================
 ### ### ======================================================
-### Based on commits through 08/13/2020:
+### Based on commits through 08/14/2020:
 ### ======================================================
 ### ======================================================

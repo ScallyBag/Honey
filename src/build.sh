@@ -27,14 +27,14 @@ ARCH="ARCH=armv7"
 COMP="COMP=gcc"
 #COMP="COMP=icc"
 
-BUILD="build"
-#BUILD="profile-build"
+#BUILD="build"
+BUILD="profile-build"
 
 #make function
 make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
 
 function mke() {
-CXXFLAGS='' make -j4 $BUILD $ARCH $COMP "$@"
+CXXFLAGS=''-flto  make -j4 $BUILD $ARCH $COMP "$@"
 }
 rm *bench
 mke WEAK=yes && wait
