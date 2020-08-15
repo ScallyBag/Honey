@@ -36,12 +36,12 @@ make net   ## pulls down the latest  Nn file from Stockfish and renames it to "e
 function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
 }
-rm *bench
-mke WEAK=yes && wait
-mke NOIR=yes && wait
-mke BLAU=yes && wait
-mke HONEY=yes && wait
-mke
+#rm *bench
+#mke WEAK=yes && wait
+#mke NOIR=yes && wait
+#mke BLAU=yes && wait
+#mke HONEY=yes && wait
+#mke
 read
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.

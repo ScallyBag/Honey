@@ -238,6 +238,11 @@ endif
 # at the end of the line for flag values.
 
 ### 2.1. General and architecture defaults
+
+ifeq ($(ARCH),)
+    empty_arch = yes
+endif
+
 optimize = yes
 debug = no
 sanitize = no
@@ -303,16 +308,7 @@ ifeq ($(ARCH),x86-64-ssse3)
 	ssse3 = yes
 endif
 
-ifeq ($(ARCH),x86-64-modern)
-	arch = x86_64
-	prefetch = yes
-	popcnt = yes
-	sse = yes
-	ssse3 = yes
-	sse41 = yes
-endif
-
-ifeq ($(ARCH),x86-64-sse41-popcnt)
+ifeq ($(ARCH),$(filter $(ARCH),x86-64-sse41-popcnt x86-64-modern))
 	arch = x86_64
 	prefetch = yes
 	popcnt = yes
@@ -747,12 +743,13 @@ help:
 	@echo ""
 	@echo "Supported targets:"
 	@echo ""
+	@echo "help                    > Display architecture details"
 	@echo "build                   > Standard build"
-	@echo "profile-build           > Standard build with PGO"
+	@echo "net                     > Download the default nnue net"
+	@echo "profile-build           > Faster build (with profile-guided optimization)"
 	@echo "strip                   > Strip executable"
 	@echo "install                 > Install executable"
 	@echo "clean                   > Clean up"
-	@echo "net                     > Download the default nnue net"
 	@echo ""
 	@echo "Supported archs:"
 	@echo ""
@@ -761,7 +758,7 @@ help:
 	@echo "x86-64-bmi2             > x86 64-bit with bmi2 support"
 	@echo "x86-64-avx2             > x86 64-bit with avx2 support"
 	@echo "x86-64-sse41-popcnt     > x86 64-bit with sse41 and popcnt support"
-	@echo "x86-64-modern           > the same as previous (x86-64-sse41-popcnt)"
+	@echo "x86-64-modern           > common modern CPU, currently x86-64-sse41-popcnt"
 	@echo "x86-64-ssse3            > x86 64-bit with ssse3 support"
 	@echo "x86-64-sse3-popcnt      > x86 64-bit with sse3 and popcnt support"
 	@echo "x86-64                  > x86 64-bit generic"
@@ -784,18 +781,20 @@ help:
 	@echo ""
 	@echo "Simple examples. If you don't know what to do, you likely want to run: "
 	@echo ""
-	@echo "make -j build ARCH=x86-64    (This is for 64-bit systems)"
-	@echo "make -j build ARCH=x86-32    (This is for 32-bit systems)"
+	@echo "make -j build ARCH=x86-64  (A portable, slow compile for 64-bit systems)"
+	@echo "make -j build ARCH=x86-32  (A portable, slow compile for 32-bit systems)"
 	@echo ""
-	@echo "Advanced examples, for experienced users: "
+	@echo "Advanced examples, for experienced users looking for performance: "
 	@echo ""
-	@echo "make build ARCH=x86-64 COMP=clang"
-	@echo "make build ARCH=armv8-a COMP=ndk NDK=~/android-ndk-r21"
-	@echo "make profile-build ARCH=x86-64-bmi2 COMP=gcc"
+	@echo "make    help  ARCH=x86-64-bmi2"
+	@echo "make -j profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-9.0"
+	@echo "make -j build ARCH=x86-64-ssse3 COMP=clang"
 	@echo ""
-	@echo "The selected architecture $(ARCH) enables the following configuration: "
-	@echo ""
+ifneq ($(empty_arch), yes)
+	@echo "-------------------------------\n"
+	@echo "The selected architecture $(ARCH) will enable the following configuration: "
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
+endif
 
 directory = ../bench_nodes
 all: | $(directory)
@@ -859,11 +858,24 @@ clean: objclean profileclean
 	@rm -f .depend *~ core
 
 net:
+
+### Honey Net Check
 	$(eval currentNet := $(shell grep make_net ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
 	@echo "Default net: $(currentNet)"
 	$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
 	$(eval wget := $(shell echo "wget -O "eval.bin"   "))
 	$(wget) $(sha256nn)
+### End Honey
+
+#### Stockfish Net Check - did not work on my machine
+###	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+###	@echo "Default net: $(nnuenet)"
+###	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
+###	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -skL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
+###	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
+###	$(eval shasum_command := $(shell if hash shasum 2>/dev/null; then echo "shasum -a 256 "; elif hash sha256sum 2>/dev/null; then echo "sha256sum "; fi))
+###	@if [ "$(nnuenet)" != "nn-"`$(shasum_command) $(nnuenet) | cut -c1-12`".nnue" ]; then echo "Failed download or $(nnuenet) corrupted, please delete!"; exit 1; fi
+###  Edd Stockfish
 
 
 # clean binaries and objects
@@ -985,37 +997,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
 ### Based on commits through 08/14/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19602863
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2479491
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 20352292
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1674672
-### Bluefish-XIr4-classical.bench:Nodes searched  : 5129521
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2478029
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4841038
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1630528
-### Honey-XIr4-classical.bench:Nodes searched  : 4768056
-### Honey-XIr4-classical.bench:Nodes/second    : 2548399
-### Honey-XIr4-NN.bench:Nodes searched  : 4370098
-### Honey-XIr4-NN.bench:Nodes/second    : 1620956
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4964866
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2386954
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4171946
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1750711
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3838
-### Weakfish-XIr4-classical.bench:Nodes/second    : 153520
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3557
-### Weakfish-XIr4-NN.bench:Nodes/second    : 127035
+### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19057641
+### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2465093
+### Black-Diamond-XIr4-NN.bench:Nodes searched  : 17949807
+### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1779675
+### Bluefish-XIr4-classical.bench:Nodes searched  : 5005895
+### Bluefish-XIr4-classical.bench:Nodes/second    : 2509220
+### Bluefish-XIr4-NN.bench:Nodes searched  : 3979743
+### Bluefish-XIr4-NN.bench:Nodes/second    : 1665861
+### Honey-XIr4-classical.bench:Nodes searched  : 4646952
+### Honey-XIr4-classical.bench:Nodes/second    : 2482346
+### Honey-XIr4-NN.bench:Nodes searched  : 3906458
+### Honey-XIr4-NN.bench:Nodes/second    : 1702160
+### Stockfish-XIr4-classical.bench:Nodes searched  : 4666262
+### Stockfish-XIr4-classical.bench:Nodes/second    : 2335466
+### Stockfish-XIr4-NN.bench:Nodes searched  : 4348697
+### Stockfish-XIr4-NN.bench:Nodes/second    : 1817257
+### Weakfish-XIr4-classical.bench:Nodes searched  : 3824
+### Weakfish-XIr4-classical.bench:Nodes/second    : 136571
+### Weakfish-XIr4-NN.bench:Nodes searched  : 3505
+### Weakfish-XIr4-NN.bench:Nodes/second    : 140200
 ### ======================================================
