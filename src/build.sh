@@ -26,25 +26,27 @@ ARCH="ARCH=armv7"
 #COMP="COMP=mingw"
 COMP="COMP=gcc"
 #COMP="COMP=icc"
-
 #BUILD="build"
 BUILD="profile-build"
 
-#make function
+RASPI="RASPBERRY=Pi"
+
 make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
 
 function mke() {
-CXXFLAGS=''-flto  make -j4 $BUILD $ARCH $COMP "$@"
+CXXFLAGS=''-flto  make -j4 $BUILD $ARCH $COMP $RASPI "$@"
 }
+
 rm bench*.txt *bench
 mke WEAK=yes && wait
 mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
 mke
-read
+#read
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
+
 echo ""
 mv benchnodes.txt benchnodes_old.txt
 echo "$( date +'Based on commits through %m/%d/%Y:')">> benchnodes.txt
@@ -52,7 +54,6 @@ echo "======================================================">> benchnodes.txt
 grep -E 'searched|Nodes/second' *.bench  /dev/null >> benchnodes.txt
 echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
-##rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
 sed -i.bak -e '1000,1172d' ../src/Makefile
 sed '999r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
