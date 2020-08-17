@@ -55,7 +55,9 @@ public:
   void start_searching();
   void wait_for_search_finished();
   int best_move_count(Move move) const;
-
+#ifndef Stockfish
+  int id() const { return idx; }
+#endif
   Pawns::Table pawnsTable;
   Material::Table materialTable;
   size_t pvIdx, pvLast;

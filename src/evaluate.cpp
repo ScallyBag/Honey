@@ -957,7 +957,11 @@ Value Eval::evaluate(const Position& pos) {
 
 
   bool classical = !Eval::useNNUE
-                ||  abs(eg_value(pos.psq_score())) >= NNUEThreshold * (16 + pos.rule50_count()) / 16;
+                ||  abs(eg_value(pos.psq_score())) >= NNUEThreshold * (16 + pos.rule50_count()) / 16
+#ifndef Stockfish
+                ||  pos.this_thread()->id() % 4 != 0
+#endif
+                ;
   Value v = classical ? Evaluation<NO_TRACE>(pos).value()
 #ifdef Stockfish
                     : NNUE::evaluate(pos) * 5 / 4 + Tempo;

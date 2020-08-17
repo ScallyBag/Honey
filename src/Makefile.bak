@@ -38,7 +38,8 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = XIr4
+RELVERSION = XIr5
+CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -161,28 +162,28 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench
 PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
+PGOBENCH2  = ./$(EXE) bench 16 12 13 true eval.bin
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 13 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 13 true eval.bin
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
 endif
 ifeq  ($(RASPBERRY),Pi)
-PGOBENCH  = ./$(EXE) bench 16 1 6
-PGOBENCH2 = ./$(EXE) bench 16 1 10 true
+PGOBENCH = ./$(EXE) bench 16 1 8 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 8 true eval.bin
 #endif
 endif
 ### Source and object files
@@ -833,13 +834,13 @@ else
 endif
 
 ifeq ($(COMP),mingw)
-	$(EXE) bench >/dev/null 2> $(EXE2)-classical.bench && wait
-	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
+	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
+	$(EXE) bench 2048 $(CORES) 18 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
-	@echo ""
+
 	@echo "==================================="
 	@echo "$(EXE) build completed..."
 	@echo "==================================="
@@ -996,27 +997,6 @@ icc-profile-use:
 #
 #
 #
-#
-### Based on commits through 08/14/2020:
+### Based on commits through 08/16/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19057641
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2465093
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 17949807
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1779675
-### Bluefish-XIr4-classical.bench:Nodes searched  : 5005895
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2509220
-### Bluefish-XIr4-NN.bench:Nodes searched  : 3979743
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1665861
-### Honey-XIr4-classical.bench:Nodes searched  : 4646952
-### Honey-XIr4-classical.bench:Nodes/second    : 2482346
-### Honey-XIr4-NN.bench:Nodes searched  : 3906458
-### Honey-XIr4-NN.bench:Nodes/second    : 1702160
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4666262
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2335466
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4348697
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1817257
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3824
-### Weakfish-XIr4-classical.bench:Nodes/second    : 136571
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3505
-### Weakfish-XIr4-NN.bench:Nodes/second    : 140200
 ### ======================================================

@@ -73,7 +73,7 @@ size_t memtest = 0; //lp mem test
 /// DD-MM-YY and show in engine_info.
 
 #if (defined Add_Features && ReleaseVer)
-const string Version = "XIr4 ";
+const string Version = "XIr5 ";
 #else
 const string Version = "";
 #endif
@@ -390,6 +390,9 @@ const std::string compiler_info() {
   compiler += (HasPopCnt ? " POPCNT" : "");
   #if defined(USE_MMX)
     compiler += " MMX";
+  #endif
+  #if defined(USE_NEON)
+    compiler += " NEON";
   #endif
 
   #if !defined(NDEBUG)

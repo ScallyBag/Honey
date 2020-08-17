@@ -38,7 +38,8 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = XIr4
+RELVERSION = XIr5
+CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -161,28 +162,28 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench
 PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
+PGOBENCH2  = ./$(EXE) bench 16 2 13 true eval.bin
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 10
-PGOBENCH2 = ./$(EXE) bench 16 1 13 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 13 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 13 true eval.bin
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
 endif
 ifeq  ($(HONEY),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 15
-PGOBENCH2 = ./$(EXE) bench 16 1 18 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
 endif
 ifeq  ($(RASPBERRY),Pi)
-PGOBENCH  = ./$(EXE) bench 16 1 6
-PGOBENCH2 = ./$(EXE) bench 16 1 10 true
+PGOBENCH = ./$(EXE) bench 16 1 8 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 8 true eval.bin
 #endif
 endif
 ### Source and object files
@@ -833,13 +834,13 @@ else
 endif
 
 ifeq ($(COMP),mingw)
-	$(EXE) bench >/dev/null 2> $(EXE2)-classical.bench && wait
-	$(EXE) bench 16 1 13 true >/dev/null 2>> $(EXE2)-NN.bench && wait
+	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
+	$(EXE) bench 2048 $(CORES) 18 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
-	@echo ""
+
 	@echo "==================================="
 	@echo "$(EXE) build completed..."
 	@echo "==================================="
@@ -996,27 +997,26 @@ icc-profile-use:
 #
 #
 #
-#
-### Based on commits through 08/14/2020:
+### Based on commits through 08/16/2020:
 ### ======================================================
-### Black-Diamond-XIr4-classical.bench:Nodes searched  : 19057641
-### Black-Diamond-XIr4-classical.bench:Nodes/second    : 2456198
-### Black-Diamond-XIr4-NN.bench:Nodes searched  : 16183993
-### Black-Diamond-XIr4-NN.bench:Nodes/second    : 1815570
-### Bluefish-XIr4-classical.bench:Nodes searched  : 5005895
-### Bluefish-XIr4-classical.bench:Nodes/second    : 2511738
-### Bluefish-XIr4-NN.bench:Nodes searched  : 4424911
-### Bluefish-XIr4-NN.bench:Nodes/second    : 1711764
-### Honey-XIr4-classical.bench:Nodes searched  : 4646952
-### Honey-XIr4-classical.bench:Nodes/second    : 2108417
-### Honey-XIr4-NN.bench:Nodes searched  : 4409284
-### Honey-XIr4-NN.bench:Nodes/second    : 1727775
-### Stockfish-XIr4-classical.bench:Nodes searched  : 4666262
-### Stockfish-XIr4-classical.bench:Nodes/second    : 2417752
-### Stockfish-XIr4-NN.bench:Nodes searched  : 4131619
-### Stockfish-XIr4-NN.bench:Nodes/second    : 1755894
-### Weakfish-XIr4-classical.bench:Nodes searched  : 3824
-### Weakfish-XIr4-classical.bench:Nodes/second    : 147076
-### Weakfish-XIr4-NN.bench:Nodes searched  : 3549
-### Weakfish-XIr4-NN.bench:Nodes/second    : 126750
+### Black-Diamond-XIr5.bench:Nodes searched  : 18555313
+### Black-Diamond-XIr5.bench:Nodes/second    : 1703729
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 2286456875
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 69383k
+### Bluefish-XIr5.bench:Nodes searched  : 4630694
+### Bluefish-XIr5.bench:Nodes/second    : 1648520
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 591687789
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 64223k
+### Honey-XIr5.bench:Nodes searched  : 4283103
+### Honey-XIr5.bench:Nodes/second    : 1688255
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 605409523
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 66150k
+### Stockfish-XIr5.bench:Nodes searched  : 3956212
+### Stockfish-XIr5.bench:Nodes/second    : 1819784
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 404739545
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 53828k
+### Weakfish-XIr5.bench:Nodes searched  : 3494
+### Weakfish-XIr5.bench:Nodes/second    : 194111
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 90529
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 471505
 ### ======================================================

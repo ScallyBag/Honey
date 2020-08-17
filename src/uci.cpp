@@ -517,7 +517,7 @@ string UCI::value(Value v) {
         ss << "cp " << fixed << setprecision(0) << vs * vf;
         }
   else
-      ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+      ss  << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
   return ss.str();
 }
@@ -622,7 +622,7 @@ string UCI::value(Value v, Value v2) {
            ss << "cp " << fixed << setprecision(0) << vs * vf;
   }
   else
-       ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+       ss  << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
   return ss.str();
 }

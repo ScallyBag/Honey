@@ -1,4 +1,6 @@
 #!/bin/bash
+set -x
+
 ###  modify as appropriate for you system
 ### all builds have added features, 4 opening books can be used, adaptive ply,
 ### play by FIDE Elo ratings or CCRL Elo ratings
@@ -31,18 +33,18 @@ COMP="COMP=mingw"
 BUILD="profile-build"
 
 #make function
-make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
+#make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
 
 function mke() {
-CXXFLAGS='-flto -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS='-Os -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
 }
-#rm *bench
-#mke WEAK=yes && wait
-#mke NOIR=yes && wait
-#mke BLAU=yes && wait
-#mke HONEY=yes && wait
-#mke
-read
+rm *bench
+mke WEAK=yes && wait
+mke NOIR=yes && wait
+mke BLAU=yes && wait
+mke HONEY=yes && wait
+mke
+
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""
