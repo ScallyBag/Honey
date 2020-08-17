@@ -89,7 +89,7 @@ ifeq ($(HONEY),yes)
 		ifeq ($(TEST),yes)
 		        ifeq ($(COMP),mingw)
 			        EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
-							EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+				EXE2 = $(NAME)-$(TESTv1)-$(TESTv2).exe
 		        else
 			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
                         endif
@@ -99,7 +99,7 @@ ifeq ($(HONEY),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
 			EXE  = $(NAME)-$(RELVERSION).exe
-			EXE2 = $(NAME)-$(RELVERSION)
+			EXE2 = $(NAME)-$(RELVERSION).exe
 		else
 			EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -367,7 +367,8 @@ endif
 ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
-	bits = 32
+	bits = 64
+	neon = yes
 endif
 
 ifeq ($(ARCH),armv8)
@@ -391,8 +392,7 @@ endif
 
 ifeq ($(ARCH),ppc-64)
 	arch = ppc64
-	popcnt = yes
-	prefetch = yes
+	popcnt = yes	prefetch = yes
 endif
 
 ### ==========================================================================
@@ -404,18 +404,19 @@ CXXFLAGS += -Wall -Wcast-qual -fno-exceptions -std=c++17 $(EXTRACXXFLAGS)
 DEPENDFLAGS += -std=c++17
 LDFLAGS += $(EXTRALDFLAGS)
 
-ifeq ($(COMP),)
+ifeq ($(COMP),gcc)
 	COMP=gcc
 endif
-
 ifeq ($(COMP),gcc)
 	comp=gcc
 	CXX=g++
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
 	ifeq ($(ARCH),armv7)
-                CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
+		CXXFLAGS += -mcpu=cortex-a72 -march=armv8-a+crypto+simd -mtune=cortex-a72
+#	        CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
 		ifeq ($(OS),Android)
+
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
 		endif
@@ -832,11 +833,10 @@ ifeq ($(COMP),mingw)
 else
 #	strip $(EXE)
 endif
-
-ifeq ($(COMP),mingw)
-	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
-	$(EXE) bench 2048 $(CORES) 18 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
-endif
+	./$(EXE) bench >/dev/null 2>$(EXE)-classical.bench && wait
+	./$(EXE) bench 16 1 13 true >/dev/null 2>$(EXE)-NN.bench && wait
+	./$(EXE) bench 16 4 13 >/dev/null 2>$(EXE)-classical_4core.bench && wait
+	./$(EXE) bench 16 4 13 true >/dev/null 2>$(EXE)-NN_4core.bench && wait
 	rm -f *.o syzygy/*.o llvm-profdata
 #	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
@@ -963,12 +963,14 @@ clang-profile-use:
 	all
 
 gcc-profile-make:
+	COMP=gcc-10.1
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
+	COMP=gcc-10.1
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer' \
 	EXTRALDFLAGS='-lgcov' \
@@ -997,26 +999,59 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/16/2020:
-### ======================================================
-### Black-Diamond-XIr5.bench:Nodes searched  : 18555313
-### Black-Diamond-XIr5.bench:Nodes/second    : 1703729
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 2286456875
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 69383k
-### Bluefish-XIr5.bench:Nodes searched  : 4630694
-### Bluefish-XIr5.bench:Nodes/second    : 1648520
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 591687789
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 64223k
-### Honey-XIr5.bench:Nodes searched  : 4283103
-### Honey-XIr5.bench:Nodes/second    : 1688255
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 605409523
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 66150k
-### Stockfish-XIr5.bench:Nodes searched  : 3956212
-### Stockfish-XIr5.bench:Nodes/second    : 1819784
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 404739545
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 53828k
-### Weakfish-XIr5.bench:Nodes searched  : 3494
-### Weakfish-XIr5.bench:Nodes/second    : 194111
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 90529
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 471505
-### ======================================================
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#

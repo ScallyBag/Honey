@@ -411,7 +411,6 @@ skipLevels:
              if (uci_sleep)
 #endif
                  {
-                   sync_cout <<FontColor::engine << sync_endl;
                    sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime << " milliseconds\n" << sync_endl;// for debug
                    sync_cout << sync_endl;
                    std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));

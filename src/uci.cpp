@@ -330,7 +330,7 @@ void set(istringstream& is) {
                else
                    cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
                if (Options["UseNN"])
-                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled" << sync_endl;
                 else
                    cerr << "Classical evaluation enabled." <<  sync_endl;
             }
