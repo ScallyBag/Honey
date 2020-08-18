@@ -11,10 +11,8 @@ set echo on
 #DATE=$(shell date +"%m/%d/%y")
 starttime=`date +%s`
 
-#ARCH="ARCH=general-32"
-#ARCH="ARCH=x86-32-old"
+
 #ARCH="ARCH=x86-32"
-#ARCH="ARCH=general-64"
 #ARCH="ARCH=x86-64"
 #ARCH="ARCH=x86-64-modern"
 #ARCH="ARCH=x86-64-amd"
@@ -56,8 +54,8 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '1050,1222d' ../src/Makefile
-sed '1049r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '1100,1272d' ../src/Makefile
+sed '1099r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 rm *.bench
 #strip Black* Blue* Honey* Weak* Stock*

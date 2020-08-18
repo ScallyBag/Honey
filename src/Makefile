@@ -225,11 +225,13 @@ endif
 # bits = 64/32        --- -DIS_64BIT       --- 64-/32-bit operating system
 # prefetch = yes/no   --- -DUSE_PREFETCH   --- Use prefetch asm-instruction
 # popcnt = yes/no     --- -DUSE_POPCNT     --- Use popcnt asm-instruction
+# pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
 # sse = yes/no        --- -msse            --- Use Intel Streaming SIMD Extensions
+# mmx = yes/no        --- -mmmx            --- Use Intel MMX instructions
+# sse2 = yes/no       --- -msse2           --- Use Intel Streaming SIMD Extensions 2
 # ssse3 = yes/no      --- -mssse3          --- Use Intel Supplemental Streaming SIMD Extensions 3
 # sse41 = yes/no      --- -msse4.1         --- Use Intel Streaming SIMD Extensions 4.1
 # avx2 = yes/no       --- -mavx2           --- Use Intel Advanced Vector Extensions 2
-# pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
 # avx512 = yes/no     --- -mavx512bw       --- Use Intel Advanced Vector Extensions 512
 # vnni = yes/no       --- -mavx512vnni     --- Use Intel Vector Neural Network Instructions 512
 # neon = yes/no       --- -DUSE_NEON       --- Use ARM SIMD architecture
@@ -250,12 +252,13 @@ sanitize = no
 bits = 64
 prefetch = no
 popcnt = no
-mmx = no
+pext = no
 sse = no
+mmx = no
+sse2 = no
 ssse3 = no
 sse41 = no
 avx2 = no
-pext = no
 avx512 = no
 vnni = no
 neon = no
@@ -268,83 +271,82 @@ ifeq ($(native),yes)
 CXXFLAGS += -march=native
 endif
 
-ifeq ($(ARCH),general-32)
-	arch = any
-	bits = 32
-endif
+ifeq ($(findstring x86,$(ARCH)),x86)
 
-ifeq ($(ARCH),x86-32-old)
+# x86-32/64
+
+ifeq ($(findstring x86-32,$(ARCH)),x86-32)
 	arch = i386
 	bits = 32
-endif
-
-ifeq ($(ARCH),x86-32)
-	arch = i386
-	bits = 32
-	prefetch = yes
+	sse = yes
 	mmx = yes
-	sse = yes
-endif
-
-ifeq ($(ARCH),general-64)
-	arch = any
-endif
-
-ifeq ($(ARCH),x86-64)
+else
 	arch = x86_64
-	prefetch = yes
+	sse = yes
+	sse2 = yes
+endif
+
+ifeq ($(findstring -sse,$(ARCH)),-sse)
 	sse = yes
 endif
 
-ifeq ($(ARCH),x86-64-sse3-popcnt)
-	arch = x86_64
-	prefetch = yes
-	sse = yes
+ifeq ($(findstring -popcnt,$(ARCH)),-popcnt)
 	popcnt = yes
 endif
 
-ifeq ($(ARCH),x86-64-ssse3)
-	arch = x86_64
-	prefetch = yes
+ifeq ($(findstring -mmx,$(ARCH)),-mmx)
+	mmx = yes
+endif
+
+ifeq ($(findstring -sse2,$(ARCH)),-sse2)
 	sse = yes
+	sse2 = yes
+endif
+
+ifeq ($(findstring -ssse3,$(ARCH)),-ssse3)
+	sse = yes
+	sse2 = yes
 	ssse3 = yes
 endif
 
-ifeq ($(ARCH),$(filter $(ARCH),x86-64-sse41-popcnt x86-64-modern))
-	arch = x86_64
-	prefetch = yes
-	popcnt = yes
+ifeq ($(findstring -sse41,$(ARCH)),-sse41)
 	sse = yes
+	sse2 = yes
 	ssse3 = yes
 	sse41 = yes
 endif
 
-ifeq ($(ARCH),x86-64-avx2)
-	arch = x86_64
-	prefetch = yes
+ifeq ($(findstring -modern,$(ARCH)),-modern)
 	popcnt = yes
 	sse = yes
+	sse2 = yes
+	ssse3 = yes
+	sse41 = yes
+endif
+
+ifeq ($(findstring -avx2,$(ARCH)),-avx2)
+	popcnt = yes
+	sse = yes
+	sse2 = yes
 	ssse3 = yes
 	sse41 = yes
 	avx2 = yes
 endif
 
-ifeq ($(ARCH),x86-64-bmi2)
-	arch = x86_64
-	prefetch = yes
+ifeq ($(findstring -bmi2,$(ARCH)),-bmi2)
 	popcnt = yes
 	sse = yes
+	sse2 = yes
 	ssse3 = yes
 	sse41 = yes
 	avx2 = yes
 	pext = yes
 endif
 
-ifeq ($(ARCH),x86-64-avx512)
-	arch = x86_64
-	prefetch = yes
+ifeq ($(findstring -avx512,$(ARCH)),-avx512)
 	popcnt = yes
 	sse = yes
+	sse2 = yes
 	ssse3 = yes
 	sse41 = yes
 	avx2 = yes
@@ -352,17 +354,38 @@ ifeq ($(ARCH),x86-64-avx512)
 	avx512 = yes
 endif
 
-ifeq ($(ARCH),x86-64-vnni)
-	arch = x86_64
-	prefetch = yes
+ifeq ($(findstring -vnni,$(ARCH)),-vnni)
 	popcnt = yes
 	sse = yes
+	sse2 = yes
 	ssse3 = yes
 	sse41 = yes
 	avx2 = yes
 	pext = yes
 	avx512 = yes
 	vnni = yes
+endif
+
+ifeq ($(sse),yes)
+	prefetch = yes
+endif
+
+# 64-bit pext is not available on x86-32
+ifeq ($(bits),32)
+	pext = no
+endif
+
+else
+
+# all other architectures
+
+ifeq ($(ARCH),general-32)
+	arch = any
+	bits = 32
+endif
+
+ifeq ($(ARCH),general-64)
+	arch = any
 endif
 
 ifeq ($(ARCH),armv7)
@@ -402,6 +425,8 @@ ifeq ($(ARCH),ppc-64)
 	arch = ppc64
 	popcnt = yes
 	prefetch = yes
+endif
+
 endif
 
 ### ==========================================================================
@@ -672,6 +697,13 @@ ifeq ($(ssse3),yes)
 	endif
 endif
 
+ifeq ($(sse2),yes)
+	CXXFLAGS += -DUSE_SSE2
+	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
+		CXXFLAGS += -msse2
+	endif
+endif
+
 ifeq ($(mmx),yes)
 	CXXFLAGS += -DUSE_MMX
 	ifeq ($(comp),$(filter $(comp),gcc clang mingw))
@@ -686,10 +718,6 @@ ifeq ($(neon),yes)
 		CXXFLAGS += -mfpu=neon
 	endif
 	endif
-endif
-
-ifeq ($(arch),x86_64)
-	CXXFLAGS += -msse2 -DUSE_SSE2
 endif
 
 ### 3.7 pext
@@ -793,9 +821,10 @@ help:
 	@echo "x86-64-modern           > common modern CPU, currently x86-64-sse41-popcnt"
 	@echo "x86-64-ssse3            > x86 64-bit with ssse3 support"
 	@echo "x86-64-sse3-popcnt      > x86 64-bit with sse3 and popcnt support"
-	@echo "x86-64                  > x86 64-bit generic"
-	@echo "x86-32                  > x86 32-bit (also enables MMX and SSE)"
-	@echo "x86-32-old              > x86 32-bit fall back for old hardware"
+	@echo "x86-64                  > x86 64-bit generic (with sse2 support)"
+	@echo "x86-32-sse41-popcnt     > x86 32-bit with sse41 and popcnt support"
+	@echo "x86-32-sse2             > x86 32-bit with sse2 support"
+	@echo "x86-32                  > x86 32-bit generic (with mmx and sse support)"
 	@echo "ppc-64                  > PPC 64-bit"
 	@echo "ppc-32                  > PPC 32-bit"
 	@echo "armv7                   > ARMv7 32-bit"
@@ -825,7 +854,7 @@ help:
 	@echo "make -j build ARCH=x86-64-ssse3 COMP=clang"
 	@echo ""
 ifneq ($(empty_arch), yes)
-	@echo "-------------------------------\n"
+	@echo "-------------------------------"
 	@echo "The selected architecture $(ARCH) will enable the following configuration: "
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
 endif
@@ -891,24 +920,35 @@ clean: objclean profileclean
 	@rm -f .depend *~ core
 
 net:
-
-### Honey Net Check
-	$(eval currentNet := $(shell grep Net_SHA256 ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-	@echo "Default net: $(currentNet)"
-	$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
-	$(eval wget := $(shell echo "wget -O "eval.bin"   "))
-	$(wget) $(sha256nn)
-### End Honey
-
-#### Stockfish Net Check - did not work on my machine
-###	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-###	@echo "Default net: $(nnuenet)"
-###	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
-###	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -skL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
-###	@if test -f "$(nnuenet)"; then echo "Already available."; else echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet); fi
-###	$(eval shasum_command := $(shell if hash shasum 2>/dev/null; then echo "shasum -a 256 "; elif hash sha256sum 2>/dev/null; then echo "sha256sum "; fi))
-###	@if [ "$(nnuenet)" != "nn-"`$(shasum_command) $(nnuenet) | cut -c1-12`".nnue" ]; then echo "Failed download or $(nnuenet) corrupted, please delete!"; exit 1; fi
-###  Edd Stockfish
+	### Honey Net Check
+		$(eval currentNet := $(shell grep Net_SHA256 ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+		@echo "Default net: $(currentNet)"
+		$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
+		$(eval wget := $(shell echo "wget -O "eval.bin"   "))
+		$(wget) $(sha256nn)
+	### End Honey
+#
+#	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+#	@echo "Default net: $(nnuenet)"
+#	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
+#	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -skL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
+#	@if test -f "$(nnuenet)"; then \
+#            echo "Already available."; \
+#         else \
+#            if [ "x$(curl_or_wget)" = "x" ]; then \
+#               echo "Automatic download failed: neither curl nor wget is installed. Install one of these tools or download the net manually"; exit 1; \
+#            else \
+#               echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet);\
+#            fi; \
+#        fi;
+#	$(eval shasum_command := $(shell if hash shasum 2>/dev/null; then echo "shasum -a 256 "; elif hash sha256sum 2>/dev/null; then echo "sha256sum "; fi))
+#	@if [ "x$(shasum_command)" != "x" ]; then \
+#	    if [ "$(nnuenet)" != "nn-"`$(shasum_command) $(nnuenet) | cut -c1-12`".nnue" ]; then \
+#                echo "Failed download or $(nnuenet) corrupted, please delete!"; exit 1; \
+#            fi \
+#         else \
+#            echo "shasum / sha256sum not found, skipping net validation"; \
+#        fi
 
 
 # clean binaries and objects
@@ -942,11 +982,13 @@ config-sanity:
 	@echo "os: '$(OS)'"
 	@echo "prefetch: '$(prefetch)'"
 	@echo "popcnt: '$(popcnt)'"
+	@echo "pext: '$(pext)'"
 	@echo "sse: '$(sse)'"
+	@echo "mmx: '$(mmx)'"
+	@echo "sse2: '$(sse2)'"
 	@echo "ssse3: '$(ssse3)'"
 	@echo "sse41: '$(sse41)'"
 	@echo "avx2: '$(avx2)'"
-	@echo "pext: '$(pext)'"
 	@echo "avx512: '$(avx512)'"
 	@echo "vnni: '$(vnni)'"
 	@echo "neon: '$(neon)'"
@@ -967,11 +1009,13 @@ config-sanity:
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
 	@test "$(prefetch)" = "yes" || test "$(prefetch)" = "no"
 	@test "$(popcnt)" = "yes" || test "$(popcnt)" = "no"
+	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(sse)" = "yes" || test "$(sse)" = "no"
+	@test "$(mmx)" = "yes" || test "$(mmx)" = "no"
+	@test "$(sse2)" = "yes" || test "$(sse2)" = "no"
 	@test "$(ssse3)" = "yes" || test "$(ssse3)" = "no"
 	@test "$(sse41)" = "yes" || test "$(sse41)" = "no"
 	@test "$(avx2)" = "yes" || test "$(avx2)" = "no"
-	@test "$(pext)" = "yes" || test "$(pext)" = "no"
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
 	@test "$(vnni)" = "yes" || test "$(vnni)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
@@ -1045,28 +1089,34 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/18/2020:
-### ======================================================
+#
+#
+#
+#
+#
+#
+#
+#
 ### Based on commits through 08/18/2020:
 ### ======================================================
 ### Black-Diamond-XIr5.bench:Nodes searched  : 12021488
-### Black-Diamond-XIr5.bench:Nodes/second    : 1760616
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1423479547
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 70458k
+### Black-Diamond-XIr5.bench:Nodes/second    : 1753681
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1323263594
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 69902k
 ### Bluefish-XIr5.bench:Nodes searched  : 5082763
-### Bluefish-XIr5.bench:Nodes/second    : 1701058
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 585939448
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 68084k
+### Bluefish-XIr5.bench:Nodes/second    : 1721803
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 609606087
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 68765k
 ### Honey-XIr5.bench:Nodes searched  : 4762917
-### Honey-XIr5.bench:Nodes/second    : 1716366
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 535482111
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 67526k
+### Honey-XIr5.bench:Nodes/second    : 1733861
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 531617229
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 67929k
 ### Stockfish-XIr5.bench:Nodes searched  : 3679401
-### Stockfish-XIr5.bench:Nodes/second    : 1798338
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 335932652
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 54366k
+### Stockfish-XIr5.bench:Nodes/second    : 1811620
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 371527845
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 56079k
 ### Weakfish-XIr5.bench:Nodes searched  : 3535
 ### Weakfish-XIr5.bench:Nodes/second    : 207941
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 85162
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 396102
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 84459
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 396521
 ### ======================================================
