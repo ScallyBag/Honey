@@ -260,6 +260,7 @@ avx512 = no
 vnni = no
 neon = no
 ARCH = x86-64-modern
+STRIP = strip
 
 ### 2.2 Architecture specific
 ### native
@@ -370,6 +371,14 @@ ifeq ($(ARCH),armv7)
 	bits = 32
 endif
 
+ifeq ($(ARCH),armv7-neon)
+	arch = armv7
+	prefetch = yes
+	popcnt = yes
+	neon = yes
+	bits = 32
+endif
+
 ifeq ($(ARCH),armv8)
 	arch = armv8-a
 	prefetch = yes
@@ -413,8 +422,7 @@ ifeq ($(COMP),gcc)
 	CXX=g++
 	CXXFLAGS += -pedantic -Wextra -Wshadow
 
-	ifeq ($(ARCH),armv7)
-                CXXFLAGS += -mcpu=cortex-a53 -mfloat-abi=hard -mfpu=neon-fp-armv8 -mneon-for-64bits -mtune=cortex-a53
+	ifeq ($(arch),$(filter $(arch),armv7 armv8-a))
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -422,6 +430,10 @@ ifeq ($(COMP),gcc)
 	else
 		CXXFLAGS += -m$(bits)
 		LDFLAGS += -m$(bits)
+	endif
+
+	ifeq ($(arch),$(filter $(arch),armv7))
+		LDFLAGS += -latomic
 	endif
 
 	ifneq ($(KERNEL),Darwin)
@@ -474,17 +486,7 @@ ifeq ($(COMP),clang)
 	endif
 	endif
 
-	ifeq ($(ARCH),armv7)
-		ifeq ($(OS),Android)
-			CXXFLAGS += -m$(bits)
-			LDFLAGS += -m$(bits)
-		endif
-	else
-		CXXFLAGS += -m$(bits)
-		LDFLAGS += -m$(bits)
-	endif
-
-	ifeq ($(ARCH),armv8)
+	ifeq ($(arch),$(filter $(arch),armv7 armv8))
 		ifeq ($(OS),Android)
 			CXXFLAGS += -m$(bits)
 			LDFLAGS += -m$(bits)
@@ -534,6 +536,25 @@ ifeq ($(KERNEL),Darwin)
 	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
 endif
 
+# To cross-compile for Android, NDK version r21 or later is recommended.
+# In earlier NDK versions, you'll need to pass -fno-addrsig if using GNU binutils.
+# Currently we don't know how to make PGO builds with the NDK yet.
+ifeq ($(COMP),ndk)
+	CXXFLAGS += -stdlib=libc++ -fPIE
+	ifeq ($(arch),armv7)
+		comp=armv7a-linux-androideabi16-clang
+		CXX=armv7a-linux-androideabi16-clang++
+		CXXFLAGS += -mthumb -march=armv7-a -mfloat-abi=softfp -mfpu=neon
+		STRIP=arm-linux-androideabi-strip
+	endif
+	ifeq ($(arch),armv8-a)
+		comp=aarch64-linux-android21-clang
+		CXX=aarch64-linux-android21-clang++
+		STRIP=aarch64-linux-android-strip
+	endif
+	LDFLAGS += -static-libstdc++ -pie -lm -latomic
+endif
+
 ### Travis CI script uses COMPILER to overwrite CXX
 ifdef COMPILER
 	COMPCXX=$(COMPILER)
@@ -551,7 +572,9 @@ ifneq ($(comp),mingw)
 	ifneq ($(COMP),ndk)
 		# Haiku has pthreads in its libroot, so only link it in on other platforms
 		ifneq ($(KERNEL),Haiku)
-			LDFLAGS += -lpthread
+			ifneq ($(COMP),ndk)
+				LDFLAGS += -lpthread
+			endif
 		endif
 	endif
 	endif
@@ -597,7 +620,6 @@ endif
 ifeq ($(prefetch),yes)
 	ifeq ($(sse),yes)
 		CXXFLAGS += -msse
-		DEPENDFLAGS += -msse
 	endif
 else
 	CXXFLAGS += -DNO_PREFETCH
@@ -605,7 +627,7 @@ endif
 
 ### 3.6 popcnt
 ifeq ($(popcnt),yes)
-	ifeq ($(arch),$(filter $(arch),ppc64 armv8-a arm64))
+	ifeq ($(arch),$(filter $(arch),ppc64 armv7 armv8-a arm64))
 		CXXFLAGS += -DUSE_POPCNT
 	else ifeq ($(comp),icc)
 		CXXFLAGS += -msse3 -DUSE_POPCNT
@@ -613,6 +635,7 @@ ifeq ($(popcnt),yes)
 		CXXFLAGS += -msse3 -mpopcnt -DUSE_POPCNT
 	endif
 endif
+
 
 ifeq ($(avx2),yes)
 	CXXFLAGS += -DUSE_AVX2
@@ -658,6 +681,11 @@ endif
 
 ifeq ($(neon),yes)
 	CXXFLAGS += -DUSE_NEON
+	ifeq ($(KERNEL),Linux)
+	ifneq ($(COMP),ndk)
+		CXXFLAGS += -mfpu=neon
+	endif
+	endif
 endif
 
 ifeq ($(arch),x86_64)
@@ -677,7 +705,10 @@ endif
 ### needs access to the optimization flags.
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
-	ifeq ($(comp),clang)
+	ifeq ($(COMP),ndk)
+		CXXFLAGS += -flto=thin
+		LDFLAGS += $(CXXFLAGS)
+	else ifeq ($(comp),clang)
 		CXXFLAGS += -flto=thin
 		LDFLAGS += $(CXXFLAGS)
 
@@ -698,7 +729,7 @@ ifeq ($(debug), no)
 	endif
 
 # To use LTO and static linking on windows, the tool chain requires a recent gcc:
-# gcc version 10.1 in msys2 or TDM-GCC version 9.2 are know to work, older might not.
+# gcc version 10.1 in msys2 or TDM-GCC version 9.2 are known to work, older might not.
 # So, only enable it for a cross from Linux by default.
 	else ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
@@ -768,7 +799,8 @@ help:
 	@echo "ppc-64                  > PPC 64-bit"
 	@echo "ppc-32                  > PPC 32-bit"
 	@echo "armv7                   > ARMv7 32-bit"
-	@echo "armv8                   > ARMv8 64-bit"
+	@echo "armv7-neon              > ARMv7 32-bit with popcnt and neon"
+	@echo "armv8                   > ARMv8 64-bit with popcnt and neon"
 	@echo "apple-silicon           > Apple silicon ARM64"
 	@echo "general-64              > unspecified 64-bit"
 	@echo "general-32              > unspecified 32-bit"
@@ -779,6 +811,7 @@ help:
 	@echo "mingw                   > Gnu compiler with MinGW under Windows"
 	@echo "clang                   > LLVM Clang compiler"
 	@echo "icc                     > Intel compiler"
+	@echo "ndk                     > Google NDK to cross-compile for Android"
 	@echo ""
 	@echo "Simple examples. If you don't know what to do, you likely want to run: "
 	@echo ""
@@ -832,13 +865,12 @@ ifeq ($(COMP),mingw)
 else
 #	strip $(EXE)
 endif
-
 ifeq ($(COMP),mingw)
 	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
 	$(EXE) bench 2048 $(CORES) 18 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
-#	touch * syzygy/*
+	#	touch * syzygy/*
 #	cp $(EXE) /opt/picochess/engines/armv7l
 
 	@echo "==================================="
@@ -847,7 +879,7 @@ endif
 	@echo ""
 
 strip:
-	strip $(EXE)
+	$(STRIP) $(EXE)
 
 install:
 	-mkdir -p -m 755 $(BINDIR)
@@ -861,7 +893,7 @@ clean: objclean profileclean
 net:
 
 ### Honey Net Check
-	$(eval currentNet := $(shell grep make_net ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+	$(eval currentNet := $(shell grep Net_SHA256 ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
 	@echo "Default net: $(currentNet)"
 	$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
 	$(eval wget := $(shell echo "wget -O "eval.bin"   "))
@@ -943,7 +975,8 @@ config-sanity:
 	@test "$(avx512)" = "yes" || test "$(avx512)" = "no"
 	@test "$(vnni)" = "yes" || test "$(vnni)" = "no"
 	@test "$(neon)" = "yes" || test "$(neon)" = "no"
-	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang"
+	@test "$(comp)" = "gcc" || test "$(comp)" = "icc" || test "$(comp)" = "mingw" || test "$(comp)" = "clang" \
+	|| test "$(comp)" = "armv7a-linux-androideabi16-clang"  || test "$(comp)" = "aarch64-linux-android21-clang"
 
 $(EXE): $(OBJS)
 	+$(CXX) -o $@ $(OBJS) $(LDFLAGS)
@@ -997,26 +1030,43 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/17/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 08/18/2020:
 ### ======================================================
-### Black-Diamond-XIr5.bench:Nodes searched  : 13238609
-### Black-Diamond-XIr5.bench:Nodes/second    : 1742380
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1644944191
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 67052k
-### Bluefish-XIr5.bench:Nodes searched  : 4630694
-### Bluefish-XIr5.bench:Nodes/second    : 1656777
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 592891385
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 66134k
-### Honey-XIr5.bench:Nodes searched  : 4283103
-### Honey-XIr5.bench:Nodes/second    : 1698969
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 583692838
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 66043k
-### Stockfish-XIr5.bench:Nodes searched  : 3823788
-### Stockfish-XIr5.bench:Nodes/second    : 1739666
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 365014140
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 53450k
-### Weakfish-XIr5.bench:Nodes searched  : 3494
-### Weakfish-XIr5.bench:Nodes/second    : 194111
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 92078
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 414765
+### Based on commits through 08/18/2020:
+### ======================================================
+### Black-Diamond-XIr5.bench:Nodes searched  : 12021488
+### Black-Diamond-XIr5.bench:Nodes/second    : 1760616
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1423479547
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 70458k
+### Bluefish-XIr5.bench:Nodes searched  : 5082763
+### Bluefish-XIr5.bench:Nodes/second    : 1701058
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 585939448
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 68084k
+### Honey-XIr5.bench:Nodes searched  : 4762917
+### Honey-XIr5.bench:Nodes/second    : 1716366
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 535482111
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 67526k
+### Stockfish-XIr5.bench:Nodes searched  : 3679401
+### Stockfish-XIr5.bench:Nodes/second    : 1798338
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 335932652
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 54366k
+### Weakfish-XIr5.bench:Nodes searched  : 3535
+### Weakfish-XIr5.bench:Nodes/second    : 207941
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 85162
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 396102
 ### ======================================================

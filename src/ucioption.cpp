@@ -89,11 +89,11 @@ void init(OptionsMap& o) {
     o["Book_Depth_2"] 	          << Option(127, 1, 127, on_book_depth2);
     o["Use_Book_3"] 	            << Option(false);
     o["Book_File_3"]              << Option("", on_book_file3);
-    o["Best_Move_3"]              << Option(true, on_best_book_move3);
+    o["Best_Move_3"]              << Option(false, on_best_book_move3);
     o["Book_Depth_3"]             << Option(127, 1, 127, on_book_depth3);
     o["Use_Book_4"]               << Option(false);
     o["Book_File_4"]              << Option("", on_book_file4);
-    o["Best_Move_4"]              << Option(true, on_best_book_move4);
+    o["Best_Move_4"]              << Option(false, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 
     o["Contempt_Value"]           << Option(24, -100, 100);
@@ -113,7 +113,7 @@ void init(OptionsMap& o) {
     o["Ponder"]                   << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 	  o["FastPlay"]                 << Option(false);
-	  o["Min Output"]               << Option(true);
+	  o["Minimal Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var Centipawn"
                                            ,"Centipawn");
@@ -142,7 +142,7 @@ void init(OptionsMap& o) {
 #endif
 
     o["Tactical"]                 << Option(0, 0, 8);
-    o["ShowWDL"]                  << Option(false);
+    o["UCI_ShowWDL"]                  << Option(false);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
@@ -170,7 +170,7 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
-    o["make_net"]                 << Option("nn-82215d0fd0df.nnue");
+    o["Net_SHA256"]               << Option("nn-82215d0fd0df.nnue");
     o["EvalFile"]                 << Option("eval.bin", on_eval_file);
 }
 

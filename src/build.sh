@@ -1,5 +1,5 @@
 #!/bin/bash
-set -x
+#set -x
 
 ###  modify as appropriate for you system
 ### all builds have added features, 4 opening books can be used, adaptive ply,
@@ -36,7 +36,7 @@ BUILD="profile-build"
 #make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
 
 function mke() {
-CXXFLAGS='-Os -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS='-Os -flto -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
 }
 rm *bench
 mke WEAK=yes && wait
@@ -56,8 +56,8 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '1000,1172d' ../src/Makefile
-sed '999r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '1050,1222d' ../src/Makefile
+sed '1049r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 rm *.bench
 #strip Black* Blue* Honey* Weak* Stock*

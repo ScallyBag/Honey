@@ -261,7 +261,7 @@ void MainThread::search() {
     adaptive            = Options["Adaptive_Play"];
     defensive           = Options["Defensive"];
     fide                = Options["FIDE_Ratings"];
-    minOutput           = Options["Min Output"];
+    minOutput           = Options["Minimal Output"];
     tactical            = Options["Tactical"];
     uci_elo             = Options["Engine_Elo"];
     uci_sleep           = Options["Slow Play"];
@@ -411,7 +411,6 @@ skipLevels:
              if (uci_sleep)
 #endif
                  {
-                   sync_cout <<FontColor::engine << sync_endl;
                    sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime << " milliseconds\n" << sync_endl;// for debug
                    sync_cout << sync_endl;
                    std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
@@ -720,7 +719,7 @@ void Thread::search() {
               // When failing high/low give some update (without cluttering
               // the UI) before a re-search.
               if (
-                  !minOutput &&  mainThread
+                  mainThread
                   && multiPV == 1
                   && (bestValue <= alpha || bestValue >= beta)
                   && Time.elapsed() > 5000)
@@ -1092,11 +1091,7 @@ namespace {
     else
     {
         if ((ss-1)->currentMove != MOVE_NULL)
-        {
-            int bonus = -(ss-1)->statScore / 512;
-
-            ss->staticEval = eval = evaluate(pos) + bonus;
-        }
+            ss->staticEval = eval = evaluate(pos);
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Tempo;
 
@@ -1445,12 +1440,12 @@ moves_loop: // When in check, search starts from here
                && pos.advanced_pawn_push(move)
                && pos.pawn_passed(us, to_sq(move)))
           extension = 1;
-#endif
+
       // Last captures extension
       else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
-
+#endif
       // Castling extension
       if (   type_of(move) == CASTLING
           && popcount(pos.pieces(us) & ~pos.pieces(PAWN) & (to_sq(move) & KingSide ? KingSide : QueenSide)) <= 2)
@@ -1460,7 +1455,7 @@ moves_loop: // When in check, search starts from here
       if (   move == ttMove
           && pos.rule50_count() > 80
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
-          extension = 2;
+          extension = 1;
 
       // Add extension to new depth
       newDepth += extension;
@@ -1964,28 +1959,11 @@ moves_loop: // When in check, search starts from here
 
   Value value_from_tt(Value v, int ply, int r50c) {
 
-    if (v == VALUE_NONE)
-        return VALUE_NONE;
-
-    if (v >= VALUE_TB_WIN_IN_MAX_PLY)  // TB win or better
-    {
-        if (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 99 - r50c)
-            return VALUE_MATE_IN_MAX_PLY - 1; // do not return a potentially false mate score
-
-        return v - ply;
+    return   v == VALUE_NONE ? VALUE_NONE
+          :  v <= VALUE_MATED_IN_MAX_PLY ? v + ply
+          : (v >= VALUE_MATE_IN_MAX_PLY) && (VALUE_MATE - v > 99 - r50c) ? VALUE_MATE_IN_MAX_PLY - 1
+          :  v >= VALUE_MATE_IN_MAX_PLY ? v - ply : v;
     }
-
-    if (v <= VALUE_TB_LOSS_IN_MAX_PLY) // TB loss or worse
-    {
-        if (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 99 - r50c)
-            return VALUE_MATED_IN_MAX_PLY + 1; // do not return a potentially false mate score
-
-        return v + ply;
-    }
-
-    return v;
-  }
-
 
   // update_pv() adds current move and appends child pv[]
 
@@ -2902,7 +2880,7 @@ namespace {
 
       ss->moveCount = ++moveCount;
 
-      if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
           sync_cout << "info depth " << depth
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
@@ -3000,7 +2978,7 @@ namespace {
       // Step 14. Extensions (~75 Elo)
       if (   gameCycle
           && (depth < 5 || PvNode))
-          extension = 2;
+          extension = 1;
 
       // Singular extension search (~70 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
@@ -3058,7 +3036,7 @@ namespace {
       if (   move == ttMove
           && pos.rule50_count() > 80
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
-          extension = 2;
+          extension = 1;
 
       // Check extension (~2 Elo)
       else if (!extension)
@@ -3605,30 +3583,10 @@ namespace {
 
   Value value_from_tt(Value v, int ply, int r50c) {
 
-    /*return  v == VALUE_NONE             ? VALUE_NONE
-          : v >= VALUE_MATE_IN_MAX_PLY  ? v - ply
-          : v <= VALUE_MATED_IN_MAX_PLY ? v + ply : v; */
-
-    if (v == VALUE_NONE)
-        return VALUE_NONE;
-
-    if (v >= VALUE_TB_WIN_IN_MAX_PLY)  // TB win or better
-    {
-        if (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 99 - r50c)
-            return VALUE_MATE_IN_MAX_PLY - 1; // do not return a potentially false mate score
-
-        return v - ply;
-    }
-
-    if (v <= VALUE_TB_LOSS_IN_MAX_PLY) // TB loss or worse
-    {
-        if (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 99 - r50c)
-            return VALUE_MATED_IN_MAX_PLY + 1; // do not return a potentially false mate score
-
-        return v + ply;
-    }
-
-    return v;
+    return  v == VALUE_NONE ? VALUE_NONE
+              :  v <= VALUE_MATED_IN_MAX_PLY ? v + ply
+              : (v >= VALUE_MATE_IN_MAX_PLY) && (VALUE_MATE - v > 99 - r50c) ? VALUE_MATE_IN_MAX_PLY - 1
+              :  v >= VALUE_MATE_IN_MAX_PLY ? v - ply : v;
 
   }
 
@@ -3920,4 +3878,4 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
             m.tbRank = 0;
     }
 }
-#endif
+#endif  //Noir - not Noir starts at row 695, Noir starts at row 2303
