@@ -67,8 +67,7 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 using namespace std;
 
 namespace {
-
-size_t memtest = 0; //lp mem test
+size_t memtest = 0; //lp mem testgit add search.cpp
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 

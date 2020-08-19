@@ -115,10 +115,11 @@ namespace {
   constexpr Value LazyThreshold2 =  Value(1300);
   constexpr Value SpaceThreshold = Value(12222);
 #ifdef Stockfish
-  constexpr Value NNUEThreshold  =   Value(575);
+  constexpr Value NNUEThreshold1  =   Value(550);
 #else
-  constexpr Value NNUEThreshold  =   Value(863);
+  constexpr Value NNUEThreshold1  =   Value(863);
 #endif
+  constexpr Value NNUEThreshold2 =   Value(150);
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
 
@@ -954,20 +955,25 @@ make_v:
 /// evaluation of the position from the point of view of the side to move.
 
 Value Eval::evaluate(const Position& pos) {
+  bool classical = !Eval::useNNUE;
+  Value v;
+  if (classical && Eval::useNNUE && abs(v) * 16 < NNUEThreshold2 * (16 + pos.rule50_count()))
+      v = NNUE::evaluate(pos) * 5 / 4 + Tempo;
 
-
-  bool classical = !Eval::useNNUE
-                ||  abs(eg_value(pos.psq_score())) >= NNUEThreshold * (16 + pos.rule50_count()) / 16
+  else   {
+              classical = !Eval::useNNUE
+                         ||  abs(eg_value(pos.psq_score())) * 16 > NNUEThreshold1 * (16 + pos.rule50_count())
 #ifndef Stockfish
-                ||  pos.this_thread()->id() % 4 != 0
+                         ||  pos.this_thread()->id() % 4 != 0
 #endif
-                ;
-  Value v = classical ? Evaluation<NO_TRACE>(pos).value()
+                        ;
+      v = classical ? Evaluation<NO_TRACE>(pos).value()
 #ifdef Stockfish
-                    : NNUE::evaluate(pos) * 5 / 4 + Tempo;
+                      : NNUE::evaluate(pos) * 5 / 4 + Tempo;
 #else
-                    : NNUE::evaluate(pos) + Tempo;
+                      : NNUE::evaluate(pos) + Tempo;
 #endif
+        }
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
