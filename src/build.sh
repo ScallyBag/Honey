@@ -14,8 +14,13 @@ starttime=`date +%s`
 
 #ARCH="ARCH=x86-32"
 #ARCH="ARCH=x86-64"
+#ARCH="ARCH=x86-64-sse"
+#ARCH="ARCH=x86-64-popcnt"
+#ARCH="ARCH=x86-64-mmx"
+#ARCH="ARCH=x86-64-sse2"
+#ARCH="ARCH=x86-64-ssse3"
+#ARCH="ARCH=x86-64-sse41"
 #ARCH="ARCH=x86-64-modern"
-#ARCH="ARCH=x86-64-amd"
 #ARCH="ARCH=x86-64-bmi2"
 ARCH="ARCH=x86-64-avx2"
 #ARCH="ARCH=armv7"
@@ -34,15 +39,15 @@ BUILD="profile-build"
 #make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
 
 function mke() {
-CXXFLAGS='-Os -flto -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
+CXXFLAGS='-flto -mbmi' make -j30 $BUILD $ARCH $COMP "$@"
 }
-rm *bench
+#rm *bench
 mke WEAK=yes && wait
 mke NOIR=yes && wait
 mke BLAU=yes && wait
 mke HONEY=yes && wait
 mke
-
+#read
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""
