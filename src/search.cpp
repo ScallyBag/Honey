@@ -1254,8 +1254,7 @@ namespace {
     }
 #endif  //ifndef Weakfish
 
-#ifndef Stockfish
-    // Step 11. Internal iterative deepening (~1 Elo)
+    // Step 11. If the position is not in TT, decrease depth by 2
     if (depth >= 6 && !ttMove)    {
         search<NT>(pos, ss, alpha, beta, depth - 6, cutNode);
 
@@ -1263,13 +1262,6 @@ namespace {
         ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
         ttMove = ttHit ? tte->move() : MOVE_NONE;
       }
-#else
-    // Step 11. If the position is not in TT, decrease depth by 2
-    if (   PvNode
-        && depth >= 6
-        && !ttMove)
-        depth -= 2;
-#endif
 
 moves_loop: // When in check, search starts from here
 
