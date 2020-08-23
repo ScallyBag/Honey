@@ -464,9 +464,6 @@ ifeq ($(COMP),gcc)
 	ifneq ($(KERNEL),Darwin)
 	   LDFLAGS += -Wl,--no-as-needed
 	endif
-
-	gccversion = $(shell $(CXX) --version)
-	gccisclang = $(findstring clang,$(gccversion))
 endif
 
 ifeq ($(COMP),mingw)
@@ -559,6 +556,7 @@ endif
 ifeq ($(KERNEL),Darwin)
 	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
 	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
+	XCRUN = xcrun
 endif
 
 # To cross-compile for Android, NDK version r21 or later is recommended.
@@ -590,8 +588,19 @@ ifdef COMPCXX
 	CXX=$(COMPCXX)
 endif
 
+### Sometimes gcc is really clang
+ifeq ($(COMP),gcc)
+	gccversion = $(shell $(CXX) --version)
+	gccisclang = $(findstring clang,$(gccversion))
+	ifneq ($(gccisclang),)
+		profile_make = clang-profile-make
+		profile_use = clang-profile-use
+	endif
+endif
+
 ### On mingw use Windows threads, otherwise POSIX
 ifneq ($(comp),mingw)
+	CXXFLAGS += -DUSE_PTHREADS
 	# On Android Bionic's C library comes with its own pthread implementation bundled in
 	ifneq ($(OS),Android)
 	ifneq ($(COMP),ndk)
@@ -927,28 +936,6 @@ net:
 		$(eval wget := $(shell echo "wget -O "eval.bin"   "))
 		$(wget) $(sha256nn)
 	### End Honey
-#
-#	$(eval nnuenet := $(shell grep EvalFile ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
-#	@echo "Default net: $(nnuenet)"
-#	$(eval nnuedownloadurl := https://tests.stockfishchess.org/api/nn/$(nnuenet))
-#	$(eval curl_or_wget := $(shell if hash curl 2>/dev/null; then echo "curl -skL"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi))
-#	@if test -f "$(nnuenet)"; then \
-#            echo "Already available."; \
-#         else \
-#            if [ "x$(curl_or_wget)" = "x" ]; then \
-#               echo "Automatic download failed: neither curl nor wget is installed. Install one of these tools or download the net manually"; exit 1; \
-#            else \
-#               echo "Downloading $(nnuedownloadurl)"; $(curl_or_wget) $(nnuedownloadurl) > $(nnuenet);\
-#            fi; \
-#        fi;
-#	$(eval shasum_command := $(shell if hash shasum 2>/dev/null; then echo "shasum -a 256 "; elif hash sha256sum 2>/dev/null; then echo "sha256sum "; fi))
-#	@if [ "x$(shasum_command)" != "x" ]; then \
-#	    if [ "$(nnuenet)" != "nn-"`$(shasum_command) $(nnuenet) | cut -c1-12`".nnue" ]; then \
-#                echo "Failed download or $(nnuenet) corrupted, please delete!"; exit 1; \
-#            fi \
-#         else \
-#            echo "shasum / sha256sum not found, skipping net validation"; \
-#        fi
 
 
 # clean binaries and objects
@@ -1032,8 +1019,7 @@ clang-profile-make:
 	all
 
 clang-profile-use:
-## /opt/local/bin/llvm-profdata-mp-7.0 merge -output=stockfish.profdata *.profraw
-	llvm-profdata merge -output=stockfish.profdata *.profraw
+	$(XCRUN) llvm-profdata merge -output=stockfish.profdata *.profraw
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-fprofile-instr-use=stockfish.profdata -Wno-profile-instr-out-of-date' \
 	EXTRALDFLAGS='-fprofile-use ' \
@@ -1097,14 +1083,41 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 08/18/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 08/21/2020:
 ### ======================================================
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1545206278
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 77547k
 ### Black-Diamond-XIr5.bench:Nodes searched  : 12021488
-### Black-Diamond-XIr5.bench:Nodes/second    : 1753681
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1323263594
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 69902k
+### Black-Diamond-XIr5.bench:Nodes/second    : 1784662
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 612365927
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84000k
+### Bluefish-XIr5.bench:Nodes searched  : 4682953
+### Bluefish-XIr5.bench:Nodes/second    : 1676074
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 531475428
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 82068k
+### Honey-XIr5.bench:Nodes searched  : 4558134
+### Honey-XIr5.bench:Nodes/second    : 1752454
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 334410837
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 71962k
+### Stockfish-XIr5.bench:Nodes searched  : 4007104
+### Stockfish-XIr5.bench:Nodes/second    : 1875107
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 698376
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10744k
 ### Weakfish-XIr5.bench:Nodes searched  : 3535
-### Weakfish-XIr5.bench:Nodes/second    : 207941
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 84459
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 396521
+### Weakfish-XIr5.bench:Nodes/second    : 147291
 ### ======================================================

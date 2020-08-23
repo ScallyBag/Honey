@@ -400,7 +400,7 @@ skipLevels:
              //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
              Limits.nodes = NodesToSearch;
              Limits.nodes = (Limits.nodes * Time.optimum()/1000);
-             Limits.nodes = Utility::clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
+             Limits.nodes = std::clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
              int sleepTime = Time.optimum() * double(1 - Limits.nodes/benchKnps);
              //int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps);
              //sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
@@ -587,7 +587,7 @@ void Thread::search() {
   // for match (TC 60+0.6) results spanning a wide range of k values.
   PRNG rng(now());
   double floatLevel = Options["UCI_LimitStrength"] ?
-                      Utility::clamp(std::pow((Options["UCI_Elo"] - 946.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
+                      std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
                         double(Options["Skill Level"]);
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
@@ -797,7 +797,7 @@ void Thread::search() {
       {
           double fallingEval = (318 + 6 * (mainThread->bestPreviousScore - bestValue)
                                     + 6 * (mainThread->iterValue[iterIdx] - bestValue)) / 825.0;
-          fallingEval = Utility::clamp(fallingEval, 0.5, 1.5);
+          fallingEval = std::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.92 : 0.95;
@@ -1106,8 +1106,9 @@ namespace {
         &&  eval <= alpha - RazorMargin)
         return qsearch<NT>(pos, ss, alpha, beta);
 
-    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
-              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
+    improving =  (ss-2)->staticEval == VALUE_NONE
+               ? ss->staticEval > (ss-4)->staticEval || (ss-4)->staticEval == VALUE_NONE
+               : ss->staticEval > (ss-2)->staticEval;
 
     // Step 8. Futility pruning: child node (~50 Elo)
     if (   !PvNode
@@ -1576,7 +1577,7 @@ moves_loop: // When in check, search starts from here
                 r++;
           }
 
-          Depth d = Utility::clamp(newDepth - r, 1, newDepth);
+          Depth d = std::clamp(newDepth - r, 1, newDepth);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
@@ -2394,7 +2395,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
       {
           double fallingEval = (318 + 6 * (mainThread->bestPreviousScore - bestValue)
                                     + 6 * (mainThread->iterValue[iterIdx] - bestValue)) / 825.0;
-          fallingEval = Utility::clamp(fallingEval, 0.5, 1.5);
+          fallingEval = std::clamp(fallingEval, 0.5, 1.5);
 
           // If the bestMove is stable over several iterations, reduce time accordingly
           timeReduction = lastBestMoveDepth + 9 < completedDepth ? 1.92 : 0.95;
@@ -3183,7 +3184,7 @@ namespace {
 
           r -= rr;
 
-          Depth d = Utility::clamp(newDepth - r, 1, newDepth);
+          Depth d = std::clamp(newDepth - r, 1, newDepth);
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 

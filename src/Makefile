@@ -1097,27 +1097,26 @@ icc-profile-use:
 #
 #
 #
-#
-### Based on commits through 08/21/2020:
+### Based on commits through 08/23/2020:
 ### ======================================================
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1545206278
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 77547k
 ### Black-Diamond-XIr5.bench:Nodes searched  : 12021488
-### Black-Diamond-XIr5.bench:Nodes/second    : 1784662
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 612365927
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84000k
+### Black-Diamond-XIr5.bench:Nodes/second    : 1775437
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1380186966
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78827k
 ### Bluefish-XIr5.bench:Nodes searched  : 4682953
-### Bluefish-XIr5.bench:Nodes/second    : 1676074
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 531475428
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 82068k
+### Bluefish-XIr5.bench:Nodes/second    : 933230
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 658658325
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 42609k
 ### Honey-XIr5.bench:Nodes searched  : 4558134
-### Honey-XIr5.bench:Nodes/second    : 1752454
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 334410837
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 71962k
+### Honey-XIr5.bench:Nodes/second    : 1750435
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 597658814
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 79741k
 ### Stockfish-XIr5.bench:Nodes searched  : 4007104
-### Stockfish-XIr5.bench:Nodes/second    : 1875107
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 698376
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10744k
+### Stockfish-XIr5.bench:Nodes/second    : 1872478
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 318760671
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 71025k
 ### Weakfish-XIr5.bench:Nodes searched  : 3535
-### Weakfish-XIr5.bench:Nodes/second    : 147291
+### Weakfish-XIr5.bench:Nodes/second    : 126250
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 657764
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10277k
 ### ======================================================
