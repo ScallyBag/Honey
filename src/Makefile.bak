@@ -243,8 +243,15 @@ endif
 
 ### 2.1. General and architecture defaults
 
-ifeq ($(ARCH),)
-    empty_arch = yes
+# explicitly check for the list of supported architectures (as listed with make help),
+# the user can override with `make ARCH=x86-32-vnni256 SUPPORTED_ARCH=true`
+ifeq ($(ARCH),$(filter $(ARCH),x86-64-vnni512 x86-64-vnni256 x86-64-avx512 x86-64-bmi2 x86-64-avx2 \
+                               x86-64-sse41-popcnt x86-64-modern x86-64-ssse3 x86-64-sse3-popcnt \
+                               x86-64 x86-32-sse41-popcnt x86-32-sse2 x86-32 ppc-64 ppc-32 \
+                               armv7 armv7-neon armv8 apple-silicon general-64 general-32))
+   SUPPORTED_ARCH=true
+else
+   SUPPORTED_ARCH=false
 endif
 
 optimize = yes
@@ -822,6 +829,7 @@ endif
 ### Section 4. Public Targets
 ### ==========================================================================
 
+
 help:
 	@echo ""
 	@echo "To compile Honey, type: "
@@ -885,10 +893,12 @@ help:
 	@echo "make -j profile-build ARCH=x86-64-bmi2 COMP=gcc COMPCXX=g++-9.0"
 	@echo "make -j build ARCH=x86-64-ssse3 COMP=clang"
 	@echo ""
-ifneq ($(empty_arch), yes)
 	@echo "-------------------------------"
+ifeq ($(SUPPORTED_ARCH), true)
 	@echo "The selected architecture $(ARCH) will enable the following configuration: "
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
+else
+	@echo "Specify a supported architecture with the ARCH option for more details"
 endif
 
 directory = ../bench_nodes
@@ -1014,6 +1024,7 @@ config-sanity:
 	@test "$(debug)" = "yes" || test "$(debug)" = "no"
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
+	@test "$(SUPPORTED_ARCH)" = "true"
 	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64"
@@ -1097,51 +1108,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 08/23/2020:
+### Based on commits through 08/24/2020:
 ### ======================================================
-### Black-Diamond-XIr5.bench:Nodes searched  : 12021488
-### Black-Diamond-XIr5.bench:Nodes/second    : 1787581
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1446838651
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78402k
-### Bluefish-XIr5.bench:Nodes searched  : 4682953
-### Bluefish-XIr5.bench:Nodes/second    : 1653001
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 655769902
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 81920k
-### Honey-XIr5.bench:Nodes searched  : 4558134
-### Honey-XIr5.bench:Nodes/second    : 1755153
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 566013047
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 82689k
-### Stockfish-XIr5.bench:Nodes searched  : 4274332
-### Stockfish-XIr5.bench:Nodes/second    : 1797448
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 327549327
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 72258k
-### Weakfish-XIr5.bench:Nodes searched  : 3535
-### Weakfish-XIr5.bench:Nodes/second    : 114032
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 682655
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10188k
+### Black-Diamond-XIr5.bench:Nodes searched  : 10393694
+### Black-Diamond-XIr5.bench:Nodes/second    : 1763137
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1128268325
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78070k
+### Bluefish-XIr5.bench:Nodes searched  : 4208230
+### Bluefish-XIr5.bench:Nodes/second    : 1645768
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 590745736
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 82552k
+### Honey-XIr5.bench:Nodes searched  : 4373344
+### Honey-XIr5.bench:Nodes/second    : 1710341
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 515100667
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 80800k
+### Stockfish-XIr5.bench:Nodes searched  : 3713976
+### Stockfish-XIr5.bench:Nodes/second    : 1785565
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 329894684
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 71529k
+### Weakfish-XIr5.bench:Nodes searched  : 3357
+### Weakfish-XIr5.bench:Nodes/second    : 145956
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 677447
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10585k
 ### ======================================================
