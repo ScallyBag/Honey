@@ -799,8 +799,10 @@ ifeq ($(debug), no)
 # So, only enable it for a cross from Linux by default.
 	else ifeq ($(comp),mingw)
 	ifeq ($(KERNEL),Linux)
+	ifneq ($(arch),i386)
 		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS) -flto=jobserver
+	endif
 	endif
 	endif
 endif
@@ -1099,24 +1101,24 @@ icc-profile-use:
 #
 ### Based on commits through 08/26/2020:
 ### ======================================================
-### Black-Diamond-XIr5.bench:Nodes searched  : 10393694
-### Black-Diamond-XIr5.bench:Nodes/second    : 1826980
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1123878751
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 80449k
-### Bluefish-XIr5.bench:Nodes searched  : 4646794
-### Bluefish-XIr5.bench:Nodes/second    : 1788604
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 561437885
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 85873k
-### Honey-XIr5.bench:Nodes searched  : 4379285
-### Honey-XIr5.bench:Nodes/second    : 1761578
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 539761915
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 84245k
-### Stockfish-XIr5.bench:Nodes searched  : 3449530
-### Stockfish-XIr5.bench:Nodes/second    : 1840731
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 321214726
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 74962k
-### Weakfish-XIr5.bench:Nodes searched  : 3176
-### Weakfish-XIr5.bench:Nodes/second    : 113428
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 683584
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10202k
+### Black-Diamond-XIr5.bench:Nodes searched  : 11147615
+### Black-Diamond-XIr5.bench:Nodes/second    : 1764980
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1158378674
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78769k
+### Bluefish-XIr5.bench:Nodes searched  : 4321184
+### Bluefish-XIr5.bench:Nodes/second    : 1701253
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 599493759
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 85010k
+### Honey-XIr5.bench:Nodes searched  : 4458053
+### Honey-XIr5.bench:Nodes/second    : 1743470
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 549479391
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 83204k
+### Stockfish-XIr5.bench:Nodes searched  : 3630284
+### Stockfish-XIr5.bench:Nodes/second    : 1804316
+### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 325438829
+### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 73997k
+### Weakfish-XIr5.bench:Nodes searched  : 3161
+### Weakfish-XIr5.bench:Nodes/second    : 105366
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 663147
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9340098
 ### ======================================================

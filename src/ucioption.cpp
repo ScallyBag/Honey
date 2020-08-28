@@ -172,7 +172,7 @@ void init(OptionsMap& o) {
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
 //  o["Net_SHA256"]               << Option("nn-82215d0fd0df.nnue");
-    o["EvalFile"]                 << Option("eval.bin", on_eval_file);
+    o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
 }
 
 /// operator<<() is used to print all the options default values in chronological
