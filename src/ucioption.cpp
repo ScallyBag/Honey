@@ -171,7 +171,6 @@ void init(OptionsMap& o) {
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
-//  o["Net_SHA256"]               << Option("nn-82215d0fd0df.nnue");
     o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
 }
 

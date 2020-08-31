@@ -122,10 +122,13 @@ ifneq ($(HONEY),yes)
 		else
 			PRE=Stock
 			STOCKFISH = yes
-			CXXFLAGS += -DStockfish
 		endif
 	NAME=$(PRE)fish$(SUF)
   endif
+	ifeq ($(STOCKFISH),yes)
+		NAME=Oki-Maguro
+		CXXFLAGS += -DStockfish
+	endif
 	ifeq ($(RELEASEVER),no)
       ifeq ($(TEST),no)
 		  ifeq ($(COMP),mingw)
@@ -965,7 +968,7 @@ clean: objclean profileclean
 
 net:
 	### Honey Net Check
-		$(eval currentNet := $(shell grep Net_SHA256 ucioption.cpp | grep Option | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
+		$(eval currentNet := $(shell grep SHA256NET evaluate.h | grep define | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
 		@echo "Default net: $(currentNet)"
 		$(eval sha256nn := https://tests.stockfishchess.org/api/nn/$(currentNet))
 		$(eval wget := $(shell echo "wget -O "eval.bin"   "))
@@ -1094,29 +1097,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-### Based on commits through 08/28/2020:
+### Based on commits through 08/29/2020:
 ### ======================================================
 ### Black-Diamond-XIr5.bench:Nodes searched  : 9420033
-### Black-Diamond-XIr5.bench:Nodes/second    : 1757468
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1268608838
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 82254k
+### Black-Diamond-XIr5.bench:Nodes/second    : 1748011
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1044764828
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78915k
 ### Bluefish-XIr5.bench:Nodes searched  : 4193570
-### Bluefish-XIr5.bench:Nodes/second    : 1688232
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 634453308
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84145k
+### Bluefish-XIr5.bench:Nodes/second    : 1674079
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 631738521
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 82311k
 ### Honey-XIr5.bench:Nodes searched  : 3660829
-### Honey-XIr5.bench:Nodes/second    : 1713069
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 564527804
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 82545k
-### Stockfish-XIr5.bench:Nodes searched  : 3630284
-### Stockfish-XIr5.bench:Nodes/second    : 1811518
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 316213803
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 72178k
+### Honey-XIr5.bench:Nodes/second    : 1715477
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 520078816
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 81186k
+### Oki-Maguro-XIr5.bench:Nodes searched  : 3630284
+### Oki-Maguro-XIr5.bench:Nodes/second    : 1818779
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 336056861
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 72488k
 ### Weakfish-XIr5.bench:Nodes searched  : 3169
-### Weakfish-XIr5.bench:Nodes/second    : 121884
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 723301
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10636k
+### Weakfish-XIr5.bench:Nodes/second    : 77292
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 677481
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 8575708
 ### ======================================================

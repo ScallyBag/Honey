@@ -43,7 +43,7 @@
 //     const unsigned char *const gEmbeddedNNUEEnd;     // a marker to the end
 //     const unsigned int         gEmbeddedNNUESize;    // the size of the embedded file
 // Note that this does not work in Microsof Visual Studio.
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(NNUE_EMBEDDING_OFF)
   INCBIN(EmbeddedNNUE, EvalFileDefaultName);
 #else
   const unsigned char        gEmbeddedNNUEData[1] = {0x0};
@@ -61,11 +61,11 @@ namespace Eval {
   string eval_file_loaded = "None";
 
   /// init_NNUE() tries to load a nnue network at startup time, or when the engine
-  /// receives a UCI command "setoption name EvalFile value blahblah.nnue"
+  /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
   /// The name of the nnue network is always retrieved from the EvalFile option.
   /// We search the given network in three locations: internally (the default
   /// network may be embedded in the binary), in the active working directory and
-  /// in the engine directory. Distros packagers may patch the DISTRO_NNUE_DIRECTORY
+  /// in the engine directory. Distro packagers may define the DEFAULT_NNUE_DIRECTORY
   /// variable to have the engine search in a special directory in their distro.
 
   void init_NNUE() {
@@ -75,9 +75,14 @@ namespace Eval {
         return;
 
     string eval_file = string(Options["EvalFile"]);
-    string DISTRO_NNUE_DIRECTORY = "";
 
-    vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory , DISTRO_NNUE_DIRECTORY };
+    #if defined(DEFAULT_NNUE_DIRECTORY)
+    #define stringify2(x) #x
+    #define stringify(x) stringify2(x)
+    vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory , stringify(DEFAULT_NNUE_DIRECTORY) };
+    #else
+    vector<string> dirs = { "<internal>" , "" , CommandLine::binaryDirectory };
+    #endif
 
     for (string directory : dirs)
         if (eval_file_loaded != eval_file)
@@ -110,13 +115,12 @@ namespace Eval {
   void verify_NNUE() {
 
     string eval_file = string(Options["EvalFile"]);
-//    std::string eval_file = std::string(Options["EvalFile"]);
 
     if (useNNUE && eval_file_loaded != eval_file)
     {
         UCI::OptionsMap defaults;
         UCI::init(defaults);
-/*
+/*  My repo will have the best NN named as eval.bin
         string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
         string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
         string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";

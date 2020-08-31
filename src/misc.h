@@ -227,5 +227,4 @@ namespace CommandLine {
   extern std::string workingDirectory; // path of the working directory
 }
 
-
 #endif // #ifndef MISC_H_INCLUDED
