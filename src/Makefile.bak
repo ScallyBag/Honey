@@ -246,12 +246,17 @@ endif
 
 ### 2.1. General and architecture defaults
 
+ifeq ($(ARCH),)
+   ARCH = x86-64-modern
+   help_skip_sanity = yes
+endif
 # explicitly check for the list of supported architectures (as listed with make help),
 # the user can override with `make ARCH=x86-32-vnni256 SUPPORTED_ARCH=true`
-ifeq ($(ARCH),$(filter $(ARCH),x86-64-vnni512 x86-64-vnni256 x86-64-avx512 x86-64-bmi2 x86-64-avx2 \
-                               x86-64-sse41-popcnt x86-64-modern x86-64-ssse3 x86-64-sse3-popcnt \
-                               x86-64 x86-32-sse41-popcnt x86-32-sse2 x86-32 ppc-64 ppc-32 \
-                               armv7 armv7-neon armv8 apple-silicon general-64 general-32))
+ifeq ($(ARCH), $(filter $(ARCH), \
+                 x86-64-vnni512 x86-64-vnni256 x86-64-avx512 x86-64-bmi2 x86-64-avx2 \
+                 x86-64-sse41-popcnt x86-64-modern x86-64-ssse3 x86-64-sse3-popcnt \
+                 x86-64 x86-32-sse41-popcnt x86-32-sse2 x86-32 ppc-64 ppc-32 \
+                 armv7 armv7-neon armv8 apple-silicon general-64 general-32))
    SUPPORTED_ARCH=true
 else
    SUPPORTED_ARCH=false
@@ -274,7 +279,6 @@ avx512 = no
 vnni256 = no
 vnni512 = no
 neon = no
-ARCH = x86-64-modern
 STRIP = strip
 
 ### 2.2 Architecture specific
@@ -899,11 +903,12 @@ help:
 	@echo "make -j build ARCH=x86-64-ssse3 COMP=clang"
 	@echo ""
 	@echo "-------------------------------"
-ifeq ($(SUPPORTED_ARCH), true)
+ifeq ($(SUPPORTED_ARCH)$(help_skip_sanity), true)
 	@echo "The selected architecture $(ARCH) will enable the following configuration: "
 	@$(MAKE) ARCH=$(ARCH) COMP=$(COMP) config-sanity
 else
 	@echo "Specify a supported architecture with the ARCH option for more details"
+	@echo ""
 endif
 
 directory = ../bench_nodes
@@ -1097,29 +1102,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-### Based on commits through 08/28/2020:
+### Based on commits through 08/29/2020:
 ### ======================================================
 ### Black-Diamond-XIr5.bench:Nodes searched  : 9420033
-### Black-Diamond-XIr5.bench:Nodes/second    : 1757468
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1268608838
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 82254k
+### Black-Diamond-XIr5.bench:Nodes/second    : 1748011
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1044764828
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78915k
 ### Bluefish-XIr5.bench:Nodes searched  : 4193570
-### Bluefish-XIr5.bench:Nodes/second    : 1688232
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 634453308
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84145k
+### Bluefish-XIr5.bench:Nodes/second    : 1674079
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 631738521
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 82311k
 ### Honey-XIr5.bench:Nodes searched  : 3660829
-### Honey-XIr5.bench:Nodes/second    : 1713069
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 564527804
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 82545k
-### Stockfish-XIr5.bench:Nodes searched  : 3630284
-### Stockfish-XIr5.bench:Nodes/second    : 1811518
-### Stockfish-XIr5-60_Cores.bench:Nodes searched  : 316213803
-### Stockfish-XIr5-60_Cores.bench:Nodes/second    : 72178k
+### Honey-XIr5.bench:Nodes/second    : 1715477
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 520078816
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 81186k
+### Oki-Maguro-XIr5.bench:Nodes searched  : 3630284
+### Oki-Maguro-XIr5.bench:Nodes/second    : 1818779
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 336056861
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 72488k
 ### Weakfish-XIr5.bench:Nodes searched  : 3169
-### Weakfish-XIr5.bench:Nodes/second    : 121884
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 723301
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 10636k
+### Weakfish-XIr5.bench:Nodes/second    : 77292
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 677481
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 8575708
 ### ======================================================
