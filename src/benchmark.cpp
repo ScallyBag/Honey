@@ -29,7 +29,6 @@ namespace {
 
 const vector<string> Defaults = {
   "setoption name UCI_Chess960 value false",
-  //"8/6k1/5r2/8/8/8/1K6/Q7 w - - 0 1",
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
   "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 10",
   "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 11",
@@ -67,7 +66,7 @@ const vector<string> Defaults = {
   "4k3/3q1r2/1N2r1b1/3ppN2/2nPP3/1B1R2n1/2R1Q3/3K4 w - - 5 1",
 
   // 4-man positions
-  //"8/1k4K1/7P/8/p7/8/8/8 w - - 0 1",
+  "4K3/8/p7/8/8/2k5/7P/8 w - - 0 1"        // h4  - mate in 19
 
   // 5-man positions
   "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
