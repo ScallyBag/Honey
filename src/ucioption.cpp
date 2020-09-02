@@ -75,6 +75,7 @@ bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const 
 /// init() initializes the UCI options to their hard-coded default values
 void init(OptionsMap& o) {
 
+<<<<<<< HEAD
     // At most 2^32 superclusters. Supercluster = 8 kB
     constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
 
@@ -167,12 +168,43 @@ void init(OptionsMap& o) {
     o["UCI_Chess960"]             << Option(false);
     o["AnalyseMode"]              << Option(false);
     //o["SyzygyPath"]               << Option("<empty>", on_tb_path);
-    o["SyzygyPath"]               << Option("c:/syzygy", on_tb_path);
+    o["SyzygyPath"]            << Option("<4-men>", on_tb_path);
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
     o["Syzygy50MoveRule"]         << Option(true);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
     o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
+=======
+  constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
+
+  o["Debug Log File"]        << Option("", on_logger);
+  o["Contempt"]              << Option(24, -100, 100);
+  o["Analysis Contempt"]     << Option("Both var Off var White var Black var Both", "Both");
+  o["Threads"]               << Option(1, 1, 512, on_threads);
+  o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
+  o["Clear Hash"]            << Option(on_clear_hash);
+  o["Ponder"]                << Option(false);
+  o["MultiPV"]               << Option(1, 1, 500);
+  o["Skill Level"]           << Option(20, 0, 20);
+  o["Move Overhead"]         << Option(10, 0, 5000);
+  o["Slow Mover"]            << Option(100, 10, 1000);
+  o["nodestime"]             << Option(0, 0, 10000);
+  o["UCI_Chess960"]          << Option(false);
+  o["UCI_AnalyseMode"]       << Option(false);
+  o["UCI_LimitStrength"]     << Option(false);
+  o["UCI_Elo"]               << Option(1350, 1350, 2850);
+  o["UCI_ShowWDL"]           << Option(false);
+  //o["SyzygyPath"]            << Option("<empty>", on_tb_path);
+  //o["SyzygyPath"]            << Option("C:\\syzygy4", on_tb_path);
+  //o["SyzygyPath"]            << Option("C:\\syzygy5", on_tb_path);
+  //o["SyzygyPath"]            << Option("C:\\syzygy6", on_tb_path);
+  o["SyzygyPath"]            << Option("<4-men>", on_tb_path);
+  o["SyzygyProbeDepth"]      << Option(1, 1, 100);
+  o["Syzygy50MoveRule"]      << Option(true);
+  o["SyzygyProbeLimit"]      << Option(7, 0, 7);
+  o["Use NNUE"]              << Option(true, on_use_NNUE);
+  o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
+>>>>>>> f5e047cbf14d43148a1dcd040ca1837f13cc53e3
 }
 
 /// operator<<() is used to print all the options default values in chronological
