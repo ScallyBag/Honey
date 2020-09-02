@@ -38,7 +38,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = XIr5
+RELVERSION = 12
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -974,7 +974,7 @@ install:
 
 # clean all
 clean: objclean profileclean
-	@rm -f .depend *~ core
+	@rm -f  *~ core
 
 net:
 	### Honey Net Check
@@ -1003,7 +1003,7 @@ default:
 ### Section 5. Private Targets
 ### ==========================================================================
 
-all: $(EXE) .depend
+all: $(EXE)
 
 config-sanity:
 	@echo ""
@@ -1097,22 +1097,26 @@ icc-profile-make:
 icc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
-### Based on commits through 09/01/2020:
+### Based on commits through 09/02/2020:
 ### ======================================================
-### Bluefish-XIr5.bench:Nodes searched  : 3641104
-### Bluefish-XIr5.bench:Nodes/second    : 1677155
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 639473776
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84754k
-### Honey-XIr5.bench:Nodes searched  : 3638998
-### Honey-XIr5.bench:Nodes/second    : 1704448
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 586817632
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 82141k
-### Oki-Maguro-XIr5.bench:Nodes searched  : 3443202
-### Oki-Maguro-XIr5.bench:Nodes/second    : 1841284
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 372089339
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 73159k
-### Weakfish-XIr5.bench:Nodes searched  : 3169
-### Weakfish-XIr5.bench:Nodes/second    : 117370
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 633428
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9454149
+### Black-Diamond-12.bench:Nodes searched  : 7910417
+### Black-Diamond-12.bench:Nodes/second    : 1566109
+### Black-Diamond-12-60_Cores.bench:Nodes searched  : 1188624459
+### Black-Diamond-12-60_Cores.bench:Nodes/second    : 72743k
+### Bluefish-12.bench:Nodes searched  : 4099335
+### Bluefish-12.bench:Nodes/second    : 1551602
+### Bluefish-12-60_Cores.bench:Nodes searched  : 640363335
+### Bluefish-12-60_Cores.bench:Nodes/second    : 79637k
+### Honey-12.bench:Nodes searched  : 3528864
+### Honey-12.bench:Nodes/second    : 1538972
+### Honey-12-60_Cores.bench:Nodes searched  : 515783507
+### Honey-12-60_Cores.bench:Nodes/second    : 79941k
+### Oki-Maguro-12.bench:Nodes searched  : 3651664
+### Oki-Maguro-12.bench:Nodes/second    : 1662113
+### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 496982411
+### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 77994k
+### Weakfish-12.bench:Nodes searched  : 3167
+### Weakfish-12.bench:Nodes/second    : 102161
+### Weakfish-12-60_Cores.bench:Nodes searched  : 627507
+### Weakfish-12-60_Cores.bench:Nodes/second    : 8595986
 ### ======================================================

@@ -49,8 +49,17 @@ Thread::~Thread() {
   start_searching();
   stdThread.join();
 }
+#ifndef Stockfish
+/// Thread::bestMoveCount(Move move) return best move counter for the given root move
 
+int Thread::best_move_count(Move move) const {
 
+  auto rm = std::find(rootMoves.begin() + pvIdx,
+                      rootMoves.begin() + pvLast, move);
+
+  return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
+}
+#endif
 /// Thread::clear() reset histories, usually before a new game
 
 void Thread::clear() {
@@ -160,10 +169,8 @@ void ThreadPool::clear() {
   main()->bestPreviousScore = VALUE_INFINITE;
   main()->previousTimeReduction = 1.0;
 
-#ifndef Stockfish
   for (int i = 0; i < 4; ++i)
       main()->iterValue[i] = VALUE_ZERO;
-#endif
 }
 
 

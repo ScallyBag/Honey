@@ -187,13 +187,14 @@ using namespace Trace;
 namespace {
 
   // Threshold for lazy and space evaluation
-  constexpr Value LazyThreshold1 =  Value(1400);
-  constexpr Value LazyThreshold2 =  Value(1300);
+  constexpr Value LazyThreshold1 =  Value(1500);
+  constexpr Value LazyThreshold2 =  Value(1375);
   constexpr Value SpaceThreshold = Value(12222);
+
 #ifdef Stockfish
-  constexpr Value NNUEThreshold1  =   Value(550);
+  constexpr Value NNUEThreshold1  =   Value(875);
 #else
-  constexpr Value NNUEThreshold1  =   Value(1100);
+  constexpr Value NNUEThreshold1  =   Value(1375);
 #endif
   constexpr Value NNUEThreshold2 =   Value(275);
   // KingAttackWeights[PieceType] contains king attack weights by piece type
@@ -230,26 +231,26 @@ namespace {
 
   // Outpost[knight/bishop] contains bonuses for each knight or bishop occupying a
   // pawn protected square on rank 4 to 6 which is also safe from a pawn attack.
-  constexpr Score Outpost[] = { S(56, 34), S(31, 23) };
+  constexpr Score Outpost[] = { S(56, 36), S(30, 23) };
 
   // PassedRank[Rank] contains a bonus according to the rank of a passed pawn
   constexpr Score PassedRank[RANK_NB] = {
-    S(0, 0), S(9, 28), S(15, 31), S(17, 39), S(64, 70), S(171, 177), S(277, 260)
+    S(0, 0), S(10, 28), S(17, 33), S(15, 41), S(62, 72), S(168, 177), S(276, 260)
   };
 
   // RookOnFile[semiopen/open] contains bonuses for each rook when there is
   // no (friendly) pawn on the rook file.
-  constexpr Score RookOnFile[] = { S(19, 7), S(48, 27) };
+  constexpr Score RookOnFile[] = { S(19, 7), S(48, 29) };
 
   // ThreatByMinor/ByRook[attacked PieceType] contains bonuses according to
   // which piece type attacks which one. Attacks on lesser pieces which are
   // pawn-defended are not considered.
   constexpr Score ThreatByMinor[PIECE_TYPE_NB] = {
-    S(0, 0), S(5, 32), S(55, 41), S(77, 56), S(89, 119), S(79, 162)
+    S(0, 0), S(5, 32), S(57, 41), S(77, 56), S(88, 119), S(79, 161)
   };
 
   constexpr Score ThreatByRook[PIECE_TYPE_NB] = {
-    S(0, 0), S(3, 44), S(37, 68), S(42, 60), S(0, 39), S(58, 43)
+    S(0, 0), S(3, 46), S(37, 68), S(42, 60), S(0, 38), S(58, 41)
   };
 
   // Assorted bonuses and penalties
@@ -265,9 +266,7 @@ namespace {
   constexpr Score MinorBehindPawn     = S( 18,  3);
   constexpr Score PassedFile          = S( 11,  8);
   constexpr Score PawnlessFlank       = S( 17, 95);
-#ifndef Stockfish
   constexpr Score QueenInfiltration   = S( -2, 14);
-#endif
   constexpr Score ReachableOutpost    = S( 31, 22);
   constexpr Score RestrictedPiece     = S(  7,  7);
   constexpr Score RookOnKingRing      = S( 16,  0);
@@ -511,10 +510,10 @@ namespace {
             if (pos.slider_blockers(pos.pieces(Them, ROOK, BISHOP), s, queenPinners))
                 score -= WeakQueen;
                 // Bonus for queen on weak square in enemy camp
-#ifndef Stockfish
+
             if (relative_rank(Us, s) > RANK_4 && (~pe->pawn_attacks_span(Them) & s))
                 score += QueenInfiltration;
-#endif
+
         }
     }
     if (T)
@@ -1039,10 +1038,7 @@ Value Eval::evaluate(const Position& pos) {
   else   {
               classical = !Eval::useNNUE
                          ||  abs(eg_value(pos.psq_score())) * 16 > NNUEThreshold1 * (16 + pos.rule50_count())
-#ifndef Stockfish
-                         ||  pos.this_thread()->id() % 4 != 0
-#endif
-                        ;
+                         ||  pos.this_thread()->id() % 4 != 0;
       v = classical ? Evaluation<NO_TRACE>(pos).value()
                       : NNUE::evaluate(pos) * 5 / 4 + Tempo;
 

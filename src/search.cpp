@@ -1496,6 +1496,9 @@ moves_loop: // When in check, search starts from here
       // re-searched at full depth.
       if (    depth >= 3
           &&  moveCount > 1 + 2 * rootNode + 2 * (PvNode && abs(bestValue) < 2)
+#ifndef Stockfish
+          && (!rootNode || thisThread->best_move_count(move) == 0)
+#endif
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
@@ -2699,11 +2702,7 @@ namespace {
     else
     {
         if ((ss-1)->currentMove != MOVE_NULL)
-        {
-            int bonus = -(ss-1)->statScore / 512;
-
-            ss->staticEval = eval = evaluate(pos) + bonus;
-        }
+            ss->staticEval = eval = evaluate(pos);
         else
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Tempo;
     }
@@ -2714,8 +2713,9 @@ namespace {
     if (!ttHit)
         tte->save(posKey, VALUE_NONE, ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
 
-    improving =  (ss-2)->staticEval == VALUE_NONE ? (ss->staticEval > (ss-4)->staticEval
-              || (ss-4)->staticEval == VALUE_NONE) : ss->staticEval > (ss-2)->staticEval;
+    improving =  (ss-2)->staticEval == VALUE_NONE
+               ? ss->staticEval > (ss-4)->staticEval || (ss-4)->staticEval == VALUE_NONE
+               : ss->staticEval > (ss-2)->staticEval;
 
     // Begin early pruning.
     if (   !PvNode
@@ -2856,17 +2856,7 @@ namespace {
                    }
                }
        }
-    } //End early Pruning
-
-    // Step 11. Internal iterative deepening (~1 Elo)
-    if (depth >= 7 && !ttMove)
-    {
-        search<NT>(pos, ss, alpha, beta, depth - 7, cutNode);
-
-        tte = TT.probe(posKey, ttHit);
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-        ttMove = ttHit ? tte->move() : MOVE_NONE;
-    }
+    } // End early Pruning
     } // In check search starts here
 
     const PieceToHistory* contHist[] = { (ss-1)->continuationHistory, (ss-2)->continuationHistory,
@@ -3523,6 +3513,10 @@ namespace {
          {
              assert(type_of(move) != ENPASSANT); // Due to !pos.advanced_pawn_push
 
+             // moveCount pruning
+             if (moveCount > 2)
+                 continue;
+
              futilityValue = futilityBase + PieceValue[EG][pos.piece_on(to_sq(move))];
 
              if (futilityValue <= alpha)
@@ -3551,6 +3545,12 @@ namespace {
                                                                 [captureOrPromotion]
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
+
+      if (  !captureOrPromotion
+          && moveCount >= abs(depth) + 1
+          && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
+          && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)
+          continue;
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
