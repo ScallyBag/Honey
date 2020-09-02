@@ -783,6 +783,11 @@ ifeq ($(debug), no)
 		LDFLAGS += $(CXXFLAGS)
 	else ifeq ($(comp),clang)
 		CXXFLAGS += -flto=thin
+		ifneq ($(findstring MINGW,$(KERNEL)),)
+			CXXFLAGS += -fuse-ld=lld
+		else ifneq ($(findstring MSYS,$(KERNEL)),)
+			CXXFLAGS += -fuse-ld=lld
+		endif
 		LDFLAGS += $(CXXFLAGS)
 
 # GCC and CLANG use different methods for parallelizing LTO and CLANG pretends to be
@@ -1097,31 +1102,26 @@ icc-profile-use:
 .depend:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
 
--include .depend
-#
-#
-#
-#
-### Based on commits through 08/29/2020:
+### Based on commits through 08/30/2020:
 ### ======================================================
-### Black-Diamond-XIr5.bench:Nodes searched  : 9420033
-### Black-Diamond-XIr5.bench:Nodes/second    : 1748011
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1044764828
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 78915k
-### Bluefish-XIr5.bench:Nodes searched  : 4193570
-### Bluefish-XIr5.bench:Nodes/second    : 1674079
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 631738521
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 82311k
-### Honey-XIr5.bench:Nodes searched  : 3660829
-### Honey-XIr5.bench:Nodes/second    : 1715477
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 520078816
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 81186k
-### Oki-Maguro-XIr5.bench:Nodes searched  : 3630284
-### Oki-Maguro-XIr5.bench:Nodes/second    : 1818779
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 336056861
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 72488k
+### Black-Diamond-XIr5.bench:Nodes searched  : 11273002
+### Black-Diamond-XIr5.bench:Nodes/second    : 1749108
+### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1249828405
+### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 79158k
+### Bluefish-XIr5.bench:Nodes searched  : 3529719
+### Bluefish-XIr5.bench:Nodes/second    : 1645556
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 678285454
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 76798k
+### Honey-XIr5.bench:Nodes searched  : 3601874
+### Honey-XIr5.bench:Nodes/second    : 1707858
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 555021169
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 81765k
+### Oki-Maguro-XIr5.bench:Nodes searched  : 3674714
+### Oki-Maguro-XIr5.bench:Nodes/second    : 1770093
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 347572167
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 70174k
 ### Weakfish-XIr5.bench:Nodes searched  : 3169
-### Weakfish-XIr5.bench:Nodes/second    : 77292
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 677481
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 8575708
+### Weakfish-XIr5.bench:Nodes/second    : 109275
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 647093
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9516073
 ### ======================================================
