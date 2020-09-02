@@ -1003,7 +1003,7 @@ default:
 ### Section 5. Private Targets
 ### ==========================================================================
 
-all: $(EXE) .depend
+all: $(EXE)
 
 config-sanity:
 	@echo ""
@@ -1097,22 +1097,22 @@ icc-profile-make:
 icc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
-### Based on commits through 09/01/2020:
+### Based on commits through 09/02/2020:
 ### ======================================================
-### Bluefish-XIr5.bench:Nodes searched  : 3641104
-### Bluefish-XIr5.bench:Nodes/second    : 1677155
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 639473776
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84754k
-### Honey-XIr5.bench:Nodes searched  : 3638998
-### Honey-XIr5.bench:Nodes/second    : 1704448
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 586817632
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 82141k
-### Oki-Maguro-XIr5.bench:Nodes searched  : 3443202
-### Oki-Maguro-XIr5.bench:Nodes/second    : 1841284
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 372089339
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 73159k
-### Weakfish-XIr5.bench:Nodes searched  : 3169
-### Weakfish-XIr5.bench:Nodes/second    : 117370
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 633428
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9454149
+### Bluefish-XIr5.bench:Nodes searched  : 3904170
+### Bluefish-XIr5.bench:Nodes/second    : 1650114
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 595656141
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84790k
+### Honey-XIr5.bench:Nodes searched  : 3768737
+### Honey-XIr5.bench:Nodes/second    : 1737545
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 568291186
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 83954k
+### Oki-Maguro-XIr5.bench:Nodes searched  : 3425235
+### Oki-Maguro-XIr5.bench:Nodes/second    : 1832656
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 347980015
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 72300k
+### Weakfish-XIr5.bench:Nodes searched  : 3171
+### Weakfish-XIr5.bench:Nodes/second    : 117444
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 703310
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9905774
 ### ======================================================

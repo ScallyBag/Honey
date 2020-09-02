@@ -1,20 +1,20 @@
 /*
-  Honey, a UCI chess playing engine derived from Glaurung 2.1
+  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
-  Honey is free software: you can redistribute it and/or modify
+  Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Honey is distributed in the hope that it will be useful,
+  Stockfish is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <algorithm>
 #include <atomic>
@@ -27,6 +27,7 @@
 #include <sstream>
 #include <type_traits>
 #include <mutex>
+#include <unordered_map>
 
 #include "../bitboard.h"
 #include "../movegen.h"
@@ -36,6 +37,7 @@
 #include "../uci.h"
 
 #include "tbprobe.h"
+#include "4men.h"
 
 #ifndef _WIN32
 #include <fcntl.h>
@@ -65,10 +67,11 @@ enum TBType { WDL, DTZ }; // Used as template parameter
 enum TBFlag { STM = 1, Mapped = 2, WinPlies = 4, LossPlies = 8, Wide = 16, SingleValue = 128 };
 
 inline WDLScore operator-(WDLScore d) { return WDLScore(-int(d)); }
-//inline Square operator^=(Square& s, int i) { return s = Square(int(s) ^ i);
 inline Square operator^(Square s, int i) { return Square(int(s) ^ i); }
 
 const std::string PieceToChar = " PNBRQK  pnbrqk";
+
+bool internal4Men = true;
 
 int MapPawns[SQUARE_NB];
 int MapB1H1H7[SQUARE_NB];
@@ -82,7 +85,7 @@ int LeadPawnsSize[6][4];       // [leadPawnsCnt][FILE_A..FILE_D]
 // Comparison function to sort leading pawns in ascending MapPawns[] order
 bool pawns_comp(Square i, Square j) { return MapPawns[i] < MapPawns[j]; }
 int off_A1H8(Square sq) { return int(rank_of(sq)) - file_of(sq); }
-#ifndef Noir
+
 constexpr Value WDL_to_value[] = {
    -VALUE_MATE + MAX_PLY + 1,
     VALUE_DRAW - 2,
@@ -90,15 +93,6 @@ constexpr Value WDL_to_value[] = {
     VALUE_DRAW + 2,
     VALUE_MATE - MAX_PLY - 1
 };
-#else
-constexpr Value WDL_to_value[] = {
-   -VALUE_TB_WIN + 6 * PawnValueEg,
-    VALUE_DRAW - 2,
-    VALUE_DRAW,
-    VALUE_DRAW + 2,
-    VALUE_TB_WIN - 6 * PawnValueEg
-};
-#endif
 
 template<typename T, int Half = sizeof(T) / 2, int End = sizeof(T) - 1>
 inline void swap_endian(T& x)
@@ -168,6 +162,23 @@ struct LR {
 
 static_assert(sizeof(LR) == 3, "LR tree entry must be 3 bytes");
 
+
+#define M(c) { #c".rtbw", c##w }, { #c".rtbz", c##z }
+static const std::unordered_map<std::string, const void*> map4Men = {
+    M(KBvK),  M(KNvK),  M(KPvK),  M(KQvK),  M(KRvK),  M(KBBvK), M(KBNvK),
+    M(KBPvK), M(KBvKB), M(KBvKN), M(KBvKP), M(KNNvK), M(KNPvK), M(KNvKN),
+    M(KNvKP), M(KPPvK), M(KPvKP), M(KQBvK), M(KQNvK), M(KQPvK), M(KQQvK),
+    M(KQRvK), M(KQvKB), M(KQvKN), M(KQvKP), M(KQvKQ), M(KQvKR), M(KRBvK),
+    M(KRNvK), M(KRPvK), M(KRRvK), M(KRvKB), M(KRvKN), M(KRvKP), M(KRvKR)
+};
+#undef M
+
+inline const void* get_4men(const std::string& str)
+{
+    auto it = map4Men.find(str);
+    return it != map4Men.end() ? it->second : nullptr;
+}
+
 // Tablebases data layout is structured as following:
 //
 //  TBFile:   memory maps/unmaps the physical .rtbw and .rtbz files
@@ -192,19 +203,26 @@ public:
 
     TBFile(const std::string& f) {
 
+        if (internal4Men)
+        {
+            fname = f;
+        }
+        else
+        {
 #ifndef _WIN32
-        constexpr char SepChar = ':';
+            constexpr char SepChar = ':';
 #else
-        constexpr char SepChar = ';';
+            constexpr char SepChar = ';';
 #endif
-        std::stringstream ss(Paths);
-        std::string path;
+            std::stringstream ss(Paths);
+            std::string path;
 
-        while (std::getline(ss, path, SepChar)) {
-            fname = path + "/" + f;
-            std::ifstream::open(fname);
-            if (is_open())
-                return;
+            while (std::getline(ss, path, SepChar)) {
+                fname = path + "/" + f;
+                std::ifstream::open(fname);
+                if (is_open())
+                    return;
+            }
         }
     }
 
@@ -212,71 +230,86 @@ public:
     // closed after mapping.
     uint8_t* map(void** baseAddress, uint64_t* mapping, TBType type) {
 
-        assert(is_open());
+        if (internal4Men)
+        {
+            if (is_open())
+                close();
 
-        close(); // Need to re-open to get native file descriptor
+            *baseAddress = const_cast<void*>(get_4men(fname));
+            *mapping = 0;
+
+            if (!*baseAddress)
+                return nullptr;
+        }
+        else
+        {
+            assert(is_open());
+
+            close(); // Need to re-open to get native file descriptor
 
 #ifndef _WIN32
-        struct stat statbuf;
-        int fd = ::open(fname.c_str(), O_RDONLY);
+            struct stat statbuf;
+            int fd = ::open(fname.c_str(), O_RDONLY);
 
-        if (fd == -1)
-            return *baseAddress = nullptr, nullptr;
+            if (fd == -1)
+                return *baseAddress = nullptr, nullptr;
 
-        fstat(fd, &statbuf);
+            fstat(fd, &statbuf);
 
-        if (statbuf.st_size % 64 != 16)
-        {
-            std::cerr << "Corrupt tablebase file " << fname << std::endl;
-            exit(EXIT_FAILURE);
-        }
+            if (statbuf.st_size % 64 != 16)
+            {
+                std::cerr << "Corrupt tablebase file " << fname << std::endl;
+                exit(EXIT_FAILURE);
+            }
 
-        *mapping = statbuf.st_size;
-        *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-        madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
-        ::close(fd);
+            *mapping = statbuf.st_size;
+            *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+            madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
+            ::close(fd);
 
-        if (*baseAddress == MAP_FAILED)
-        {
-            std::cerr << "Could not mmap() " << fname << std::endl;
-            exit(EXIT_FAILURE);
-        }
+            if (*baseAddress == MAP_FAILED)
+            {
+                std::cerr << "Could not mmap() " << fname << std::endl;
+                exit(EXIT_FAILURE);
+            }
 #else
-        // Note FILE_FLAG_RANDOM_ACCESS is only a hint to Windows and as such may get ignored.
-        HANDLE fd = CreateFile(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                               OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, nullptr);
+            // Note FILE_FLAG_RANDOM_ACCESS is only a hint to Windows and as such may get ignored.
+            HANDLE fd = CreateFile(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                                   OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, nullptr);
 
-        if (fd == INVALID_HANDLE_VALUE)
-            return *baseAddress = nullptr, nullptr;
+            if (fd == INVALID_HANDLE_VALUE)
+                return *baseAddress = nullptr, nullptr;
 
-        DWORD size_high;
-        DWORD size_low = GetFileSize(fd, &size_high);
+            DWORD size_high;
+            DWORD size_low = GetFileSize(fd, &size_high);
 
-        if (size_low % 64 != 16)
-        {
-            std::cerr << "Corrupt tablebase file " << fname << std::endl;
-            exit(EXIT_FAILURE);
-        }
+            if (size_low % 64 != 16)
+            {
+                std::cerr << "Corrupt tablebase file " << fname << std::endl;
+                exit(EXIT_FAILURE);
+            }
 
-        HANDLE mmap = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
-        CloseHandle(fd);
+            HANDLE mmap = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
+            CloseHandle(fd);
 
-        if (!mmap)
-        {
-            std::cerr << "CreateFileMapping() failed" << std::endl;
-            exit(EXIT_FAILURE);
-        }
+            if (!mmap)
+            {
+                std::cerr << "CreateFileMapping() failed" << std::endl;
+                exit(EXIT_FAILURE);
+            }
 
-        *mapping = (uint64_t)mmap;
-        *baseAddress = MapViewOfFile(mmap, FILE_MAP_READ, 0, 0, 0);
+            *mapping = (uint64_t)mmap;
+            *baseAddress = MapViewOfFile(mmap, FILE_MAP_READ, 0, 0, 0);
 
-        if (!*baseAddress)
-        {
-            std::cerr << "MapViewOfFile() failed, name = " << fname
-                      << ", error = " << GetLastError() << std::endl;
-            exit(EXIT_FAILURE);
-        }
+            if (!*baseAddress)
+            {
+                std::cerr << "MapViewOfFile() failed, name = " << fname
+                          << ", error = " << GetLastError() << std::endl;
+                exit(EXIT_FAILURE);
+            }
 #endif
+        }
+
         uint8_t* data = (uint8_t*)*baseAddress;
 
         constexpr uint8_t Magics[][4] = { { 0xD7, 0x66, 0x0C, 0xA5 },
@@ -293,6 +326,9 @@ public:
     }
 
     static void unmap(void* baseAddress, uint64_t mapping) {
+
+        if (internal4Men)
+            return;
 
 #ifndef _WIN32
         munmap(baseAddress, mapping);
@@ -486,12 +522,22 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
     for (PieceType pt : pieces)
         code += PieceToChar[pt];
 
-    TBFile file(code.insert(code.find('K', 1), "v") + ".rtbw"); // KRK -> KRvK
+    code.insert(code.find('K', 1), "v"); // KRK -> KRvK
 
-    if (!file.is_open()) // Only WDL file is checked
-        return;
+    if (internal4Men)
+    {
+        if (!get_4men(code + ".rtbw"))
+            return;
+    }
+    else
+    {
+        TBFile file(code + ".rtbw");
 
-    file.close();
+        if (!file.is_open()) // Only WDL file is checked
+            return;
+
+        file.close();
+    }
 
     MaxCardinality = std::max((int)pieces.size(), MaxCardinality);
 
@@ -723,11 +769,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
         leadPawnsCnt = size;
 
         std::swap(squares[0], *std::max_element(squares, squares + leadPawnsCnt, pawns_comp));
-//#ifndef Stockfish
-//        tbFile = map_to_queenside(file_of(squares[0]));
-//#else
+
         tbFile = File(edge_distance(file_of(squares[0])));
-//#endif
     }
 
     // DTZ tables are one-sided, i.e. they store positions only for white to
@@ -771,7 +814,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     if (entry->hasPawns) {
         idx = LeadPawnIdx[leadPawnsCnt][squares[0]];
 
-        std::stable_sort(squares + 1, squares + leadPawnsCnt, pawns_comp);
+        std::sort(squares + 1, squares + leadPawnsCnt, pawns_comp);
 
         for (int i = 1; i < leadPawnsCnt; ++i)
             idx += Binomial[i][MapPawns[squares[i]]];
@@ -783,7 +826,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     // piece is below RANK_5.
     if (rank_of(squares[0]) > RANK_4)
         for (int i = 0; i < size; ++i)
-             squares[i] = flip_rank(squares[i]);
+            squares[i] = flip_rank(squares[i]);
 
     // Look for the first piece of the leading group not on the A1-D4 diagonal
     // and ensure it is mapped below the diagonal.
@@ -872,7 +915,7 @@ encode_remaining:
 
     while (d->groupLen[++next])
     {
-        std::stable_sort(groupSq, groupSq + d->groupLen[next]);
+        std::sort(groupSq, groupSq + d->groupLen[next]);
         uint64_t n = 0;
 
         // Map down a square if "comes later" than a square in the previous
@@ -1280,6 +1323,8 @@ void Tablebases::init(const std::string& paths) {
     if (paths.empty() || paths == "<empty>")
         return;
 
+    internal4Men = paths == "<4-men>";
+
     // MapB1H1H7[] encodes a square below a1-h8 diagonal to 0..27
     int code = 0;
     for (Square s = SQ_A1; s <= SQ_H8; ++s)
@@ -1571,7 +1616,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
                : dtz < 0 ? (-dtz * 2 + cnt50 < 100 ? -1000 : -1000 + (-dtz + cnt50))
                : 0;
         m.tbRank = r;
-#ifndef Noir
+
         // Determine the score to be displayed for this move. Assign at least
         // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
         // closer to a real win.
@@ -1580,18 +1625,8 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
                    : r == 0     ? VALUE_DRAW
                    : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
                    :             -VALUE_MATE + MAX_PLY + 1;
-
-#else
-        // Determine the score to be displayed for this move. Assign at least
-        // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
-        // closer to a real win.
-        m.tbScore =  r >= bound ? VALUE_TB_WIN - PawnValueEg * (1 + popcount(pos.pieces(~pos.side_to_move())))
-                   : r >  0     ? Value((std::max( 3, r - 800) * int(PawnValueEg)) / 200)
-                   : r == 0     ? VALUE_DRAW
-                   : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
-                   :             -VALUE_TB_WIN + PawnValueEg * (1 + popcount(pos.pieces( pos.side_to_move())));
-#endif
     }
+
     return true;
 }
 

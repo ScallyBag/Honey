@@ -1003,7 +1003,7 @@ default:
 ### Section 5. Private Targets
 ### ==========================================================================
 
-all: $(EXE) .depend
+all: $(EXE)
 
 config-sanity:
 	@echo ""
@@ -1097,31 +1097,22 @@ icc-profile-make:
 icc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
 	EXTRACXXFLAGS='-prof_use -prof_dir ./profdir' \
-	all
-
-.depend:
-	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
-
-### Based on commits through 08/30/2020:
+### Based on commits through 09/01/2020:
 ### ======================================================
-### Black-Diamond-XIr5.bench:Nodes searched  : 11273002
-### Black-Diamond-XIr5.bench:Nodes/second    : 1749108
-### Black-Diamond-XIr5-60_Cores.bench:Nodes searched  : 1249828405
-### Black-Diamond-XIr5-60_Cores.bench:Nodes/second    : 79158k
-### Bluefish-XIr5.bench:Nodes searched  : 3529719
-### Bluefish-XIr5.bench:Nodes/second    : 1645556
-### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 678285454
-### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 76798k
-### Honey-XIr5.bench:Nodes searched  : 3601874
-### Honey-XIr5.bench:Nodes/second    : 1707858
-### Honey-XIr5-60_Cores.bench:Nodes searched  : 555021169
-### Honey-XIr5-60_Cores.bench:Nodes/second    : 81765k
-### Oki-Maguro-XIr5.bench:Nodes searched  : 3674714
-### Oki-Maguro-XIr5.bench:Nodes/second    : 1770093
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 347572167
-### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 70174k
+### Bluefish-XIr5.bench:Nodes searched  : 3641104
+### Bluefish-XIr5.bench:Nodes/second    : 1677155
+### Bluefish-XIr5-60_Cores.bench:Nodes searched  : 639473776
+### Bluefish-XIr5-60_Cores.bench:Nodes/second    : 84754k
+### Honey-XIr5.bench:Nodes searched  : 3638998
+### Honey-XIr5.bench:Nodes/second    : 1704448
+### Honey-XIr5-60_Cores.bench:Nodes searched  : 586817632
+### Honey-XIr5-60_Cores.bench:Nodes/second    : 82141k
+### Oki-Maguro-XIr5.bench:Nodes searched  : 3443202
+### Oki-Maguro-XIr5.bench:Nodes/second    : 1841284
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes searched  : 372089339
+### Oki-Maguro-XIr5-60_Cores.bench:Nodes/second    : 73159k
 ### Weakfish-XIr5.bench:Nodes searched  : 3169
-### Weakfish-XIr5.bench:Nodes/second    : 109275
-### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 647093
-### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9516073
+### Weakfish-XIr5.bench:Nodes/second    : 117370
+### Weakfish-XIr5-60_Cores.bench:Nodes searched  : 633428
+### Weakfish-XIr5-60_Cores.bench:Nodes/second    : 9454149
 ### ======================================================

@@ -68,6 +68,9 @@ const vector<string> Defaults = {
 #if defined (Sullivan) || (Blau)
   "8/1p2KP2/1p4q1/1Pp5/2P5/N1Pp1k2/3P4/1N6 b - - 76 40", //draw
 
+  // 4-man positions
+  "4K3/8/p7/8/8/2k5/7P/8 w - - 0 1"        // h4  - mate in 19
+
   // 5-man positions
   "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
   "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate
@@ -81,6 +84,10 @@ const vector<string> Defaults = {
   "8/4n3/8/2n5/kp1N2P1/8/8/3K4 b - - 0 1", // Mate
 
 #else
+
+// 4-man positions
+"4K3/8/p7/8/8/2k5/7P/8 w - - 0 1"        // h4  - mate in 19
+
   // 5-man positions
   "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
   "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate

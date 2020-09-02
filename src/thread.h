@@ -57,6 +57,9 @@ public:
 #ifndef Stockfish
   int id() const { return idx; }
 #endif
+#ifdef Noir
+  int best_move_count(Move move) const;
+#endif
   Pawns::Table pawnsTable;
   Material::Table materialTable;
   size_t pvIdx, pvLast;
