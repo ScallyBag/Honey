@@ -1,6 +1,8 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -48,6 +50,17 @@ Thread::~Thread() {
   exit = true;
   start_searching();
   stdThread.join();
+}
+
+
+/// Thread::bestMoveCount(Move move) return best move counter for the given root move
+
+int Thread::best_move_count(Move move) const {
+
+  auto rm = std::find(rootMoves.begin() + pvIdx,
+                      rootMoves.begin() + pvLast, move);
+
+  return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
 }
 
 
@@ -193,17 +206,20 @@ void ThreadPool::start_thinking(Position& pos, StateListPtr& states,
 
   // We use Position::set() to set root position across threads. But there are
   // some StateInfo fields (previous, pliesFromNull, capturedPiece) that cannot
-  // be deduced from a fen string, so set() clears them and they are set from
-  // setupStates->back() later. The rootState is per thread, earlier states are shared
-  // since they are read-only.
+  // be deduced from a fen string, so set() clears them and to not lose the info
+  // we need to backup and later restore setupStates->back(). Note that setupStates
+  // is shared by threads but is accessed in read-only mode.
+  StateInfo tmp = setupStates->back();
+
   for (Thread* th : *this)
   {
       th->nodes = th->tbHits = th->nmpMinPly = th->bestMoveChanges = 0;
       th->rootDepth = th->completedDepth = 0;
       th->rootMoves = rootMoves;
-      th->rootPos.set(pos.fen(), pos.is_chess960(), &th->rootState, th);
-      th->rootState = setupStates->back();
+      th->rootPos.set(pos.fen(), pos.is_chess960(), &setupStates->back(), th);
   }
+
+  setupStates->back() = tmp;
 
   main()->start_searching();
 }

@@ -1,13 +1,15 @@
 /*
-  Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
+  Copyright (C) 2008-2015 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2015-2020 Marco Costalba, Joona Kiiski, Gary Linscott, Tord Romstad
 
-  Honey is free software: you can redistribute it and/or modify
+  Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Honey is distributed in the hope that it will be useful,
+  Stockfish is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -15,7 +17,6 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 
 #include <fstream>
 #include <iostream>
@@ -65,22 +66,7 @@ const vector<string> Defaults = {
   "r3k2r/3nnpbp/q2pp1p1/p7/Pp1PPPP1/4BNN1/1P5P/R2Q1RK1 w kq - 0 16",
   "3Qb1k1/1r2ppb1/pN1n2q1/Pp1Pp1Pr/4P2p/4BP2/4B1R1/1R5K b - - 11 40",
   "4k3/3q1r2/1N2r1b1/3ppN2/2nPP3/1B1R2n1/2R1Q3/3K4 w - - 5 1",
-#if defined (Sullivan) || (Blau)
-  "8/1p2KP2/1p4q1/1Pp5/2P5/N1Pp1k2/3P4/1N6 b - - 76 40", //draw
 
-  // 5-man positions
-  "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
-  "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate
-
-  // 6-man positions
-  "8/8/1P6/5pr1/8/4R3/7k/2K5 w - - 0 1",   // Re5 - mate
-  "8/2p4P/8/kr6/6R1/8/8/1K6 w - - 0 1",    // Ka2 - mate
-  "8/8/3P3k/8/1p6/8/1P6/1K3n2 b - - 0 1",  // Nd2 - draw
-
-  // 7-man position
-  "8/4n3/8/2n5/kp1N2P1/8/8/3K4 b - - 0 1", // Mate
-
-#else
   // 5-man positions
   "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
   "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate
@@ -91,13 +77,14 @@ const vector<string> Defaults = {
   "8/2p4P/8/kr6/6R1/8/8/1K6 w - - 0 1",    // Ka2 - mate
   "8/8/3P3k/8/1p6/8/1P6/1K3n2 b - - 0 1",  // Nd2 - draw
 
-  // 7-man position
+  // 7-man positions
   "8/R7/2q5/8/6k1/8/1P5p/K6R w - - 0 124", // Draw
-#endif
 
   // Mate and stalemate positions
   "6k1/3b3r/1p1p4/p1n2p2/1PPNpP1q/P3Q1p1/1R1RB1P1/5K2 b - - 0 1",
   "r2r1n2/pp2bk2/2p1p2p/3q4/3PN1QP/2P3R1/P4PP1/5RK1 w - - 0 1",
+  "8/8/8/8/8/6k1/6p1/6K1 w - -",
+  "7k/7P/6K1/8/3B4/8/8/8 b - -",
 
   // Chess 960
   "setoption name UCI_Chess960 value true",
@@ -125,19 +112,13 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string go, token;
 
   // Assign default values to missing arguments
-#if defined (Stockfish) || (Weakfish)
   string ttSize    = (is >> token) ? token : "16";
-#else
-  string ttSize    = (is >> token) ? token : "256";
-#endif
-  string threads   = (is >> token) ? token  : "1";
-  string limit     = (is >> token) ? token  : "13";
-  string limitNN  =  (is >> token) ? token  : "false";
-  string limitEvF  =  (is >> token) ? token : "eval.bin";
-  string fenFile   = (is >> token) ? token  : "default";
-  string limitType = (is >> token) ? token  : "depth";
+  string threads   = (is >> token) ? token : "1";
+  string limit     = (is >> token) ? token : "13";
+  string fenFile   = (is >> token) ? token : "default";
+  string limitType = (is >> token) ? token : "depth";
 
-  go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit + limitNN + limitEvF;
+  go = limitType == "eval" ? "eval" : "go " + limitType + " " + limit;
 
   if (fenFile == "default")
       fens = Defaults;
@@ -165,8 +146,6 @@ vector<string> setup_bench(const Position& current, istream& is) {
 
   list.emplace_back("setoption name Threads value " + threads);
   list.emplace_back("setoption name Hash value " + ttSize);
-  list.emplace_back("setoption name UseNN value " + limitNN);
-  list.emplace_back("setoption name EvalFile value " + limitEvF);
   list.emplace_back("ucinewgame");
 
   for (const string& fen : fens)
