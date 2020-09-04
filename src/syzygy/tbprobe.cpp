@@ -303,10 +303,19 @@ public:
                 exit(EXIT_FAILURE);
             }
 
+<<<<<<< HEAD
             *mapping = statbuf.st_size;
             *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
             madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
             ::close(fd);
+=======
+        *mapping = statbuf.st_size;
+        *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+#if defined(MADV_RANDOM)
+        madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
+#endif
+        ::close(fd);
+>>>>>>> master
 
             if (*baseAddress == MAP_FAILED)
             {
