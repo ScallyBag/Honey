@@ -76,12 +76,14 @@ void init(OptionsMap& o) {
   o["UCI_Elo"]               << Option(1350, 1350, 2850);
   o["UCI_ShowWDL"]           << Option(false);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
+  //o["SyzygyPath"]            << Option("C:\\syzygy", on_tb_path);
+  //o["SyzygyPath"]            << Option("C:\\syzygy5", on_tb_path);
+  //o["SyzygyPath"]            << Option("C:\\syzygy6", on_tb_path);
+  o["SyzygyPath"]            << Option("<4-men>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  o["UseNN"]                 << Option(true, on_use_NNUE);
-  // The default must follow the format nn-[SHA256 first 12 digits].nnue
-  // for the build process (profile-build and fishtest) to work.
+  o["Use NNUE"]              << Option(true, on_use_NNUE);
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }
 

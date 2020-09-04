@@ -70,7 +70,7 @@ namespace Eval {
 
   void init_NNUE() {
 
-    useNNUE = Options["UseNN"];
+    useNNUE = Options["Use NNUE"];
     if (!useNNUE)
         return;
 
