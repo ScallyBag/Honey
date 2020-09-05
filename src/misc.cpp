@@ -72,7 +72,7 @@ size_t memtest = 0; //lp mem testgit add search.cpp
 /// DD-MM-YY and show in engine_info.
 
 #if (defined Add_Features && ReleaseVer)
-const string Version = "12 ";
+const string Version = "";
 #else
 const string Version = "";
 #endif

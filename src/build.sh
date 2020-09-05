@@ -59,8 +59,8 @@ echo "======================================================">> benchnodes.txt
 sed -i -e  's/^/### /g' benchnodes.txt
 #rm *.nodes benchnodes.txt-e
 echo "$(<benchnodes.txt)"
-sed -i.bak -e '1100,1272d' ../src/Makefile
-sed '1099r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
+sed -i.bak -e '1200,1372d' ../src/Makefile
+sed '1199r benchnodes.txt' <../src/Makefile >../src/Makefile.tmp
 mv ../src/Makefile.tmp ../src/Makefile
 rm *.bench
 #strip Black* Blue* Honey* Weak* Stock*
