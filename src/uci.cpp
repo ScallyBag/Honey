@@ -143,6 +143,11 @@ void set(istringstream& is) {
         Options[name] = value;
         sync_cout << FontColor::engine << "Confirmation: "<< name << " set to " << value << FontColor::reset << sync_endl;
     }
+    else if (name == "50")
+    {
+      Options["Syzygy50MoveRule"] = {value};
+      sync_cout << FontColor::engine << "Confirmation: "<< "Syzygy50MoveRule" << " set to " << value << FontColor::reset << sync_endl;
+    }
     else if (name == "960")
     {
       Options["UCI_Chess960"] = {value};
@@ -214,7 +219,8 @@ void set(istringstream& is) {
       sync_cout << FontColor::engine << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
       sync_cout << FontColor::reset << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
       sync_cout << "\n Shortcuts:"  << sync_endl;
-      sync_cout << FontColor::engine << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
+      sync_cout << FontColor::engine << "    '50'  -> shortcut for 'Syzygy50MoveRule'"  <<  sync_endl;
+      sync_cout << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
       sync_cout << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
       sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;

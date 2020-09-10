@@ -36,8 +36,9 @@
 #include "../uci.h"
 
 #include "tbprobe.h"
-#include "4m2.h"
-
+#if 1
+#include "4m.h"
+#endif
 #ifndef _WIN32
 #include <fcntl.h>
 #include <unistd.h>
@@ -172,55 +173,22 @@ struct LR {
 static_assert(sizeof(LR) == 3, "LR tree entry must be 3 bytes");
 
 
-#define M(c) { #c".rtbw", c##w }, { #c".rtbz", c##z }
+#define M(c) { #c".rtbw", c##w }  //, { #c".rtbz", c##z } uncomment to use rtz
 static const std::unordered_map<std::string, const void*> map4Men = {
 #if 1
+// 4 Men
     M(KBvK),  M(KNvK),  M(KPvK),  M(KQvK),  M(KRvK),  M(KBBvK), M(KBNvK),
     M(KBPvK), M(KBvKB), M(KBvKN), M(KBvKP), M(KNNvK), M(KNPvK), M(KNvKN),
     M(KNvKP), M(KPPvK), M(KPvKP), M(KQBvK), M(KQNvK), M(KQPvK), M(KQQvK),
     M(KQRvK), M(KQvKB), M(KQvKN), M(KQvKP), M(KQvKQ), M(KQvKR), M(KRBvK),
     M(KRNvK), M(KRPvK), M(KRRvK), M(KRvKB), M(KRvKN), M(KRvKP), M(KRvKR),
-    M(KQRvKR), M(KRBvKR), M(KRNvKR), M(KRPvKR), M(KRRvKR)
+// Some 5 Men
+    M(KBBvKB), M(KBBvKN), M(KBBvKQ), M(KBNvKB), M(KBNvKN),
+    M(KBNvKQ), M(KNNvKN), M(KQBvKQ), M(KQNvKN), M(KQNvKQ),
+    M(KQQvKQ), M(KQRvKQ), M(KQRvKR), M(KRBvKB), M(KRBvKR),
+    M(KRNvKB), M(KRNvKN), M(KRNvKR), M(KRPvKR), M(KRRvKR)
 #endif
-#if 0
-    // WDL
-    { "KBvK.rtbw", KBvKw },   { "KNvK.rtbw", KNvKw },   { "KPvK.rtbw", KPvKw },   { "KQvK.rtbw", KQvKw },
-    { "KRvK.rtbw", KRvKw },   { "KBBvK.rtbw", KBBvKw }, { "KBNvK.rtbw", KBNvKw }, { "KBPvK.rtbw", KBPvKw },
-    { "KBvKB.rtbw", KBvKBw }, { "KBvKN.rtbw", KBvKNw }, { "KBvKP.rtbw", KBvKPw }, { "KNNvK.rtbw", KNNvKw },
-    { "KNPvK.rtbw", KNPvKw }, { "KNvKN.rtbw", KNvKNw }, { "KNvKP.rtbw", KNvKPw }, { "KPPvK.rtbw", KPPvKw },
-    { "KPvKP.rtbw", KPvKPw }, { "KQBvK.rtbw", KQBvKw }, { "KQNvK.rtbw", KQNvKw }, { "KQPvK.rtbw", KQPvKw },
-    { "KQQvK.rtbw", KQQvKw }, { "KQRvK.rtbw", KQRvKw }, { "KQvKB.rtbw", KQvKBw }, { "KQvKN.rtbw", KQvKNw },
-    { "KQvKP.rtbw", KQvKPw }, { "KQvKQ.rtbw", KQvKQw }, { "KQvKR.rtbw", KQvKRw }, { "KRBvK.rtbw", KRBvKw },
-    { "KRNvK.rtbw", KRNvKw }, { "KRPvK.rtbw", KRPvKw }, { "KRRvK.rtbw", KRRvKw }, { "KRvKB.rtbw", KRvKBw },
-    { "KRvKN.rtbw", KRvKNw }, { "KRvKP.rtbw", KRvKPw }, { "KRvKR.rtbw", KRvKRw }, { "KBNvKQ.rtbw", KBNvKQw },
-    { "KBPvKB.rtbw", KBPvKBw }, { "KBPvKN.rtbw", KBPvKNw }, { "KBPvKP.rtbw", KBPvKPw }, { "KBPvKQ.rtbw", KBPvKQw },
-    { "KBPvKR.rtbw", KBPvKRw }, { "KNNvKP.rtbw", KNNvKPw }, { "KNNvKQ.rtbw", KNNvKQw }, { "KNPvKB.rtbw", KNPvKBw },
-    { "KNPvKN.rtbw", KNPvKNw }, { "KNPvKP.rtbw", KNPvKPw }, { "KNPvKQ.rtbw", KNPvKQw }, { "KNPvKR.rtbw", KNPvKRw },
-    { "KPPvKB.rtbw", KPPvKBw }, { "KPPvKN.rtbw", KPPvKNw }, { "KPPvKP.rtbw", KPPvKPw }, { "KPPvKQ.rtbw", KPPvKQw },
-    { "KPPvKR.rtbw", KPPvKRw }, { "KQBvKQ.rtbw", KQBvKQw }, { "KQNvKQ.rtbw", KQNvKQw }, { "KQPvKQ.rtbw", KQPvKQw },
-    { "KRBvKB.rtbw", KRBvKBw }, { "KRBvKN.rtbw", KRBvKNw }, { "KRBvKQ.rtbw", KRBvKQw }, { "KRBvKR.rtbw", KRBvKRw },
-    { "KRNvKN.rtbw", KRNvKNw }, { "KRNvKQ.rtbw", KRNvKQw }, { "KRNvKR.rtbw", KRNvKRw }, { "KRPvKB.rtbw", KRPvKBw },
-    { "KRPvKN.rtbw", KRPvKNw }, { "KRPvKQ.rtbw", KRPvKQw }, { "KRPvKR.rtbw", KRPvKRw }, { "KRRvKQ.rtbw", KRRvKQw },
 
-    // DTZ
-    { "KBvK.rtbz", KBvKz },   { "KNvK.rtbz", KNvKz },   { "KPvK.rtbz", KPvKz },   { "KQvK.rtbz", KQvKz },
-    { "KRvK.rtbz", KRvKz },   { "KBBvK.rtbz", KBBvKz }, { "KBNvK.rtbz", KBNvKz }, { "KBPvK.rtbz", KBPvKz },
-    { "KBvKB.rtbz", KBvKBz }, { "KBvKN.rtbz", KBvKNz }, { "KBvKP.rtbz", KBvKPz }, { "KNNvK.rtbz", KNNvKz },
-    { "KNPvK.rtbz", KNPvKz }, { "KNvKN.rtbz", KNvKNz }, { "KNvKP.rtbz", KNvKPz }, { "KPPvK.rtbz", KPPvKz },
-    { "KPvKP.rtbz", KPvKPz }, { "KQBvK.rtbz", KQBvKz }, { "KQNvK.rtbz", KQNvKz }, { "KQPvK.rtbz", KQPvKz },
-    { "KQQvK.rtbz", KQQvKz }, { "KQRvK.rtbz", KQRvKz }, { "KQvKB.rtbz", KQvKBz }, { "KQvKN.rtbz", KQvKNz },
-    { "KQvKP.rtbz", KQvKPz }, { "KQvKQ.rtbz", KQvKQz }, { "KQvKR.rtbz", KQvKRz }, { "KRBvK.rtbz", KRBvKz },
-    { "KRNvK.rtbz", KRNvKz }, { "KRPvK.rtbz", KRPvKz }, { "KRRvK.rtbz", KRRvKz }, { "KRvKB.rtbz", KRvKBz },
-    { "KRvKN.rtbz", KRvKNz }, { "KRvKP.rtbz", KRvKPz }, { "KRvKR.rtbz", KRvKRz }, { "KBNvKQ.rtbz", KBNvKQz },
-    { "KBPvKB.rtbz", KBPvKBz }, { "KBPvKN.rtbz", KBPvKNz }, { "KBPvKP.rtbz", KBPvKPz }, { "KBPvKQ.rtbz", KBPvKQz },
-    { "KBPvKR.rtbz", KBPvKRz }, { "KNNvKP.rtbz", KNNvKPz }, { "KNNvKQ.rtbz", KNNvKQz }, { "KNPvKB.rtbz", KNPvKBz },
-    { "KNPvKN.rtbz", KNPvKNz }, { "KNPvKP.rtbz", KNPvKPz }, { "KNPvKQ.rtbz", KNPvKQz }, { "KNPvKR.rtbz", KNPvKRz },
-    { "KPPvKB.rtbz", KPPvKBz }, { "KPPvKN.rtbz", KPPvKNz }, { "KPPvKP.rtbz", KPPvKPz }, { "KPPvKQ.rtbz", KPPvKQz },
-    { "KPPvKR.rtbz", KPPvKRz }, { "KQBvKQ.rtbz", KQBvKQz }, { "KQNvKQ.rtbz", KQNvKQz }, { "KQPvKQ.rtbz", KQPvKQz },
-    { "KRBvKB.rtbz", KRBvKBz }, { "KRBvKN.rtbz", KRBvKNz }, { "KRBvKQ.rtbz", KRBvKQz }, { "KRBvKR.rtbz", KRBvKRz },
-    { "KRNvKN.rtbz", KRNvKNz }, { "KRNvKQ.rtbz", KRNvKQz }, { "KRNvKR.rtbz", KRNvKRz }, { "KRPvKB.rtbz", KRPvKBz },
-    { "KRPvKN.rtbz", KRPvKNz }, { "KRPvKQ.rtbz", KRPvKQz }, { "KRPvKR.rtbz", KRPvKRz }, { "KRRvKQ.rtbz", KRRvKQz }
-#endif
 };
 #undef M
 
@@ -313,7 +281,7 @@ public:
                 exit(EXIT_FAILURE);
             }
 
-//<<<<<<< HEAD
+
             *mapping = statbuf.st_size;
             *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
             madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
@@ -325,7 +293,6 @@ public:
         madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
 #endif
         ::close(fd);
->>>>>>> master
 */
             if (*baseAddress == MAP_FAILED)
             {
@@ -573,7 +540,8 @@ public:
 
 TBTables TBTables;
 
-/*
+#if 0
+// hack to create header file from syzygy files
 void dump_tb()
 {
     const char* codeS[] = {
@@ -612,20 +580,57 @@ void dump_tb()
     "KRvKN",
     "KRvKP",
     "KRvKR",
+    "KBBvKB",
+    "KBBvKN",
+    "KBBvKQ",
+    "KBNvKB",
+    "KBNvKN",
+    "KBNvKQ",
+    "KNNvKN",
+    "KQBvKQ",
+    "KQNvKN",
+    "KQNvKQ",
+    "KQQvKQ",
+    "KQRvKQ",
     "KQRvKR",
+    "KRBvKB",
     "KRBvKR",
+    "KRNvKB",
+    "KRNvKN",
     "KRNvKR",
     "KRPvKR",
     "KRRvKR"
   };
 
-    FILE* fpo = fopen("4m2.h", "w");
+    FILE* fpo = fopen("4m.h", "w");
 
-    for (int k = 0; k < 2; k++)
-    {
-        std::string ext = (k == 0 ? "w" : "z");
+    fprintf(fpo, "/*\n");
+    fprintf(fpo, "  Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1\n");
+    fprintf(fpo, "  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)\n");
 
-        for (int j = 0; j < 40; j++)
+    fprintf(fpo, "  Honey is free software: you can redistribute it and/or modify\n");
+    fprintf(fpo, "  it under the terms of the GNU General Public License as published by\n");
+    fprintf(fpo, "  the Free Software Foundation, either version 3 of the License, or\n");
+    fprintf(fpo, "  (at your option) any later version.\n\n");
+    fprintf(fpo, "  Honey is distributed in the hope that it will be useful,\n");
+    fprintf(fpo, "  but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
+    fprintf(fpo, "  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
+    fprintf(fpo, "  GNU General Public License for more details.\n\n");
+    fprintf(fpo, "  You should have received a copy of the GNU General Public License\n");
+    fprintf(fpo, "  along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
+    fprintf(fpo, "*/\n\n");
+
+    fprintf(fpo, "// Binary data for the WDL and DTZ syzygy table bases by Ronald de Man.\n\n");
+
+    fprintf(fpo, "#ifndef MEN4_H_INCLUDED\n");
+    fprintf(fpo, "#define MEN4_H_INCLUDED\n\n");
+
+    fprintf(fpo, "constexpr int alignSize = 64;\n\n");
+    //for (int k = 0; k < 2; k++)
+    //{  uncomment to include rtbz
+        std::string ext ="w"; //(k == 0 ? "w" : "z");
+
+        for (int j = 0; j < 55; j++)
         {
             std::string code = codeS[j];
 
@@ -676,13 +681,12 @@ void dump_tb()
             fprintf(fpo, "\n};\n\n");
             fclose(fp);
         }
-    }
-
+    //} uncomment for rtbz
+    fprintf(fpo, "#endif\n");
     fclose(fpo);
     exit(0);
 }
-*/
-
+#endif
 // If the corresponding file exists two new objects TBTable<WDL> and TBTable<DTZ>
 // are created and added to the lists and hash table. Called at init time.
 void TBTables::add(const std::vector<PieceType>& pieces) {
@@ -707,8 +711,9 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
             return;
 
         file.close();
-
-      //dump_tb();
+#if 0
+        dump_tb(); // creates header file
+#endif
     }
 
     MaxCardinality = std::max((int)pieces.size(), MaxCardinality);
