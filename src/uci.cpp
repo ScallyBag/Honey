@@ -322,7 +322,7 @@ void set(istringstream& is) {
         if (token == "go" || token == "eval")
         {
 
-            cerr << "\nPosition: " << cnt++ << '/' << num << endl;
+            cerr << "\nPosition: " << cnt++ << '/' << num  << "\nFEN: " << pos.fen() << endl;
             if (token == "go")
             {
                lap_time_elapsed = now();

@@ -297,7 +297,7 @@ ifeq ($(findstring x86-32,$(ARCH)),x86-32)
 	sse = yes
 	mmx = yes
 else
-	arch = x86_64
+	arch = x86-64
 	sse = yes
 	sse2 = yes
 endif
@@ -1041,7 +1041,7 @@ config-sanity:
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(SUPPORTED_ARCH)" = "true"
-	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
+	@test "$(arch)" = "any" || test "$(arch)" = "x86-64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
@@ -1197,22 +1197,6 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 09/07/2020:
-### ======================================================
-### Black-Diamond-12.bench:Nodes searched  : 8974303
-### Black-Diamond-12.bench:Nodes/second    : 1004061
-### Black-Diamond-12-60_Cores.bench:Nodes searched  : 1227698261
-### Black-Diamond-12-60_Cores.bench:Nodes/second    : 71485k
-### Bluefish-12.bench:Nodes searched  : 3933039
-### Bluefish-12.bench:Nodes/second    : 957642
-### Bluefish-12-60_Cores.bench:Nodes searched  : 767890315
-### Bluefish-12-60_Cores.bench:Nodes/second    : 72827k
-### Honey-12.bench:Nodes searched  : 3722086
-### Honey-12.bench:Nodes/second    : 976156
-### Honey-12-60_Cores.bench:Nodes searched  : 634939642
-### Honey-12-60_Cores.bench:Nodes/second    : 72465k
-### Oki-Maguro-12.bench:Nodes searched  : 3562048
-### Oki-Maguro-12.bench:Nodes/second    : 969792
-### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 534714578
-### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 51738k
-### ======================================================
+#
+#
+#

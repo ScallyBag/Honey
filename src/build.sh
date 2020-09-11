@@ -7,47 +7,67 @@
 ###
 
 ### time the compile process
-set echo on
 #DATE=$(shell date +"%m/%d/%y")
 starttime=`date +%s`
 
 
-#ARCH="ARCH=x86-32"
-ARCH="ARCH=x86-64"
-#ARCH="ARCH=x86-64-sse"
-#ARCH="ARCH=x86-64-popcnt"
-#ARCH="ARCH=x86-64-mmx"
-#ARCH="ARCH=x86-64-sse2"
-#ARCH="ARCH=x86-64-ssse3"
-#ARCH="ARCH=x86-64-sse41"
-#ARCH="ARCH=x86-64-modern"
-#ARCH="ARCH=x86-64-bmi2"
-#ARCH="ARCH=x86-64-avx2"
-#ARCH="ARCH=armv7"
-#ARCH="ARCH=ppc-32"
-#ARCH="ARCH=ppc-64comp"
+#ARCH="ARCH=x86-32" #ARCH="ARCH=x86-64" #ARCH="ARCH=x86-64-sse" #ARCH="ARCH=x86-64-mmx" #ARCH="ARCH=x86-64-sse2" #ARCH="ARCH=x86-64-ssse3"
+#ARCH="ARCH=x86-64-sse41" #ARCH="ARCH=x86-64-modern" #ARCH="ARCH=x86-64-bmi2" #ARCH="ARCH=armv7" #ARCH="ARCH=ppc-32" #ARCH="ARCH=ppc-64comp"
 
 #COMP="COMP=clang"
 COMP="COMP=mingw"
 #COMP="COMP=gcc"
 #COMP="COMP=icc"
 
+BUILD="profile-build"
 #BUILD="build"
+OS=W
+BUILD="build"
+function mke3() {
+CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
+}
+
+for ENG in "WEAK=yes"
+  do
+  for ARCH in "x86-64"
+    do
+    mke3 $ENG ARCH=$ARCH && wait
+    rename 12.exe 12-$OS$ARCH.exe *.exe
+  done
+done
+
 BUILD="profile-build"
 
-#make function
-#make net   ## pulls down the latest  Nn file from Stockfish and renames it to "eval.bin>
-
-function mke() {
-CXXFLAGS='-flto ' make -j30 $BUILD $ARCH $COMP "$@"
+function mke2() {
+CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 }
-#rm *bench
-#mke WEAK=yes && wait
-mke NOIR=yes && wait
-mke BLAU=yes && wait
-mke HONEY=yes && wait
-mke
-#read
+
+for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+  do
+  for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
+    do
+    mke2 $ENG ARCH=$ARCH && wait
+    rename 12.exe 12-$OS$ARCH.exe *.exe
+  done
+done
+
+
+
+NAME_ARCH=AMD
+function mke() {
+CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
+}
+
+for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+  do
+  for ARCH in "x86-64-avx2"
+    do
+    mke $ENG ARCH=$ARCH && wait
+    rename 12.exe 12-$OS-$NAME_ARCH.exe *.exe
+  done
+done
+
+#read # hack to stop script
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""
