@@ -26,33 +26,33 @@ BUILD="build"
 function mke3() {
 CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
 }
-
-for ENG in "WEAK=yes"
-  do
-  for ARCH in "x86-64"
+if false; then
+  for ENG in "WEAK=yes"
     do
-    mke3 $ENG ARCH=$ARCH && wait
-    rename 12.exe 12-$OS$ARCH.exe *.exe
+    for ARCH in "x86-64"
+      do
+      mke3 $ENG ARCH=$ARCH && wait
+      rename 12.exe 12-$OS$ARCH.exe *.exe
+    done
   done
-done
+
+  BUILD="profile-build"
+
+  function mke2() {
+  CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
+  }
+
+  for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+    do
+    for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
+      do
+      mke2 $ENG ARCH=$ARCH && wait
+      rename 12.exe 12-$OS$ARCH.exe *.exe
+    done
+  done
+fi
 
 BUILD="profile-build"
-
-function mke2() {
-CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
-}
-
-for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
-  do
-  for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
-    do
-    mke2 $ENG ARCH=$ARCH && wait
-    rename 12.exe 12-$OS$ARCH.exe *.exe
-  done
-done
-
-
-
 NAME_ARCH=AMD
 function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"

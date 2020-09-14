@@ -205,6 +205,11 @@ void set(istringstream& is) {
     Options["Tactical"] = {value};
     sync_cout << FontColor::engine << "Confirmation: "<< "Tactical" << " set to " << value << FontColor::reset << sync_endl;
     }
+    else if (name == "tal")
+    {
+    Options["Tal"] = {value};
+    sync_cout << FontColor::engine << "Confirmation: "<< "Tal" << " set to " << value << FontColor::reset << sync_endl;
+    }
     else if (name == "z")
     {
       Tablebases::init(value);

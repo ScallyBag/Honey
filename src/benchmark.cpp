@@ -85,8 +85,11 @@ const vector<string> Defaults = {
   // Chess 960
   "setoption name UCI_Chess960 value true",
   "bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1 moves g2g3 d7d5 d2d4 c8h3 c1g5 e8d6 g5e7 f7f6",
-  "setoption name UCI_Chess960 value false",
+  "setoption name UCI_Chess960 value false"
 
+#if 1
+  ,
+  //extended bench
   //http://talkchess.com/forum3/viewtopic.php?f=2&t=74992
   //Tough Tactical Test, the 35 hardest positions
 
@@ -126,7 +129,10 @@ const vector<string> Defaults = {
   "1k6/6Bq/b6p/2p2p2/1pPp3r/pP1Pb3/P1K3Q1/6Rr w - - bm Be5+; id TTT1.088",
   "8/5pkp/1p6/p4p2/3P4/B5rP/1R6/7K w - - bm Rg2; id TTT1.100",
   //https://en.wikipedia.org/wiki/Plaskett%27s_Puzzle
-  "8/3P3k/n2K3p/2p3n1/1b4N1/2p1p1P1/8/3B4 w - - 0 1 bm Ng6+; id Plaskett's Puzzle"
+  "8/3P3k/n2K3p/2p3n1/1b4N1/2p1p1P1/8/3B4 w - - 0 1 bm Ng6+; id Plaskett's Puzzle",
+  // AlphaZero's outstanding Bg5! move  https://arxiv.org/pdf/1712.01815.pdf pg `7 2nd game`
+  "rn3r1k/pn1p1ppq/bpp4p/7P/4N1Q1/6P1/PP3PB1/R1B1R1K1 w - - 3 21 bm Bg5"
+#endif
 };
 
 } // namespace
@@ -149,11 +155,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string go, token;
 
   // Assign default values to missing arguments
-#if defined (Stockfish) || (Weakfish)
-  string ttSize    = (is >> token) ? token : "16";
-#else
   string ttSize    = (is >> token) ? token : "256";
-#endif
   string threads   = (is >> token) ? token  : "1";
   string limit     = (is >> token) ? token  : "13";
   string limitNN  =  (is >> token) ? token  : "false";

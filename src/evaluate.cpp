@@ -190,13 +190,8 @@ namespace {
   constexpr Value LazyThreshold1 =  Value(1500);
   constexpr Value LazyThreshold2 =  Value(1375);
   constexpr Value SpaceThreshold = Value(12222);
-
-#ifdef Stockfish
-  constexpr Value NNUEThreshold1  =   Value(875);
-#else
-  constexpr Value NNUEThreshold1  =   Value(1375);
-#endif
-  constexpr Value NNUEThreshold2 =   Value(275);
+  constexpr Value NNUEThreshold1  =   Value(975);
+  constexpr Value NNUEThreshold2 =   Value(325);
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
 
@@ -912,9 +907,7 @@ namespace {
         }
         else if (  pos.non_pawn_material(WHITE) == RookValueMg
                 && pos.non_pawn_material(BLACK) == RookValueMg
-#ifndef Stockfish
                 && !pe->passed_pawns(strongSide)
-#endif
                 && pos.count<PAWN>(strongSide) - pos.count<PAWN>(~strongSide) <= 1
                 && bool(KingSide & pos.pieces(strongSide, PAWN)) != bool(QueenSide & pos.pieces(strongSide, PAWN))
                 && (attacks_bb<KING>(pos.square<KING>(~strongSide)) & pos.pieces(~strongSide, PAWN)))
@@ -1010,17 +1003,9 @@ make_v:
         Trace::add(PAWN, pe->pawn_score(WHITE), pe->pawn_score(BLACK));
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
-#ifdef Stockfish
-    // Evaluation grain
-    v = (v / 16) * 16;
 
-    // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
-
-    return v;
-#else
     return (pos.side_to_move() == WHITE ? v : -v) + Tempo;
-#endif
+
   }
 
 } // namespace
@@ -1044,18 +1029,6 @@ Value Eval::evaluate(const Position& pos) {
         v = classical ? Evaluation<NO_TRACE>(pos).value()
                             : NNUE::evaluate(pos) * 5 / 4 + Tempo;
                           }
-
-/* curr-dev-Stockfish
-// Use classical eval if there is a large imbalance
-// If there is a moderate imbalance, use classical eval with probability (1/8),
-// as derived from the node counter.
-bool useClassical = abs(eg_value(pos.psq_score())) * 16 > NNUEThreshold1 * (16 + pos.rule50_count());
-bool classical = !Eval::useNNUE
-              ||  useClassical
-              || (abs(eg_value(pos.psq_score())) > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
-Value v = classical ? Evaluation<NO_TRACE>(pos).value()
-                    : NNUE::evaluate(pos) * 5 / 4 + Tempo;
-                    */
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
@@ -1115,12 +1088,12 @@ std::string Eval::trace(const Position& pos) {
   {
       v = NNUE::evaluate(pos);
       v = pos.side_to_move() == WHITE ? v : -v;
-      ss << "\nNNUE evaluation:      " << to_cp(v) << " (white side)\n";
+      ss << "\nNNUE evaluation: " << to_cp(v) << " (white side)\n";
   }
 
   v = evaluate(pos);
   v = pos.side_to_move() == WHITE ? v : -v;
-  ss << "\nFinal evaluation:     " << to_cp(v) << " (white side)\n";
+  ss << "\nFinal evaluation: " << to_cp(v) << " (white side)\n";
 
   return ss.str();
 }

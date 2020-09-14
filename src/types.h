@@ -328,6 +328,19 @@ struct DirtyPiece {
   Square to[3];
 };
 
+//Shashin section
+enum {
+  SHASHIN_MAX_SCORE = 139 * PawnValueMg/100, SHASHIN_MIDDLE_HIGH_SCORE = 69 * PawnValueMg/100, SHASHIN_MIDDLE_LOW_SCORE=25 * PawnValueMg/100};
+//Positions-algorithms types
+enum {
+  SHASHIN_POSITION_DEFAULT, SHASHIN_POSITION_PETROSIAN, SHASHIN_POSITION_CAPABLANCA, SHASHIN_POSITION_CAPABLANCA_PETROSIAN,
+  SHASHIN_POSITION_TAL,SHASHIN_POSITION_TAL_PETROSIAN,SHASHIN_POSITION_TAL_CAPABLANCA,SHASHIN_POSITION_TAL_CAPABLANCA_PETROSIAN
+};
+enum { SHASHIN_TAL_THRESHOLD = 35 * PawnValueMg/100, SHASHIN_CAPABLANCA_THRESHOLD = 15 * PawnValueMg/100};
+
+//End Shashin section
+
+
 /// Score enum stores a middlegame and an endgame value in a single integer (enum).
 /// The least significant 16 bits are used to store the middlegame value and the
 /// upper 16 bits are used to store the endgame value. We have to take care to

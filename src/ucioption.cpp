@@ -174,7 +174,11 @@ void init(OptionsMap& o) {
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
     o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
+    o["Tal"]                      << Option(false);
+    o["Capablanca"]               << Option(false);
+    o["Petrosian"]                << Option(false);
 }
+
 
 /// operator<<() is used to print all the options default values in chronological
 /// insertion order (the idx field) and in the format defined by the UCI protocol.
