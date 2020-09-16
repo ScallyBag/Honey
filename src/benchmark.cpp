@@ -87,7 +87,7 @@ const vector<string> Defaults = {
   "bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1 moves g2g3 d7d5 d2d4 c8h3 c1g5 e8d6 g5e7 f7f6",
   "setoption name UCI_Chess960 value false"
 
-#if 1
+#if 1 // for compiling with extended bench
   ,
   //extended bench
   //http://talkchess.com/forum3/viewtopic.php?f=2&t=74992
