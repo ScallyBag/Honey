@@ -1199,4 +1199,8 @@ icc-profile-use:
 #
 ### Based on commits through 09/14/2020:
 ### ======================================================
+### Bluefish-12.bench:Nodes searched  : 12633526
+### Bluefish-12.bench:Nodes/second    : 2012028
+### Bluefish-12-60_Cores.bench:Nodes searched  : 4130906684
+### Bluefish-12-60_Cores.bench:Nodes/second    : 105345k
 ### ======================================================
