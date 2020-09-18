@@ -314,7 +314,7 @@ PolyBook::PolyBook()
     keycount = 0;
     polyhash = NULL;
 
-    use_best_book_move = true;
+    use_best_book_move = false;
     max_book_depth = 255;
     book_depth_count = 0;
 

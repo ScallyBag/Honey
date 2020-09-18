@@ -267,11 +267,15 @@ void MainThread::search() {
     tactical            = Options["Tactical"];
     uci_elo             = (Options["UCI_Elo"]);
     uci_sleep           = Options["Slow Play"];
+    mpv                 = Options["MultiPV"];
+#ifndef Weakfish
     proValue            = Options["Pro Value"];
     profound            = Options["Pro Analysis"];
     dpa                 = Options["Deep Pro Analysis"];
-    mpv                 = Options["MultiPV"];
-#ifdef Weakfish
+#else
+    proValue            = 0;
+    profound            = 0;
+    dpa                 = 0;
     weakLevel           = Options["Level"] - 1 ;
 #endif
 
