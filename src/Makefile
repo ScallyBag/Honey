@@ -567,19 +567,6 @@ ifeq ($(COMP),ndk)
 	LDFLAGS += -static-libstdc++
 endif
 
-ifeq ($(comp),icc)
-	profile_make = icc-profile-make
-	profile_use = icc-profile-use
-else
-ifeq ($(comp),clang)
-	profile_make = clang-profile-make
-	profile_use = clang-profile-use
-else
-	profile_make = gcc-profile-make
-	profile_use = gcc-profile-use
-endif
-endif
-
 ifeq ($(KERNEL),Darwin)
 	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
 	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
@@ -591,18 +578,28 @@ endif
 # Currently we don't know how to make PGO builds with the NDK yet.
 ifeq ($(COMP),ndk)
 	CXXFLAGS += -stdlib=libc++ -fPIE
+	comp=clang
 	ifeq ($(arch),armv7)
-		comp=armv7a-linux-androideabi16-clang
 		CXX=armv7a-linux-androideabi16-clang++
 		CXXFLAGS += -mthumb -march=armv7-a -mfloat-abi=softfp -mfpu=neon
 		STRIP=arm-linux-androideabi-strip
 	endif
 	ifeq ($(arch),armv8)
-		comp=aarch64-linux-android21-clang
 		CXX=aarch64-linux-android21-clang++
 		STRIP=aarch64-linux-android-strip
 	endif
 	LDFLAGS += -static-libstdc++ -pie -lm -latomic
+endif
+
+ifeq ($(comp),icc)
+	profile_make = icc-profile-make
+	profile_use = icc-profile-use
+else ifeq ($(comp),clang)
+	profile_make = clang-profile-make
+	profile_use = clang-profile-use
+else
+	profile_make = gcc-profile-make
+	profile_use = gcc-profile-use
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
@@ -778,10 +775,7 @@ endif
 ### needs access to the optimization flags.
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
-	ifeq ($(COMP),ndk)
-		CXXFLAGS += -flto=thin
-		LDFLAGS += $(CXXFLAGS)
-	else ifeq ($(comp),clang)
+	ifeq ($(comp),clang)
 		CXXFLAGS += -flto=thin
 		ifneq ($(findstring MINGW,$(KERNEL)),)
 			CXXFLAGS += -fuse-ld=lld
@@ -1203,16 +1197,22 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
 ### Black-Diamond-12-60_Cores.bench:Nodes/second    : 74539k
+### Based on commits through 09/18/2020:
+### ======================================================
+### Black-Diamond-12.bench:Nodes searched  : 18570126
+### Black-Diamond-12.bench:Nodes/second    : 1964676
+### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2072850204
+### Black-Diamond-12-60_Cores.bench:Nodes/second    : 74128k
 ### Bluefish-12.bench:Nodes searched  : 13479930
-### Bluefish-12.bench:Nodes/second    : 2022798
-### Bluefish-12-60_Cores.bench:Nodes searched  : 3939652530
-### Bluefish-12-60_Cores.bench:Nodes/second    : 108713k
+### Bluefish-12.bench:Nodes/second    : 2032865
+### Bluefish-12-60_Cores.bench:Nodes searched  : 3915637203
+### Bluefish-12-60_Cores.bench:Nodes/second    : 106449k
 ### Honey-12.bench:Nodes searched  : 12417259
-### Honey-12.bench:Nodes/second    : 2059588
-### Honey-12-60_Cores.bench:Nodes searched  : 4236156458
-### Honey-12-60_Cores.bench:Nodes/second    : 111592k
+### Honey-12.bench:Nodes/second    : 2103550
+### Honey-12-60_Cores.bench:Nodes searched  : 4266128246
+### Honey-12-60_Cores.bench:Nodes/second    : 114302k
 ### Oki-Maguro-12.bench:Nodes searched  : 10525333
-### Oki-Maguro-12.bench:Nodes/second    : 2030349
-### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 3136095370
-### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 104704k
+### Oki-Maguro-12.bench:Nodes/second    : 2073140
+### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 3226642293
+### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 108345k
 ### ======================================================

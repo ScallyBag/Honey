@@ -893,7 +893,7 @@ void Thread::search() {
               totBestMoveChanges += th->bestMoveChanges;
               th->bestMoveChanges = 0;
           }
-          double bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
+          double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
           double totalTime = rootMoves.size() == 1 ? 0 :
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
@@ -1482,17 +1482,17 @@ moves_loop: // When in check, search starts from here
                   && captureHistory[movedPiece][to_sq(move)][type_of(pos.piece_on(to_sq(move)))] < 0)
                   continue;
 
-	      // Futility pruning for captures
-	      if (   !givesCheck
-		  && lmrDepth < 6
-		  && !(PvNode && abs(bestValue) < 2)
-		  && PieceValue[MG][type_of(movedPiece)] >= PieceValue[MG][type_of(pos.piece_on(to_sq(move)))]
-		  && !ss->inCheck
-          && ss->staticEval + 169 + 244 * lmrDepth
-             + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
-		  continue;
-	    }
-	    //from Shashin end
+            	      // Futility pruning for captures
+            	 if (   !givesCheck
+            		  && lmrDepth < 6
+            		  && !(PvNode && abs(bestValue) < 2)
+            		  && PieceValue[MG][type_of(movedPiece)] >= PieceValue[MG][type_of(pos.piece_on(to_sq(move)))]
+            		  && !ss->inCheck
+                  && ss->staticEval + 169 + 244 * lmrDepth
+                     + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
+            		  continue;
+            	    }
+	                //from Shashin end
 
               // See based pruning
               if (!pos.see_ge(move, Value(-221) * depth)) // (~25 Elo)
