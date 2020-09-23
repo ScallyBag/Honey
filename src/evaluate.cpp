@@ -190,8 +190,6 @@ namespace {
   constexpr Value LazyThreshold1 =  Value(1400);
   constexpr Value LazyThreshold2 =  Value(1300);
   constexpr Value SpaceThreshold = Value(12222);
-  constexpr Value NNUEThreshold1 =   Value(550);
-  constexpr Value NNUEThreshold2 =   Value(150);
 
   // KingAttackWeights[PieceType] contains king attack weights by piece type
   constexpr int KingAttackWeights[PIECE_TYPE_NB] = { 0, 0, 81, 52, 44, 10 };
@@ -998,13 +996,8 @@ make_v:
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
 
-    // Evaluation grain
-    v = (v / 16) * 16;
-
     // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v) + Tempo;
-
-    return v;
+    return (pos.side_to_move() == WHITE ? v : -v) + Tempo;
   }
 
 } // namespace
@@ -1015,31 +1008,8 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
-  Value v;
-
-  if (!Eval::useNNUE)
-      v = Evaluation<NO_TRACE>(pos).value();
-  else
-  {
-      // scale and shift NNUE for compatibility with search and classical evaluation
-      auto  adjusted_NNUE = [&](){ return NNUE::evaluate(pos) * 5 / 4 + Tempo; };
-
-      // if there is PSQ imbalance use classical eval, with small probability if it is small
-      Value psq = Value(abs(eg_value(pos.psq_score())));
-      int   r50 = 16 + pos.rule50_count();
-      bool  largePsq = psq * 16 > (NNUEThreshold1 + pos.non_pawn_material() / 64) * r50;
-      bool  classical = largePsq || (psq > PawnValueMg / 4 && !(pos.this_thread()->nodes & 0xB));
-
-      v = classical ? Evaluation<NO_TRACE>(pos).value() : adjusted_NNUE();
-
-      // if the classical eval is small and imbalance large, use NNUE nevertheless.
-      if (   largePsq
-          && abs(v) * 16 < NNUEThreshold2 * r50)
-          v = adjusted_NNUE();
-  }
-
-  // Damp down the evaluation linearly when shuffling
-  v = v * (100 - pos.rule50_count()) / 100;
+  Value v = Eval::useNNUE ? NNUE::evaluate(pos) * 5 / 4 + Tempo
+                          : Evaluation<NO_TRACE>(pos).value();
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);

@@ -22,9 +22,9 @@
 #include "misc.h"
 #include "types.h"
 
-/// TTEntry struct is the 10 bytes transposition table entry, defined as below:
+/// TTEntry struct is the 16 bytes transposition table entry, defined as below:
 ///
-/// key        16 bit
+/// key        64 bit
 /// depth       8 bit
 /// generation  5 bit
 /// pv node     1 bit
@@ -39,14 +39,15 @@ struct TTEntry {
   Value value() const { return (Value)value16; }
   Value eval()  const { return (Value)eval16; }
   Depth depth() const { return (Depth)depth8 + DEPTH_OFFSET; }
-  bool is_pv()  const { return (bool)(genBound8 & 0x4); }
+  bool  is_pv() const { return (bool)(genBound8 & 0x4); }
   Bound bound() const { return (Bound)(genBound8 & 0x3); }
+
   void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev);
 
 private:
   friend class TranspositionTable;
 
-  uint16_t key16;
+  uint64_t key;
   uint8_t  depth8;
   uint8_t  genBound8;
   uint16_t move16;
@@ -63,11 +64,10 @@ private:
 
 class TranspositionTable {
 
-  static constexpr int ClusterSize = 3;
+  static constexpr int ClusterSize = 2;
 
   struct Cluster {
     TTEntry entry[ClusterSize];
-    char padding[2]; // Pad to 32 bytes
   };
 
   static_assert(sizeof(Cluster) == 32, "Unexpected Cluster size");
@@ -80,8 +80,9 @@ public:
   void resize(size_t mbSize);
   void clear();
 
+  // The key is used to get the index of the cluster
   TTEntry* first_entry(const Key key) const {
-    return &table[mul_hi64(key, clusterCount)].entry[0];
+    return &table[key & (clusterCount - 1)].entry[0];
   }
 
 private:

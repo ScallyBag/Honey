@@ -3,7 +3,7 @@ clone_depth: 50
 
 branches:
   only:
-    - master
+    - crystal
 
 # Operating system (build VM template)
 os: Visual Studio 2019
@@ -20,7 +20,7 @@ configuration:
 
 matrix:
   # The build fail immediately once one of the job fails
-  fast_finish: true
+  fast_finish: false
 
 # Scripts that are called at very beginning, before repo cloning
 init:
@@ -36,13 +36,13 @@ before_build:
 
       # Build CMakeLists.txt
       $t = 'cmake_minimum_required(VERSION 3.17)',
-           'project(Stockfish)',
+           'project(Crystal)',
            'set(CMAKE_CXX_STANDARD 17)',
            'set(CMAKE_CXX_STANDARD_REQUIRED ON)',
            'set (CMAKE_CXX_EXTENSIONS OFF)',
            'set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/src)',
            'set(source_files', $src, ')',
-           'add_executable(stockfish ${source_files})'
+           'add_executable(crystal ${source_files})'
 
       # Write CMakeLists.txt withouth BOM
       $MyPath = (Get-Item -Path "." -Verbose).FullName + '\CMakeLists.txt'
@@ -78,7 +78,7 @@ build_script:
 
 before_test:
   - cd src/%CONFIGURATION%
-  - stockfish bench 2> out.txt >NUL
+  - crystal bench 2> out.txt >NUL
   - ps: |
       # Verify bench number
       $s = (gc "./out.txt" | out-string)

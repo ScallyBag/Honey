@@ -113,7 +113,7 @@ const vector<string> Defaults = {
 /// where to look for positions in FEN format and the type of the limit:
 /// depth, perft, nodes and movetime (in millisecs).
 ///
-/// bench -> search default positions up to depth 13
+/// bench -> search default positions up to depth 11
 /// bench 64 1 15 -> search default positions up to depth 15 (TT = 64MB)
 /// bench 64 4 5000 current movetime -> search current position with 4 threads for 5 sec
 /// bench 64 1 100000 default nodes -> search default positions for 100K nodes each
@@ -125,11 +125,9 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string go, token;
 
   // Assign default values to missing arguments
-#if defined (Stockfish) || (Weakfish)
+
   string ttSize    = (is >> token) ? token : "16";
-#else
-  string ttSize    = (is >> token) ? token : "256";
-#endif
+
   string threads   = (is >> token) ? token  : "1";
   string limit     = (is >> token) ? token  : "13";
   string limitNN  =  (is >> token) ? token  : "false";

@@ -17,26 +17,12 @@ case $1 in
     postfix='1>/dev/null'
     threads="1"
   ;;
-  --valgrind-thread)
-    echo "valgrind-thread testing started"
-    prefix=''
-    exeprefix='valgrind --error-exitcode=42'
-    postfix='1>/dev/null'
-    threads="2"
-  ;;
   --sanitizer-undefined)
     echo "sanitizer-undefined testing started"
     prefix='!'
     exeprefix=''
     postfix='2>&1 | grep -A50 "runtime error:"'
     threads="1"
-  ;;
-  --sanitizer-thread)
-    echo "sanitizer-thread testing started"
-    prefix='!'
-    exeprefix=''
-    postfix='2>&1 | grep -A50 "WARNING: ThreadSanitizer:"'
-    threads="2"
 
 cat << EOF > tsan.supp
 race:TTEntry::move
@@ -73,15 +59,15 @@ for args in "eval" \
             "bench 128 $threads 8 default depth"
 do
 
-   echo "$prefix $exeprefix ./stockfish $args $postfix"
-   eval "$prefix $exeprefix ./stockfish $args $postfix"
+   echo "$prefix $exeprefix ./crystal $args $postfix"
+   eval "$prefix $exeprefix ./crystal $args $postfix"
 
 done
 
 # more general testing, following an uci protocol exchange
 cat << EOF > game.exp
  set timeout 240
- spawn $exeprefix ./stockfish
+ spawn $exeprefix ./crystal
 
  send "uci\n"
  expect "uciok"
@@ -116,8 +102,8 @@ if [ ! -d ../tests/syzygy ]; then
 fi
 
 cat << EOF > syzygy.exp
- set timeout 240
- spawn $exeprefix ./stockfish
+ set timeout 660
+ spawn $exeprefix ./crystal
  send "uci\n"
  send "setoption name SyzygyPath value ../tests/syzygy/\n"
  expect "info string Found 35 tablebases" {} timeout {exit 1}
