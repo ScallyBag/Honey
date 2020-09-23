@@ -67,7 +67,6 @@ enum TBType { WDL, DTZ }; // Used as template parameter
 enum TBFlag { STM = 1, Mapped = 2, WinPlies = 4, LossPlies = 8, Wide = 16, SingleValue = 128 };
 
 inline WDLScore operator-(WDLScore d) { return WDLScore(-int(d)); }
-//inline Square operator^=(Square& s, int i) { return s = Square(int(s) ^ i);
 inline Square operator^(Square s, int i) { return Square(int(s) ^ i); }
 
 const std::string PieceToChar = " PNBRQK  pnbrqk";
@@ -286,14 +285,7 @@ public:
             *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
             madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
             ::close(fd);
-/*=======
-        *mapping = statbuf.st_size;
-        *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-#if defined(MADV_RANDOM)
-        madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
-#endif
-        ::close(fd);
-*/
+
             if (*baseAddress == MAP_FAILED)
             {
                 std::cerr << "Could not mmap() " << fname << std::endl;
@@ -946,11 +938,8 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
         leadPawnsCnt = size;
 
         std::swap(squares[0], *std::max_element(squares, squares + leadPawnsCnt, pawns_comp));
-//#ifndef Stockfish
-//        tbFile = map_to_queenside(file_of(squares[0]));
-//#else
+
         tbFile = File(edge_distance(file_of(squares[0])));
-//#endif
     }
 
     // DTZ tables are one-sided, i.e. they store positions only for white to

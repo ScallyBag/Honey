@@ -2581,7 +2581,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
               totBestMoveChanges += th->bestMoveChanges;
               th->bestMoveChanges = 0;
           }
-          double bestMoveInstability = 1 + totBestMoveChanges / Threads.size();
+          double bestMoveInstability = 1 + 2 * totBestMoveChanges / Threads.size();
 
           TimePoint elapsedT = Time.elapsed();
           TimePoint optimumT = Time.optimum();
@@ -2742,9 +2742,7 @@ namespace {
     // starts with statScore = 0. Later grandchildren start with the last calculated
     // statScore of the previous grandchild. This influences the reduction rules in
     // LMR which are based on the statScore of parent position.
-    if (rootNode)
-        (ss+4)->statScore = 0;
-    else
+    if (!rootNode)
         (ss+2)->statScore = 0;
 
     // At non-PV nodes we check for an early TT cutoff

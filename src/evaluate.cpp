@@ -1016,6 +1016,11 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
+#ifdef Noir
+
+  Value v = Eval::useNNUE ? NNUE::evaluate(pos) * 5 / 4 + Tempo
+                          : Evaluation<NO_TRACE>(pos).value();
+#else
   // Use classical eval if there is a large imbalance
   // If there is a moderate imbalance, use classical eval with probability (1/8),
   // as derived from the node counter.
@@ -1033,7 +1038,7 @@ Value Eval::evaluate(const Position& pos) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
-
+#endif
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
