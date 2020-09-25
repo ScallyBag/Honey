@@ -63,7 +63,7 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #ifdef USE_MADVISE_HUGEPAGE
   #include <sys/mman.h>
 #endif
-
+size_t allocSizeTest = 0;
 using namespace std;
 
 namespace {
@@ -550,22 +550,30 @@ static void* aligned_large_pages_alloc_win(size_t allocSize) {
 void* aligned_large_pages_alloc(size_t allocSize) {
 
   static bool firstCall = true;
+  static bool secondCall = true;
 
   void* mem;
 
+
   // Try to allocate large pages
   mem = aligned_large_pages_alloc_win(allocSize);
-
   // Suppress info strings on the first call. The first call occurs before 'uci'
   // is received and in that case this output confuses some GUIs.
-  if (!firstCall)
+  if (firstCall)
+  goto skip;
+  if (secondCall)
+  goto skip2;
+  if (allocSizeTest  != allocSize )
   {
       if (mem)
-          sync_cout << "info string Hash Table: Windows Large Pages enabled" << sync_endl;
+          sync_cout << "info string Hash Table: Windows Large Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
       else
-          sync_cout << "info string Hash Table: Default Pages enabled" << sync_endl;
-
+          sync_cout << "info string Hash Table: Default Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
+      allocSizeTest  = allocSize ;
   }
+skip2:
+secondCall = false;
+skip:
 firstCall = false;
 
   // Fall back to regular, page aligned, allocation if necessary
