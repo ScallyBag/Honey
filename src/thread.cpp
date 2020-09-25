@@ -50,12 +50,12 @@ Thread::~Thread() {
   stdThread.join();
 }
 
-#ifndef Stockfish
+#if defined (Sullivan) || (Blau) ||  (Noir)
 int Thread::best_move_count(Move move) const {
   auto rm = std::find(rootMoves.begin() + pvIdx,
                       rootMoves.begin() + pvLast, move);
 
-  return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
+  return rm != rootMoves.begin() + pvLast ? rm->best_move_count : 0;
 }
 #endif
 /// Thread::clear() reset histories, usually before a new game

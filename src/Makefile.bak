@@ -1197,22 +1197,22 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
 ### Black-Diamond-12-60_Cores.bench:Nodes/second    : 74539k
-### Based on commits through 09/22/2020:
+### Based on commits through 09/24/2020:
 ### ======================================================
 ### Black-Diamond-12.bench:Nodes searched  : 24467856
-### Black-Diamond-12.bench:Nodes/second    : 1779480
-### Black-Diamond-12-60_Cores.bench:Nodes searched  : 3590236554
-### Black-Diamond-12-60_Cores.bench:Nodes/second    : 70932k
-### Bluefish-12.bench:Nodes searched  : 12935553
-### Bluefish-12.bench:Nodes/second    : 2076332
-### Bluefish-12-60_Cores.bench:Nodes searched  : 3797620046
-### Bluefish-12-60_Cores.bench:Nodes/second    : 109189k
-### Honey-12.bench:Nodes searched  : 11552120
-### Honey-12.bench:Nodes/second    : 2046071
-### Honey-12-60_Cores.bench:Nodes searched  : 4268294074
-### Honey-12-60_Cores.bench:Nodes/second    : 112616k
-### Oki-Maguro-12.bench:Nodes searched  : 11504889
-### Oki-Maguro-12.bench:Nodes/second    : 2080450
-### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 2732364821
-### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 107172k
+### Black-Diamond-12.bench:Nodes/second    : 1742352
+### Black-Diamond-12-60_Cores.bench:Nodes searched  : 3340173402
+### Black-Diamond-12-60_Cores.bench:Nodes/second    : 70854k
+### Bluefish-12.bench:Nodes searched  : 2761107
+### Bluefish-12.bench:Nodes/second    : 1737638
+### Bluefish-12-60_Cores.bench:Nodes searched  : 1332996232
+### Bluefish-12-60_Cores.bench:Nodes/second    : 95912k
+### Honey-12.bench:Nodes searched  : 2350751
+### Honey-12.bench:Nodes/second    : 1657793
+### Honey-12-60_Cores.bench:Nodes searched  : 1066367140
+### Honey-12-60_Cores.bench:Nodes/second    : 91825k
+### Oki-Maguro-12.bench:Nodes searched  : 11507970
+### Oki-Maguro-12.bench:Nodes/second    : 1899945
+### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 2698110373
+### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 99118k
 ### ======================================================

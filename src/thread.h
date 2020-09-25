@@ -54,7 +54,7 @@ public:
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();
-#ifndef Stockfish
+#if defined (Sullivan) || (Noir) || (Blau)
   int best_move_count(Move move) const;
 #endif
 
@@ -84,7 +84,7 @@ public:
   bool profound_test;
   int shashinValue, shashinQuiescentCapablancaMiddleHighScore, shashinQuiescentCapablancaMaxScore;//shashinValue
 
-  
+
 };
 
 

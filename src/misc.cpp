@@ -584,17 +584,17 @@ void* aligned_large_pages_alloc(size_t allocSize) {
 
 
 //#if defined(__linux__)
-  constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page size
+constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page size
 //#else
-//  constexpr size_t alignment = 4096; // assumed small page size
+//constexpr size_t alignment = 4096; // assumed small page size
 //#endif
 
   // round up to multiples of alignment
   size_t size = ((allocSize + alignment - 1) / alignment) * alignment;
   void *mem = std_aligned_alloc(alignment, size);
-//#if defined(MADV_HUGEPAGE)
+#if defined(MADV_HUGEPAGE)
   madvise(mem, size, MADV_HUGEPAGE);
-//#endif
+#endif
   return mem;
 }
 

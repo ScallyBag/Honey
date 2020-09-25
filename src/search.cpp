@@ -825,11 +825,17 @@ void Thread::search() {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
+#if defined (Stockfish) || (Noir)
+              else
+                  break;
+#else
               else
               {
-                  ++rootMoves[pvIdx].bestMoveCount;
+                  ++rootMoves[pvIdx].best_move_count;
                   break;
               }
+#endif
+
 
               delta += delta / 4 + 5;
 
@@ -1608,9 +1614,11 @@ moves_loop: // When in check, search starts from here
       // Step 16. Reduced depth search (LMR, ~200 Elo). If the move fails high it will be
       // re-searched at full depth.
       if (    depth >= 3
-          &&  moveCount > 1 + 2 * rootNode + 2 * (PvNode && abs(bestValue) < 2)
+        &&  moveCount > 1 + 2 * rootNode + 2 * (PvNode && abs(bestValue) < 2)
 #ifndef Stockfish
+#ifndef Noir
           && (!rootNode || thisThread->best_move_count(move) == 0)
+#endif
 #endif
           && (  !captureOrPromotion
               || moveCountPruning
@@ -2529,7 +2537,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
 
               else
               {
-                  ++rootMoves[pvIdx].bestMoveCount;
+                  ++rootMoves[pvIdx].best_move_count;
                   break;
               }
 

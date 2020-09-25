@@ -71,7 +71,9 @@ struct RootMove {
   Value previousScore = -VALUE_INFINITE;
   int selDepth = 0;
   int tbRank = 0;
-  int bestMoveCount = 0;
+#if defined (Sullivan) || (Blau) || (Noir)
+  int best_move_count = 0;
+#endif
   Value tbScore;
   std::vector<Move> pv;
 };
