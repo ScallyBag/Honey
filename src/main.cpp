@@ -22,9 +22,6 @@
 #include "endgame.h"
 #include "position.h"
 #include "search.h"
-/*#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
-#include "evaluate.h"
-#endif*/
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
@@ -59,7 +56,7 @@ int main(int argc, char* argv[]) {
   Threads.set(size_t(Options["Threads"]));
 #endif
   Search::clear(); // After threads are up
-  Eval::init_NNUE();
+  Eval::NNUE::init();
 
   UCI::loop(argc, argv);
 

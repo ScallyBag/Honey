@@ -92,7 +92,7 @@ namespace {
     Position p;
     p.set(pos.fen(), Options["UCI_Chess960"], &states->back(), Threads.main());
 
-    Eval::verify_NNUE();
+    Eval::NNUE::verify();
 
     sync_cout << "\n" << Eval::trace(p) << sync_endl;
   }
@@ -492,8 +492,10 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else if (token == "c++") sync_cout << compiler_info() << sync_endl;
       else if (token == "")  {
-        Eval::init_NNUE();
-        Eval::verify_NNUE();
+        //Eval::init_NNUE();
+        Eval::NNUE::init();
+        //Eval::verify_NNUE();
+        Eval::NNUE::verify();
         sync_cout << sync_endl;
       }
       else
