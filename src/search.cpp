@@ -227,7 +227,7 @@ int  tactical, uci_elo = 0;
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      Reductions[i] = int((22.0 + std::log(Threads.size())) * std::log(i));
+      Reductions[i] = int((22.0 + 2 * std::log(Threads.size())) * std::log(i));
 }
 
 
@@ -825,7 +825,7 @@ void Thread::search() {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
-#if defined (Stockfish) || (Noir)
+#if defined (Stockfish) || (Noir) || (Weakfish)
               else
                   break;
 #else
@@ -1617,7 +1617,9 @@ moves_loop: // When in check, search starts from here
         &&  moveCount > 1 + 2 * rootNode + 2 * (PvNode && abs(bestValue) < 2)
 #ifndef Stockfish
 #ifndef Noir
+#ifndef Weakfish
           && (!rootNode || thisThread->best_move_count(move) == 0)
+#endif
 #endif
 #endif
           && (  !captureOrPromotion

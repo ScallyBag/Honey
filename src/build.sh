@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+#STAset -x
 
 ###  modify as appropriate for you system
 ### all builds have added features, 4 opening books can be used, adaptive ply,
@@ -32,10 +32,11 @@ if false; then
     for ARCH in "x86-64"
       do
       mke3 $ENG ARCH=$ARCH && wait
-      rename 12.exe 12-$OS$ARCH.exe *.exe
+      rename 12.exe 12-$OS-$ARCH.exe *.exe
     done
   done
-
+fi
+if false; then
   BUILD="profile-build"
 
   function mke2() {
@@ -46,7 +47,7 @@ if false; then
     for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
       do
       mke2 $ENG ARCH=$ARCH && wait
-      rename 12.exe 12-$OS$ARCH.exe *.exe
+      rename 12.exe 12-$OS-$ARCH.exe *.exe
     done
   done
 fi
@@ -66,7 +67,7 @@ for ENG in  "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
     rename 12.exe 12-$OS-$NAME_ARCH.exe *.exe
   done
 done
-
+#fi
 #read # hack to stop script
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.

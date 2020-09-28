@@ -563,7 +563,7 @@ void* aligned_large_pages_alloc(size_t allocSize) {
   goto skip;
   if (secondCall)
   goto skip2;
-  if (allocSizeTest  != allocSize )
+  if (allocSizeTest != allocSize )
   {
       if (mem)
           sync_cout << "info string Hash Table: Windows Large Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
@@ -571,10 +571,11 @@ void* aligned_large_pages_alloc(size_t allocSize) {
           sync_cout << "info string Hash Table: Default Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
       allocSizeTest  = allocSize ;
   }
+
 skip2:
-secondCall = false;
+   secondCall = false;
 skip:
-firstCall = false;
+   firstCall = false;
 
   // Fall back to regular, page aligned, allocation if necessary
   if (!mem)
