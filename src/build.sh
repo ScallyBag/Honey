@@ -64,7 +64,7 @@ for ENG in  "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
   for ARCH in "x86-64-avx2"
     do
     mke $ENG ARCH=$ARCH && wait
-    rename 12.exe 12-$OS-$NAME_ARCH.exe *.exe
+    rename 12-R1.exe 12-R1-$OS-$NAME_ARCH.exe *.exe
   done
 done
 #fi

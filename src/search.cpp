@@ -227,7 +227,7 @@ int  tactical, uci_elo = 0;
 void Search::init() {
 
   for (int i = 1; i < MAX_MOVES; ++i)
-      Reductions[i] = int((22.0 + 2 * std::log(Threads.size())) * std::log(i));
+      Reductions[i] = int((22.0 + 2 * std::log(Threads.size())) * std::log(i + 0.25 * std::log(i)));
 }
 
 
@@ -1235,12 +1235,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-//#if defined (Stockfish)
-        Depth R = (737 + 77 * depth) / 246 + std::min(int(eval - beta) / 192, 3);
-//#else
-//      Depth R = std::max(1, int(2.77 * log(depth)) + std::min(int(eval - beta) / 192, 3));
-//#endif
-//        Depth R = (817 + 71 * depth) / 213 + std::min(int(eval - beta) / 192, 3);
+        Depth R = (982 + 85 * depth) / 256 + std::min(int(eval - beta) / 192, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
