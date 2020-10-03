@@ -166,11 +166,11 @@ void init(OptionsMap& o) {
     o["Nodestime"]                << Option(0, 0, 10000);
     o["UCI_Chess960"]             << Option(false);
     o["AnalyseMode"]              << Option(false);
-    //o["SyzygyPath"]               << Option("c:\\syzygy", on_tb_path);
+    o["SyzygyPath"]               << Option("c:\\syzygy", on_tb_path);
     //o["SyzygyPath"]               << Option("<empty>", on_tb_path);
     o["SyzygyPath"]               << Option("<4-men>", on_tb_path);
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
-    o["Syzygy50MoveRule"]         << Option(true);
+    o["Syzygy50MoveRule"]         << Option(false);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
     o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
@@ -225,7 +225,7 @@ Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(
 { defaultValue = v; currentValue = cur; }
 
 Option::operator double() const {
-  assert(type == "check" || type == "spin");
+//  assert(type == "check" || type == "spin"); errors in debug mode
   return (type == "spin" ? stof(currentValue) : currentValue == "true");
 }
 

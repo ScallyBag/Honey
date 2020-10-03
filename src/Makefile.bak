@@ -38,7 +38,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12
+RELVERSION = 12-R1
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -948,7 +948,7 @@ else
 endif
 ifeq ($(COMP),mingw)
 	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
-	$(EXE) bench 2048 $(CORES) 18 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
+	$(EXE) bench 2048 $(CORES) 16 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 	#	touch * syzygy/*
@@ -1197,22 +1197,10 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
 ### Black-Diamond-12-60_Cores.bench:Nodes/second    : 74539k
-### Based on commits through 09/22/2020:
+### Based on commits through 10/02/2020:
 ### ======================================================
-### Black-Diamond-12.bench:Nodes searched  : 24467856
-### Black-Diamond-12.bench:Nodes/second    : 1779480
-### Black-Diamond-12-60_Cores.bench:Nodes searched  : 3590236554
-### Black-Diamond-12-60_Cores.bench:Nodes/second    : 70932k
-### Bluefish-12.bench:Nodes searched  : 12935553
-### Bluefish-12.bench:Nodes/second    : 2076332
-### Bluefish-12-60_Cores.bench:Nodes searched  : 3797620046
-### Bluefish-12-60_Cores.bench:Nodes/second    : 109189k
-### Honey-12.bench:Nodes searched  : 11552120
-### Honey-12.bench:Nodes/second    : 2046071
-### Honey-12-60_Cores.bench:Nodes searched  : 4268294074
-### Honey-12-60_Cores.bench:Nodes/second    : 112616k
-### Oki-Maguro-12.bench:Nodes searched  : 11504889
-### Oki-Maguro-12.bench:Nodes/second    : 2080450
-### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 2732364821
-### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 107172k
+### Bluefish-12-R1.bench:Nodes searched  : 11964574
+### Bluefish-12-R1.bench:Nodes/second    : 2095005
+### Bluefish-12-R1-60_Cores.bench:Nodes searched  : 1726925023
+### Bluefish-12-R1-60_Cores.bench:Nodes/second    : 105076k
 ### ======================================================

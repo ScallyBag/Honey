@@ -38,7 +38,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12
+RELVERSION = 12-R1
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -948,7 +948,7 @@ else
 endif
 ifeq ($(COMP),mingw)
 	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
-	$(EXE) bench 2048 $(CORES) 18 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
+	$(EXE) bench 2048 $(CORES) 16 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 	#	touch * syzygy/*
@@ -1197,22 +1197,22 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
 ### Black-Diamond-12-60_Cores.bench:Nodes/second    : 74539k
-### Based on commits through 09/23/2020:
+### Based on commits through 10/02/2020:
 ### ======================================================
-### Black-Diamond-12.bench:Nodes searched  : 24467856
-### Black-Diamond-12.bench:Nodes/second    : 1783111
-### Black-Diamond-12-60_Cores.bench:Nodes searched  : 3415413304
-### Black-Diamond-12-60_Cores.bench:Nodes/second    : 71158k
-### Bluefish-12.bench:Nodes searched  : 12935553
-### Bluefish-12.bench:Nodes/second    : 2089750
-### Bluefish-12-60_Cores.bench:Nodes searched  : 4170729207
-### Bluefish-12-60_Cores.bench:Nodes/second    : 109646k
-### Honey-12.bench:Nodes searched  : 11552120
-### Honey-12.bench:Nodes/second    : 2050065
-### Honey-12-60_Cores.bench:Nodes searched  : 3685000453
-### Honey-12-60_Cores.bench:Nodes/second    : 108280k
-### Oki-Maguro-12.bench:Nodes searched  : 11504889
-### Oki-Maguro-12.bench:Nodes/second    : 2071087
-### Oki-Maguro-12-60_Cores.bench:Nodes searched  : 3010819988
-### Oki-Maguro-12-60_Cores.bench:Nodes/second    : 106577k
+### Black-Diamond-12-R1.bench:Nodes searched  : 27699033
+### Black-Diamond-12-R1.bench:Nodes/second    : 1977513
+### Black-Diamond-12-R1-60_Cores.bench:Nodes searched  : 1072829296
+### Black-Diamond-12-R1-60_Cores.bench:Nodes/second    : 82882k
+### Bluefish-12-R1.bench:Nodes searched  : 15349929
+### Bluefish-12-R1.bench:Nodes/second    : 2062885
+### Bluefish-12-R1-60_Cores.bench:Nodes searched  : 835106636
+### Bluefish-12-R1-60_Cores.bench:Nodes/second    : 103329k
+### Honey-12-R1.bench:Nodes searched  : 14571540
+### Honey-12-R1.bench:Nodes/second    : 2121965
+### Honey-12-R1-60_Cores.bench:Nodes searched  : 859727710
+### Honey-12-R1-60_Cores.bench:Nodes/second    : 107533k
+### Oki-Maguro-12-R1.bench:Nodes searched  : 11332131
+### Oki-Maguro-12-R1.bench:Nodes/second    : 2043666
+### Oki-Maguro-12-R1-60_Cores.bench:Nodes searched  : 666276946
+### Oki-Maguro-12-R1-60_Cores.bench:Nodes/second    : 103765k
 ### ======================================================

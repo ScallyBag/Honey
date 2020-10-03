@@ -63,14 +63,14 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #ifdef USE_MADVISE_HUGEPAGE
   #include <sys/mman.h>
 #endif
-
+size_t allocSizeTest = 0;
 using namespace std;
 
 namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 #if (defined Add_Features && ReleaseVer)
-const string Version = "";
+const string Version = " v12-R1";
 #else
 const string Version = "";
 #endif
@@ -550,23 +550,29 @@ static void* aligned_large_pages_alloc_win(size_t allocSize) {
 void* aligned_large_pages_alloc(size_t allocSize) {
 
   static bool firstCall = true;
-
-  void* mem;
+  static bool secondCall = true;
 
   // Try to allocate large pages
-  mem = aligned_large_pages_alloc_win(allocSize);
-
+  void* mem = aligned_large_pages_alloc_win(allocSize);
   // Suppress info strings on the first call. The first call occurs before 'uci'
   // is received and in that case this output confuses some GUIs.
-  if (!firstCall)
+  if (firstCall)
+  goto skip;
+  if (secondCall)
+  goto skip2;
+  if (allocSizeTest != allocSize )
   {
       if (mem)
-          sync_cout << "info string Hash Table: Windows Large Pages enabled" << sync_endl;
+          sync_cout << "info string Hash Table: Windows Large Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
       else
-          sync_cout << "info string Hash Table: Default Pages enabled" << sync_endl;
-
+          sync_cout << "info string Hash Table: Default Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
+      allocSizeTest  = allocSize ;
   }
-firstCall = false;
+
+skip2:
+   secondCall = false;
+skip:
+   firstCall = false;
 
   // Fall back to regular, page aligned, allocation if necessary
   if (!mem)
@@ -584,17 +590,17 @@ void* aligned_large_pages_alloc(size_t allocSize) {
 
 
 //#if defined(__linux__)
-  constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page size
+constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page size
 //#else
-//  constexpr size_t alignment = 4096; // assumed small page size
+//constexpr size_t alignment = 4096; // assumed small page size
 //#endif
 
   // round up to multiples of alignment
   size_t size = ((allocSize + alignment - 1) / alignment) * alignment;
   void *mem = std_aligned_alloc(alignment, size);
-//#if defined(MADV_HUGEPAGE)
+#if defined(MADV_HUGEPAGE)
   madvise(mem, size, MADV_HUGEPAGE);
-//#endif
+#endif
   return mem;
 }
 
