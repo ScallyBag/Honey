@@ -73,6 +73,7 @@ struct MoveList {
                 ++cur;
     }
   }
+
 #else
 template<GenType T>
 struct MoveList {

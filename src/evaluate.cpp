@@ -1016,11 +1016,6 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
-#ifdef Noir
-
-  Value v = Eval::useNNUE ? NNUE::evaluate(pos) * 5 / 4 + Tempo
-                          : Evaluation<NO_TRACE>(pos).value();
-#else
 
   Value v;
 
@@ -1055,7 +1050,7 @@ Value Eval::evaluate(const Position& pos) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
-#endif
+
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
@@ -1111,12 +1106,12 @@ std::string Eval::trace(const Position& pos) {
   {
       v = NNUE::evaluate(pos);
       v = pos.side_to_move() == WHITE ? v : -v;
-      ss << "\nNNUE evaluation: " << to_cp(v) << " (white side)\n";
+      ss << "\nNNUE evaluation:      " << to_cp(v) << " (white side)\n";
   }
 
   v = evaluate(pos);
   v = pos.side_to_move() == WHITE ? v : -v;
-  ss << "\nFinal evaluation: " << to_cp(v) << " (white side)\n";
+  ss << "\nFinal evaluation:     " << to_cp(v) << " (white side)\n";
 
   return ss.str();
 }

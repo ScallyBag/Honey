@@ -1,5 +1,5 @@
 #!/bin/bash
-#STAset -x
+#set -x
 
 ###  modify as appropriate for you system
 ### all builds have added features, 4 opening books can be used, adaptive ply,
@@ -19,35 +19,37 @@ COMP="COMP=mingw"
 #COMP="COMP=gcc"
 #COMP="COMP=icc"
 
-BUILD="profile-build"
-#BUILD="build"
-OS=W
+#BUILD="profile-build"
 BUILD="build"
-function mke3() {
+OS=W
+#BUILD="build"
+function mke() {
 CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
 }
-if false; then
+make clean
+if true; then
   for ENG in "WEAK=yes"
     do
     for ARCH in "x86-64"
       do
-      mke3 $ENG ARCH=$ARCH && wait
-      rename 12.exe 12-$OS-$ARCH.exe *.exe
+      mke $ENG ARCH=$ARCH && wait
+      rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
     done
   done
 fi
-if false; then
+#read
+if true; then
   BUILD="profile-build"
 
-  function mke2() {
+  function mke() {
   CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
   }
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
     do
     for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
       do
-      mke2 $ENG ARCH=$ARCH && wait
-      rename 12.exe 12-$OS-$ARCH.exe *.exe
+      mke $ENG ARCH=$ARCH && wait
+      rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
     done
   done
 fi
@@ -58,8 +60,8 @@ function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
 }
 
-for ENG in  "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
-##for ENG in   "BLAU=yes"
+for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+#for ENG in   "BLAU=yes"
   do
   for ARCH in "x86-64-avx2"
     do

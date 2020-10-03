@@ -743,6 +743,7 @@ ScaleFactor Endgame<KPKP>::operator()(const Position& pos) const {
 }
 #else
 
+  
   Square strongKing = pos.square<KING>(strongSide);
   Square weakKing   = pos.square<KING>(weakSide);
   Value result = Value(push_to_edge(weakKing) + push_close(strongKing, weakKing));

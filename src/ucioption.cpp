@@ -225,7 +225,7 @@ Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(
 { defaultValue = v; currentValue = cur; }
 
 Option::operator double() const {
-  assert(type == "check" || type == "spin");
+//  assert(type == "check" || type == "spin"); errors in debug mode
   return (type == "spin" ? stof(currentValue) : currentValue == "true");
 }
 

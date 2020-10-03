@@ -299,7 +299,7 @@ void MainThread::search() {
                 << sync_endl;
   }
 #else
-  if (rootMoves.empty())
+   if (rootMoves.empty())
   {
       rootMoves.emplace_back(MOVE_NONE);
       sync_cout << "info depth 0 score "
@@ -776,7 +776,7 @@ void Thread::search() {
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
           }
-#ifndef Noir  //Noir starts at line 2294
+#ifndef Noir  //Noir starts at line 2490
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
@@ -800,13 +800,12 @@ void Thread::search() {
               if (Threads.stop)
                   break;
 
-              // When failing high/low give some update (without cluttering
+// When failing high/low give some update (without cluttering
               // the UI) before a re-search.
-              if (
-                  mainThread
+              if (   mainThread
                   && multiPV == 1
                   && (bestValue <= alpha || bestValue >= beta)
-                  && Time.elapsed() > 5000)
+                  && Time.elapsed() > 3000)
                   sync_cout << UCI::pv(rootPos, rootDepth, alpha, beta) << sync_endl;
 
               // In case of failing low/high increase aspiration window and
@@ -825,7 +824,7 @@ void Thread::search() {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
-#if defined (Stockfish) || (Noir) || (Weakfish)
+#if defined (Stockfish) || (Weakfish)
               else
                   break;
 #else
@@ -905,11 +904,8 @@ void Thread::search() {
                              Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
           // Stop the search if we have exceeded the totalTime, at least 1ms search.
-#ifdef Stockfish
-          if (Time.elapsed() > totalTime)
-#else
           if (Time.elapsed() > totalTime || rootMoves.size() == 1)
-#endif
+
           {
               // If we are allowed to ponder do not stop the search now but
               // keep pondering until the GUI sends "ponderhit" or "stop".
@@ -1332,7 +1328,7 @@ namespace {
                 //begin from Shashin
                 lastShashinValue=pos.this_thread()->shashinValue,
                 lastShashinQuiescentCapablancaMiddleHighScore=pos.this_thread()->shashinQuiescentCapablancaMiddleHighScore,
-		lastShashinQuiescentCapablancaMaxScore=pos.this_thread()->shashinQuiescentCapablancaMaxScore;
+		            lastShashinQuiescentCapablancaMaxScore=pos.this_thread()->shashinQuiescentCapablancaMaxScore;
                 //end from Shashin
                 pos.do_move(move, st);
                 updateShashinValues(pos,(ss+1)->staticEval); //from Shashin
@@ -1851,7 +1847,7 @@ moves_loop: // When in check, search starts from here
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
 
-    // If no good move is found and the previous position was ttPv, then the previous
+    // If a good move is not found and the previous position was ttPv, then the previous
     // opponent move is probably good and the new position is added to the search tree.
     if (bestValue <= alpha)
         ss->ttPv = ss->ttPv || ((ss-1)->ttPv && depth > 3);
@@ -2301,34 +2297,37 @@ void MainThread::check_time() {
   TimePoint elapsed = Time.elapsed();
   TimePoint tock = Limits.startTime + elapsed;
   Thread* bestThread = this;
-  if (elapsed <= 120050)
+  if (elapsed > 500)
   {
-    if (tock - tick >= 10000 && minOutput)
+    if (elapsed <= 120050)
     {
-      tick = tock;
-      sync_cout  << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
-      //dbg_print();
+      if (tock - tick >= 10000 && minOutput)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+        //dbg_print();
+      }
     }
-  }
-  else if (elapsed <= 600100)
-  {
-    if (tock - tick >= 60000 && minOutput)
+    else if (elapsed <= 600100)
     {
-      tick = tock;
-      sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
-      //dbg_print();
+      if (tock - tick >= 60000 && minOutput)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
+        //dbg_print();
+      }
     }
-  }
-  else
-  {
-    if (tock - tick >= 300000 && minOutput)
+    else
     {
-      tick = tock;
-      sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
-      //dbg_print();
+      if (tock - tick >= 300000 && minOutput)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
+        //dbg_print();
+      }
     }
   }
 
@@ -2489,8 +2488,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
             m.tbRank = 0;
     }
 }
-#else     //begin Noir
-          // Start with a small aspiration window and, in the case of a fail
+#else     // Noir starts , Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           while (true)
@@ -2533,10 +2531,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
 
               else
-              {
-                  ++rootMoves[pvIdx].best_move_count;
                   break;
-              }
 
               delta += delta / 4 + 5;
 
@@ -2900,7 +2895,7 @@ namespace {
            assert(eval - beta >= 0);
 
            // Null move dynamic reduction based on depth and value
-           Depth R = (817 + 71 * depth) / 213 + std::min(int(eval - beta) / 192, 3);
+           Depth R = (982 + 85 * depth) / 256 + std::min(int(eval - beta) / 192, 3);
 
            if (   depth < 11
                || ttValue >= beta
@@ -3090,7 +3085,10 @@ namespace {
       if (isMate)
       {
           ss->currentMove = move;
-          ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck][priorCapture][movedPiece][to_sq(move)];
+          ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
+                                                                    [captureOrPromotion]
+                                                                    [movedPiece]
+                                                                    [to_sq(move)];
           value = mate_in(ss->ply+1);
 
           if (PvNode && (moveCount == 1 || (value > alpha && (rootNode || value < beta))))
@@ -3150,7 +3148,6 @@ namespace {
               // Futility pruning for captures
               if (   !givesCheck
                   && lmrDepth < 6
-                  && PieceValue[MG][type_of(movedPiece)] >= PieceValue[MG][type_of(pos.piece_on(to_sq(move)))]
                   && !ss->inCheck
                   && ss->staticEval + 169 + 244 * lmrDepth
                      + PieceValue[MG][type_of(pos.piece_on(to_sq(move)))] <= alpha)
@@ -3165,7 +3162,7 @@ namespace {
       // Step 14. Extensions (~75 Elo)
       if (   gameCycle
           && (depth < 5 || PvNode))
-          extension = 1;
+          extension = 2;
 
       // Singular extension search (~70 Elo). If all moves but one fail low on a
       // search of (alpha-s, beta-s), and just one fails high on (alpha, beta),
@@ -3223,7 +3220,7 @@ namespace {
       if (   move == ttMove
           && pos.rule50_count() > 80
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
-          extension = 1;
+          extension = 2;
 
       // Check extension (~2 Elo)
       else if (!extension)
@@ -3232,20 +3229,9 @@ namespace {
             && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
             extension = 1;
 
-        // Passed pawn extension
-        else if (   move == ss->killers[0]
-                 && pos.advanced_pawn_push(move)
-                 && pos.pawn_passed(us, to_sq(move)))
-            extension = 1;
-
         // Last captures extension
         else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
                  && pos.non_pawn_material() <= 2 * RookValueMg)
-            extension = 1;
-
-        // Castling extension
-        else if (   type_of(move) == CASTLING
-                 && popcount(pos.pieces(us) & ~pos.pieces(PAWN) & (to_sq(move) & KingSide ? KingSide : QueenSide)) <= 2)
             extension = 1;
       }
 
@@ -3269,8 +3255,7 @@ namespace {
       // re-searched at full depth.
       if (    depth >= 3
           && !gameCycle
-          &&  moveCount > 1 + 2 * rootNode + 2 * (PvNode && abs(bestValue) < 2)
-          && (!rootNode || thisThread->best_move_count(move) == 0)
+          &&  moveCount > 1 + 2 * rootNode
           &&  thisThread->selDepth > depth
           && (  !captureOrPromotion
               || moveCountPruning
@@ -3279,13 +3264,6 @@ namespace {
               || thisThread->ttHitAverage < 427 * ttHitAverageResolution * ttHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);
-
-          // Decrease reduction at non-check cut nodes for second move at low depths
-          if (   cutNode
-              && depth <= 10
-              && moveCount <= 2
-              && !ss->inCheck)
-              r--;
 
           // Decrease reduction if the ttHit running average is large
           if (thisThread->ttHitAverage > 509 * ttHitAverageResolution * ttHitAverageWindow / 1024)
@@ -3348,14 +3326,14 @@ namespace {
           }
           else
           {
-            // Increase reduction for captures/promotions if late move and at low depth
-            if (depth < 8 && moveCount > 2)
-                r++;
+              // Increase reduction for captures/promotions if late move and at low depth
+              if (depth < 8 && moveCount > 2)
+                  r++;
 
-            // Unless giving check, this capture is likely bad
-            if (   !givesCheck
-                && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 213 * depth <= alpha)
-                r++;
+              // Unless giving check, this capture is likely bad
+              if (   !givesCheck
+                  && ss->staticEval + PieceValue[EG][pos.captured_piece()] + 213 * depth <= alpha)
+                  r++;
           }
 
           Depth rr = newDepth / (2 + ss->ply / 3);
@@ -3565,8 +3543,6 @@ namespace {
     moveCount = 0;
     gameCycle = false;
 
-    //thisThread->nodes++;
-
     if (pos.has_game_cycle(ss->ply))
     {
        if (VALUE_DRAW >= beta)
@@ -3722,8 +3698,9 @@ namespace {
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
 
+      // CounterMove based pruning
       if (  !captureOrPromotion
-          && moveCount >= abs(depth) + 1
+          && moveCount
           && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
           && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)
           continue;
@@ -3792,10 +3769,30 @@ namespace {
 
   Value value_from_tt(Value v, int ply, int r50c) {
 
-    return  v == VALUE_NONE ? VALUE_NONE
-              :  v <= VALUE_MATED_IN_MAX_PLY ? v + ply
-              : (v >= VALUE_MATE_IN_MAX_PLY) && (VALUE_MATE - v > 99 - r50c) ? VALUE_MATE_IN_MAX_PLY - 1
-              :  v >= VALUE_MATE_IN_MAX_PLY ? v - ply : v;
+    /*return  v == VALUE_NONE             ? VALUE_NONE
+          : v >= VALUE_MATE_IN_MAX_PLY  ? v - ply
+          : v <= VALUE_MATED_IN_MAX_PLY ? v + ply : v; */
+
+    if (v == VALUE_NONE)
+        return VALUE_NONE;
+
+    if (v >= VALUE_TB_WIN_IN_MAX_PLY)  // TB win or better
+    {
+        if (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 99 - r50c)
+            return VALUE_MATE_IN_MAX_PLY - 1; // do not return a potentially false mate score
+
+        return v - ply;
+    }
+
+    if (v <= VALUE_TB_LOSS_IN_MAX_PLY) // TB loss or worse
+    {
+        if (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 99 - r50c)
+            return VALUE_MATED_IN_MAX_PLY + 1; // do not return a potentially false mate score
+
+        return v + ply;
+    }
+
+    return v;
 
   }
 
@@ -3917,37 +3914,39 @@ void MainThread::check_time() {
   TimePoint elapsed = Time.elapsed();
   TimePoint tock = Limits.startTime + elapsed;
   Thread* bestThread = this;
-  if (elapsed <= 120050)
+  if (elapsed > 500)
   {
-    if (tock - tick >= 10000 && minOutput)
+    if (elapsed <= 120050)
     {
-      tick = tock;
-      sync_cout  << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
-      //dbg_print();
+      if (tock - tick >= 10000 && minOutput)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+        //dbg_print();
+      }
+    }
+    else if (elapsed <= 600100)
+    {
+      if (tock - tick >= 60000 && minOutput)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
+        //dbg_print();
+      }
+    }
+    else
+    {
+      if (tock - tick >= 300000 && minOutput)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
+        //dbg_print();
+      }
     }
   }
-  else if (elapsed <= 600100)
-  {
-    if (tock - tick >= 60000 && minOutput)
-    {
-      tick = tock;
-      sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
-      //dbg_print();
-    }
-  }
-  else
-  {
-    if (tock - tick >= 300000 && minOutput)
-    {
-      tick = tock;
-      sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
-      sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
-      //dbg_print();
-    }
-  }
-
   // We should not stop pondering until told so by the GUI
   if (ponder)
       return;
@@ -3956,7 +3955,8 @@ void MainThread::check_time() {
       || (Limits.movetime && elapsed >= Limits.movetime)
       || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
       Threads.stop = true;
-  }
+}
+
 
 /// UCI::pv() formats PV information according to the UCI protocol. UCI requires
 /// that all (if any) unsearched PV lines are sent using a previous search score.
@@ -3986,6 +3986,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
           v = VALUE_ZERO;
 
       bool tb = TB::RootInTB && abs(v) < VALUE_TB_WIN - 6 * PawnValueEg;
+
       v = tb ? rootMoves[i].tbScore : v;
 
       if (ss.rdbuf()->in_avail()) // Not at first line
@@ -4090,4 +4091,4 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
             m.tbRank = 0;
     }
 }
-#endif  //Noir - not Noir starts at row 695, Noir starts at row 2303
+#endif  //Noir - not Noir starts at row 779, Noir starts at row 2490

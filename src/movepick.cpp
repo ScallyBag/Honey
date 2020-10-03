@@ -235,10 +235,13 @@ top:
 
   case EVASION:
       return select<Best>([](){ return true; });
-
+#ifdef Noir
+ case PROBCUT:
+      return select<Best>([&](){ return pos.see_ge(*cur, std::max(PawnValueMg, threshold)); });
+#else
   case PROBCUT:
       return select<Best>([&](){ return pos.see_ge(*cur, threshold); });
-
+#endif
   case QCAPTURE:
       if (select<Best>([&](){ return   depth > DEPTH_QS_RECAPTURES
                                     || to_sq(*cur) == recaptureSquare; }))
