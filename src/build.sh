@@ -27,7 +27,7 @@ function mke() {
 CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
 }
 make clean
-if true; then
+if false; then
   for ENG in "WEAK=yes"
     do
     for ARCH in "x86-64"
@@ -38,7 +38,7 @@ if true; then
   done
 fi
 #read
-if true; then
+if false; then
   BUILD="profile-build"
 
   function mke() {

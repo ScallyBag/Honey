@@ -983,7 +983,7 @@ namespace {
 #else
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
 #endif
-    bool ttHit, formerPv, givesCheck, improving, didLMR, priorCapture;
+    bool formerPv, givesCheck, improving, didLMR, priorCapture;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
     Piece movedPiece;
@@ -1357,15 +1357,6 @@ namespace {
          ss->ttPv = ttPv;
     }
 #endif  //ifndef Weakfish
-
-    // Step 11. If the position is not in TT, decrease depth by 2
-    if (depth >= 6 && !ttMove)    {
-        search<NT>(pos, ss, alpha, beta, depth - 6, cutNode);
-
-        tte = TT.probe(posKey, ttHit);
-        ttValue = ttHit ? value_from_tt(tte->value(), ss->ply, pos.rule50_count()) : VALUE_NONE;
-        ttMove = ttHit ? tte->move() : MOVE_NONE;
-      }
 
     // Step 11. If the position is not in TT, decrease depth by 2
     if (   PvNode
@@ -2373,23 +2364,14 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
 
       if (ss.rdbuf()->in_avail()) // Not at first line
           ss << "\n";
-      if (v >= VALUE_MATE_IN_MAX_PLY)
-      {
-          ss  << "\n";
-          ss << "info"
-             << " depth "    << d
-             << " seldepth " << rootMoves[i].selDepth
-             << " multipv "  << i + 1
-             << " score "    << UCI::value(v);
-           }
-      else
-          ss << "info"
-             << " depth "    << d
-             << " seldepth " << rootMoves[i].selDepth
-             << " multipv "  << i + 1
-             << " score "    << UCI::value(v);
 
-      if (Options["ShowWDL"])
+      ss << "info"
+         << " depth "    << d
+         << " seldepth " << rootMoves[i].selDepth
+         << " multipv "  << i + 1
+         << " score "    << UCI::value(v);
+
+      if (Options["UCI_ShowWDL"])
           ss << UCI::wdl(v, pos.game_ply());
 
       if (!tb && i == pvIdx)
