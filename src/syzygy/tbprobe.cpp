@@ -24,9 +24,11 @@
 #include <fstream>
 #include <iostream>
 #include <list>
+#include <mutex>
+#include <unordered_map>
 #include <sstream>
 #include <type_traits>
-#include <mutex>
+
 
 #include "../bitboard.h"
 #include "../movegen.h"
