@@ -932,8 +932,8 @@ profile-build: objclean profileclean
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	@$(PGOBENCH)  >/dev/null  && wait
-	@$(PGOBENCH2) >/dev/null  && wait
+	@$(PGOBENCH)  >/dev/null
+	@$(PGOBENCH2) >/dev/null 
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -947,8 +947,8 @@ else
 #	strip $(EXE)
 endif
 ifeq ($(COMP),mingw)
-	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench && wait
-	$(EXE) bench 2048 $(CORES) 16 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench && wait
+	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench
+	$(EXE) bench 2048 $(CORES) 16 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 	#	touch * syzygy/*
@@ -969,8 +969,9 @@ install:
 
 # clean all
 clean: objclean profileclean
-	@rm -f  *~ core
+	@rm -f .depend *~ core
 
+# evaluation network (nnue)
 net:
 	### Honey Net Check
 		$(eval currentNet := $(shell grep SHA256NET evaluate.h | grep define | sed 's/.*\(nn-[a-z0-9]\{12\}.nnue\).*/\1/'))
@@ -998,7 +999,7 @@ default:
 ### Section 5. Private Targets
 ### ==========================================================================
 
-all: $(EXE)
+all: $(EXE) .depend
 
 config-sanity:
 	@echo ""
@@ -1096,7 +1097,7 @@ icc-profile-use:
 
 .depend:
 	-@$(CXX) $(DEPENDFLAGS) -MM $(SRCS) > $@ 2> /dev/null
-
+-include .depend
 #
 #
 #
@@ -1196,23 +1197,6 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes searched  : 18570126
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
-### Black-Diamond-12-60_Cores.bench:Nodes/second    : 74539k
-### Based on commits through 10/04/2020:
+### Based on commits through 10/14/2020:
 ### ======================================================
-### Black-Diamond-12-R1.bench:Nodes searched  : 28203401
-### Black-Diamond-12-R1.bench:Nodes/second    : 2027271
-### Black-Diamond-12-R1-60_Cores.bench:Nodes searched  : 46746048136
-### Black-Diamond-12-R1-60_Cores.bench:Nodes/second    : 113567k
-### Bluefish-12-R1.bench:Nodes searched  : 13478892
-### Bluefish-12-R1.bench:Nodes/second    : 2178582
-### Bluefish-12-R1-60_Cores.bench:Nodes searched  : 903406246
-### Bluefish-12-R1-60_Cores.bench:Nodes/second    : 107165k
-### Honey-12-R1.bench:Nodes searched  : 13039213
-### Honey-12-R1.bench:Nodes/second    : 2162748
-### Honey-12-R1-60_Cores.bench:Nodes searched  : 841227329
-### Honey-12-R1-60_Cores.bench:Nodes/second    : 107491k
-### Oki-Maguro-12-R1.bench:Nodes searched  : 11569419
-### Oki-Maguro-12-R1.bench:Nodes/second    : 2152450
-### Oki-Maguro-12-R1-60_Cores.bench:Nodes searched  : 760106567
-### Oki-Maguro-12-R1-60_Cores.bench:Nodes/second    : 104267k
 ### ======================================================

@@ -60,7 +60,7 @@ function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
 }
 
-for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes WEAKFISH=yes "
 #for ENG in   "BLAU=yes"
   do
   for ARCH in "x86-64-avx2"
@@ -69,7 +69,7 @@ for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
     rename 12-R1.exe 12-R1-$OS-$NAME_ARCH.exe *.exe
   done
 done
-#fi
+
 #read # hack to stop script
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
