@@ -83,7 +83,7 @@ public:
   Score contempt;
   bool profound_test;
   int shashinValue, shashinQuiescentCapablancaMiddleHighScore, shashinQuiescentCapablancaMaxScore;//shashinValue
-
+  int failedHighCnt;
 
 };
 

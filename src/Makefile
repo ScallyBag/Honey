@@ -1197,22 +1197,20 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes searched  : 18570126
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
-### Based on commits through 10/14/2020:
+### Based on commits through 10/19/2020:
 ### ======================================================
 ### Black-Diamond-12-R1.bench:Nodes searched  : 27996500
-### Black-Diamond-12-R1.bench:Nodes/second    : 1999036
-### Black-Diamond-12-R1-60_Cores.bench:Nodes searched  : 6630277303
-### Black-Diamond-12-R1-60_Cores.bench:Nodes/second    : 109816k
-### Bluefish-12-R1.bench:Nodes searched  : 12960827
-### Bluefish-12-R1.bench:Nodes/second    : 2099259
-### Bluefish-12-R1-60_Cores.bench:Nodes searched  : 940138663
-### Bluefish-12-R1-60_Cores.bench:Nodes/second    : 105503k
-### Honey-12-R1.bench:Nodes searched  : 12939857
-### Honey-12-R1.bench:Nodes/second    : 2133881
-### Honey-12-R1-60_Cores.bench:Nodes searched  : 829409839
-### Honey-12-R1-60_Cores.bench:Nodes/second    : 103857k
-### Oki-Maguro-12-R1.bench:Nodes searched  : 10401610
-### Oki-Maguro-12-R1.bench:Nodes/second    : 2074099
-### Oki-Maguro-12-R1-60_Cores.bench:Nodes searched  : 675319557
-### Oki-Maguro-12-R1-60_Cores.bench:Nodes/second    : 102897k
+### Black-Diamond-12-R1.bench:Nodes/second    : 2034185
+### Bluefish-12-R1.bench:Nodes searched  : 13894470
+### Bluefish-12-R1.bench:Nodes/second    : 2139256
+### Bluefish-12-R1-60_Cores.bench:Nodes searched  : 1039989067
+### Bluefish-12-R1-60_Cores.bench:Nodes/second    : 106807k
+### Honey-12-R1.bench:Nodes searched  : 12320661
+### Honey-12-R1.bench:Nodes/second    : 2157356
+### Honey-12-R1-60_Cores.bench:Nodes searched  : 913197075
+### Honey-12-R1-60_Cores.bench:Nodes/second    : 107447k
+### Oki-Maguro-12-R1.bench:Nodes searched  : 10339731
+### Oki-Maguro-12-R1.bench:Nodes/second    : 2083363
+### Oki-Maguro-12-R1-60_Cores.bench:Nodes searched  : 728385674
+### Oki-Maguro-12-R1-60_Cores.bench:Nodes/second    : 105501k
 ### ======================================================
