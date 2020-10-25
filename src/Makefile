@@ -38,7 +38,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R1
+RELVERSION = 12-R2
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -933,7 +933,7 @@ profile-build: objclean profileclean
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	@$(PGOBENCH)  >/dev/null
-	@$(PGOBENCH2) >/dev/null 
+	@$(PGOBENCH2) >/dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -1001,7 +1001,7 @@ default:
 
 all: $(EXE) .depend
 
-config-sanity:
+config-sanity: net
 	@echo ""
 	@echo "Config:"
 	@echo "debug: '$(debug)'"
@@ -1197,20 +1197,26 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes searched  : 18570126
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
-### Based on commits through 10/19/2020:
+### Based on commits through 10/24/2020:
 ### ======================================================
-### Black-Diamond-12-R1.bench:Nodes searched  : 27996500
-### Black-Diamond-12-R1.bench:Nodes/second    : 2034185
-### Bluefish-12-R1.bench:Nodes searched  : 13894470
-### Bluefish-12-R1.bench:Nodes/second    : 2139256
-### Bluefish-12-R1-60_Cores.bench:Nodes searched  : 1039989067
-### Bluefish-12-R1-60_Cores.bench:Nodes/second    : 106807k
-### Honey-12-R1.bench:Nodes searched  : 12320661
-### Honey-12-R1.bench:Nodes/second    : 2157356
-### Honey-12-R1-60_Cores.bench:Nodes searched  : 913197075
-### Honey-12-R1-60_Cores.bench:Nodes/second    : 107447k
-### Oki-Maguro-12-R1.bench:Nodes searched  : 10339731
-### Oki-Maguro-12-R1.bench:Nodes/second    : 2083363
-### Oki-Maguro-12-R1-60_Cores.bench:Nodes searched  : 728385674
-### Oki-Maguro-12-R1-60_Cores.bench:Nodes/second    : 105501k
+### Black-Diamond-12-R2.bench:Nodes searched  : 44467783
+### Black-Diamond-12-R2.bench:Nodes/second    : 2201266
+### Black-Diamond-12-R2-60_Cores.bench:Nodes searched  : 20963026416
+### Black-Diamond-12-R2-60_Cores.bench:Nodes/second    : 120342k
+### Bluefish-12-R2.bench:Nodes searched  : 13855066
+### Bluefish-12-R2.bench:Nodes/second    : 2155088
+### Bluefish-12-R2-60_Cores.bench:Nodes searched  : 966922520
+### Bluefish-12-R2-60_Cores.bench:Nodes/second    : 109777k
+### Honey-12-R2.bench:Nodes searched  : 12658110
+### Honey-12-R2.bench:Nodes/second    : 2185824
+### Honey-12-R2-60_Cores.bench:Nodes searched  : 872096555
+### Honey-12-R2-60_Cores.bench:Nodes/second    : 110113k
+### Oki-Maguro-12-R1.bench:Nodes searched  : 10946473
+### Oki-Maguro-12-R1.bench:Nodes/second    : 2122643
+### Oki-Maguro-12-R1-60_Cores.bench:Nodes searched  : 764908146
+### Oki-Maguro-12-R1-60_Cores.bench:Nodes/second    : 108083k
+### Oki-Maguro-12-R2.bench:Nodes searched  : 11134046
+### Oki-Maguro-12-R2.bench:Nodes/second    : 2137463
+### Oki-Maguro-12-R2-60_Cores.bench:Nodes searched  : 702185604
+### Oki-Maguro-12-R2-60_Cores.bench:Nodes/second    : 107697k
 ### ======================================================

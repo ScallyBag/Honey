@@ -12,9 +12,9 @@
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
 
- You should have received a copy of the GNU General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <algorithm>
 #include <atomic>
@@ -24,11 +24,9 @@
 #include <fstream>
 #include <iostream>
 #include <list>
-#include <mutex>
-#include <unordered_map>
 #include <sstream>
 #include <type_traits>
-
+#include <mutex>
 
 #include "../bitboard.h"
 #include "../movegen.h"
@@ -38,9 +36,7 @@
 #include "../uci.h"
 
 #include "tbprobe.h"
-#if 1
-#include "4m.h"
-#endif
+
 #ifndef _WIN32
 #include <fcntl.h>
 #include <unistd.h>
@@ -73,8 +69,6 @@ inline Square operator^(Square s, int i) { return Square(int(s) ^ i); }
 
 const std::string PieceToChar = " PNBRQK  pnbrqk";
 
-bool internal4Men = true;
-
 int MapPawns[SQUARE_NB];
 int MapB1H1H7[SQUARE_NB];
 int MapA1D1D4[SQUARE_NB];
@@ -87,7 +81,7 @@ int LeadPawnsSize[6][4];       // [leadPawnsCnt][FILE_A..FILE_D]
 // Comparison function to sort leading pawns in ascending MapPawns[] order
 bool pawns_comp(Square i, Square j) { return MapPawns[i] < MapPawns[j]; }
 int off_A1H8(Square sq) { return int(rank_of(sq)) - file_of(sq); }
-#ifndef Noir
+
 constexpr Value WDL_to_value[] = {
    -VALUE_MATE + MAX_PLY + 1,
     VALUE_DRAW - 2,
@@ -95,15 +89,6 @@ constexpr Value WDL_to_value[] = {
     VALUE_DRAW + 2,
     VALUE_MATE - MAX_PLY - 1
 };
-#else
-constexpr Value WDL_to_value[] = {
-   -VALUE_TB_WIN + 6 * PawnValueEg,
-    VALUE_DRAW - 2,
-    VALUE_DRAW,
-    VALUE_DRAW + 2,
-    VALUE_TB_WIN - 6 * PawnValueEg
-};
-#endif
 
 template<typename T, int Half = sizeof(T) / 2, int End = sizeof(T) - 1>
 inline void swap_endian(T& x)
@@ -173,32 +158,6 @@ struct LR {
 
 static_assert(sizeof(LR) == 3, "LR tree entry must be 3 bytes");
 
-
-#define M(c) { #c".rtbw", c##w }  //, { #c".rtbz", c##z } uncomment to use rtz
-static const std::unordered_map<std::string, const void*> map4Men = {
-#if 1
-// 4 Men
-    M(KBvK),  M(KNvK),  M(KPvK),  M(KQvK),  M(KRvK),  M(KBBvK), M(KBNvK),
-    M(KBPvK), M(KBvKB), M(KBvKN), M(KBvKP), M(KNNvK), M(KNPvK), M(KNvKN),
-    M(KNvKP), M(KPPvK), M(KPvKP), M(KQBvK), M(KQNvK), M(KQPvK), M(KQQvK),
-    M(KQRvK), M(KQvKB), M(KQvKN), M(KQvKP), M(KQvKQ), M(KQvKR), M(KRBvK),
-    M(KRNvK), M(KRPvK), M(KRRvK), M(KRvKB), M(KRvKN), M(KRvKP), M(KRvKR),
-// Some 5 Men
-    M(KBBvKB), M(KBBvKN), M(KBBvKQ), M(KBNvKB), M(KBNvKN),
-    M(KBNvKQ), M(KNNvKN), M(KQBvKQ), M(KQNvKN), M(KQNvKQ),
-    M(KQQvKQ), M(KQRvKQ), M(KQRvKR), M(KRBvKB), M(KRBvKR),
-    M(KRNvKB), M(KRNvKN), M(KRNvKR), M(KRPvKR), M(KRRvKR)
-#endif
-
-};
-#undef M
-
-static const void* get_4men(const std::string& str)
-{
-    auto it = map4Men.find(str);
-    return it != map4Men.end() ? it->second : nullptr;
-}
-
 // Tablebases data layout is structured as following:
 //
 //  TBFile:   memory maps/unmaps the physical .rtbw and .rtbz files
@@ -209,7 +168,7 @@ static const void* get_4men(const std::string& str)
 // memory mapped for best performance. Files are mapped at first access: at init
 // time only existence of the file is checked.
 class TBFile : public std::ifstream {
-public:
+
     std::string fname;
 
 public:
@@ -223,26 +182,19 @@ public:
 
     TBFile(const std::string& f) {
 
-        if (internal4Men)
-        {
-            fname = f;
-        }
-        else
-        {
 #ifndef _WIN32
-            constexpr char SepChar = ':';
+        constexpr char SepChar = ':';
 #else
-            constexpr char SepChar = ';';
+        constexpr char SepChar = ';';
 #endif
-            std::stringstream ss(Paths);
-            std::string path;
+        std::stringstream ss(Paths);
+        std::string path;
 
-            while (std::getline(ss, path, SepChar)) {
-                fname = path + "/" + f;
-                std::ifstream::open(fname);
-                if (is_open())
-                    return;
-            }
+        while (std::getline(ss, path, SepChar)) {
+            fname = path + "/" + f;
+            std::ifstream::open(fname);
+            if (is_open())
+                return;
         }
     }
 
@@ -250,87 +202,73 @@ public:
     // closed after mapping.
     uint8_t* map(void** baseAddress, uint64_t* mapping, TBType type) {
 
-        if (internal4Men)
-        {
-            if (is_open())
-                close();
+        assert(is_open());
 
-            *baseAddress = const_cast<void*>(get_4men(fname));
-            *mapping = 0;
-
-            if (!*baseAddress)
-                return nullptr;
-        }
-        else
-        {
-            assert(is_open());
-
-            close(); // Need to re-open to get native file descriptor
+        close(); // Need to re-open to get native file descriptor
 
 #ifndef _WIN32
-            struct stat statbuf;
-            int fd = ::open(fname.c_str(), O_RDONLY);
+        struct stat statbuf;
+        int fd = ::open(fname.c_str(), O_RDONLY);
 
-            if (fd == -1)
-                return *baseAddress = nullptr, nullptr;
+        if (fd == -1)
+            return *baseAddress = nullptr, nullptr;
 
-            fstat(fd, &statbuf);
+        fstat(fd, &statbuf);
 
-            if (statbuf.st_size % 64 != 16)
-            {
-                std::cerr << "Corrupt tablebase file " << fname << std::endl;
-                exit(EXIT_FAILURE);
-            }
-
-
-            *mapping = statbuf.st_size;
-            *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-            madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
-            ::close(fd);
-
-            if (*baseAddress == MAP_FAILED)
-            {
-                std::cerr << "Could not mmap() " << fname << std::endl;
-                exit(EXIT_FAILURE);
-            }
-#else
-            // Note FILE_FLAG_RANDOM_ACCESS is only a hint to Windows and as such may get ignored.
-            HANDLE fd = CreateFile(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
-                                   OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, nullptr);
-
-            if (fd == INVALID_HANDLE_VALUE)
-                return *baseAddress = nullptr, nullptr;
-
-            DWORD size_high;
-            DWORD size_low = GetFileSize(fd, &size_high);
-
-            if (size_low % 64 != 16)
-            {
-                std::cerr << "Corrupt tablebase file " << fname << std::endl;
-                exit(EXIT_FAILURE);
-            }
-
-            HANDLE mmap = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
-            CloseHandle(fd);
-
-            if (!mmap)
-            {
-                std::cerr << "CreateFileMapping() failed" << std::endl;
-                exit(EXIT_FAILURE);
-            }
-
-            *mapping = (uint64_t)mmap;
-            *baseAddress = MapViewOfFile(mmap, FILE_MAP_READ, 0, 0, 0);
-
-            if (!*baseAddress)
-            {
-                std::cerr << "MapViewOfFile() failed, name = " << fname
-                          << ", error = " << GetLastError() << std::endl;
-                exit(EXIT_FAILURE);
-            }
-#endif
+        if (statbuf.st_size % 64 != 16)
+        {
+            std::cerr << "Corrupt tablebase file " << fname << std::endl;
+            exit(EXIT_FAILURE);
         }
 
+        *mapping = statbuf.st_size;
+        *baseAddress = mmap(nullptr, statbuf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+#if defined(MADV_RANDOM)
+        madvise(*baseAddress, statbuf.st_size, MADV_RANDOM);
+#endif
+        ::close(fd);
+
+        if (*baseAddress == MAP_FAILED)
+        {
+            std::cerr << "Could not mmap() " << fname << std::endl;
+            exit(EXIT_FAILURE);
+        }
+#else
+        // Note FILE_FLAG_RANDOM_ACCESS is only a hint to Windows and as such may get ignored.
+        HANDLE fd = CreateFile(fname.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr,
+                               OPEN_EXISTING, FILE_FLAG_RANDOM_ACCESS, nullptr);
+
+        if (fd == INVALID_HANDLE_VALUE)
+            return *baseAddress = nullptr, nullptr;
+
+        DWORD size_high;
+        DWORD size_low = GetFileSize(fd, &size_high);
+
+        if (size_low % 64 != 16)
+        {
+            std::cerr << "Corrupt tablebase file " << fname << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        HANDLE mmap = CreateFileMapping(fd, nullptr, PAGE_READONLY, size_high, size_low, nullptr);
+        CloseHandle(fd);
+
+        if (!mmap)
+        {
+            std::cerr << "CreateFileMapping() failed" << std::endl;
+            exit(EXIT_FAILURE);
+        }
+
+        *mapping = (uint64_t)mmap;
+        *baseAddress = MapViewOfFile(mmap, FILE_MAP_READ, 0, 0, 0);
+
+        if (!*baseAddress)
+        {
+            std::cerr << "MapViewOfFile() failed, name = " << fname
+                      << ", error = " << GetLastError() << std::endl;
+            exit(EXIT_FAILURE);
+        }
+#endif
         uint8_t* data = (uint8_t*)*baseAddress;
 
         constexpr uint8_t Magics[][4] = { { 0xD7, 0x66, 0x0C, 0xA5 },
@@ -347,9 +285,6 @@ public:
     }
 
     static void unmap(void* baseAddress, uint64_t mapping) {
-
-        if (internal4Men)
-            return;
 
 #ifndef _WIN32
         munmap(baseAddress, mapping);
@@ -534,153 +469,6 @@ public:
 
 TBTables TBTables;
 
-#if 0
-// hack to create header file from syzygy files
-void dump_tb()
-{
-    const char* codeS[] = {
-    "KBvK",
-    "KNvK",
-    "KPvK",
-    "KQvK",
-    "KRvK",
-    "KBBvK",
-    "KBNvK",
-    "KBPvK",
-    "KBvKB",
-    "KBvKN",
-    "KBvKP",
-    "KNNvK",
-    "KNPvK",
-    "KNvKN",
-    "KNvKP",
-    "KPPvK",
-    "KPvKP",
-    "KQBvK",
-    "KQNvK",
-    "KQPvK",
-    "KQQvK",
-    "KQRvK",
-    "KQvKB",
-    "KQvKN",
-    "KQvKP",
-    "KQvKQ",
-    "KQvKR",
-    "KRBvK",
-    "KRNvK",
-    "KRPvK",
-    "KRRvK",
-    "KRvKB",
-    "KRvKN",
-    "KRvKP",
-    "KRvKR",
-    "KBBvKB",
-    "KBBvKN",
-    "KBBvKQ",
-    "KBNvKB",
-    "KBNvKN",
-    "KBNvKQ",
-    "KNNvKN",
-    "KQBvKQ",
-    "KQNvKN",
-    "KQNvKQ",
-    "KQQvKQ",
-    "KQRvKQ",
-    "KQRvKR",
-    "KRBvKB",
-    "KRBvKR",
-    "KRNvKB",
-    "KRNvKN",
-    "KRNvKR",
-    "KRPvKR",
-    "KRRvKR"
-  };
-
-    FILE* fpo = fopen("4m.h", "w");
-
-    fprintf(fpo, "/*\n");
-    fprintf(fpo, "  Honey, a UCI chess playing engine derived from Stockfish and Glaurung 2.1\n");
-    fprintf(fpo, "  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)\n");
-
-    fprintf(fpo, "  Honey is free software: you can redistribute it and/or modify\n");
-    fprintf(fpo, "  it under the terms of the GNU General Public License as published by\n");
-    fprintf(fpo, "  the Free Software Foundation, either version 3 of the License, or\n");
-    fprintf(fpo, "  (at your option) any later version.\n\n");
-    fprintf(fpo, "  Honey is distributed in the hope that it will be useful,\n");
-    fprintf(fpo, "  but WITHOUT ANY WARRANTY; without even the implied warranty of\n");
-    fprintf(fpo, "  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n");
-    fprintf(fpo, "  GNU General Public License for more details.\n\n");
-    fprintf(fpo, "  You should have received a copy of the GNU General Public License\n");
-    fprintf(fpo, "  along with this program.  If not, see <http://www.gnu.org/licenses/>.\n");
-    fprintf(fpo, "*/\n\n");
-
-    fprintf(fpo, "// Binary data for the WDL and DTZ syzygy table bases by Ronald de Man.\n\n");
-
-    fprintf(fpo, "#ifndef MEN4_H_INCLUDED\n");
-    fprintf(fpo, "#define MEN4_H_INCLUDED\n\n");
-
-    fprintf(fpo, "constexpr int alignSize = 64;\n\n");
-    //for (int k = 0; k < 2; k++)
-    //{  uncomment to include rtbz
-        std::string ext ="w"; //(k == 0 ? "w" : "z");
-
-        for (int j = 0; j < 55; j++)
-        {
-            std::string code = codeS[j];
-
-            TBFile file(code + ".rtb" + ext);
-            FILE* fp = fopen(file.fname.c_str(), "rb");
-
-            fseek(fp, 0, SEEK_END);
-            const int len = ftell(fp);
-            const int vCnt = len / 8;
-            rewind(fp);
-
-            //fprintf(fpo, "CACHE_LINE_ALIGNMENT\n");
-            //fprintf(fpo, "static constexpr uint64_t %s%s[%d] = {\n", code.c_str(), ext.c_str(), vCnt);
-
-            fprintf(fpo, "alignas(alignSize) static constexpr uint64_t %s%s[%d] = {\n", code.c_str(), ext.c_str(), vCnt);
-
-            uint64_t v = 0;
-            int c, i = 0, vId = 0;
-            while ((c = fgetc(fp)) != EOF)
-            {
-                const int r = i % 8;
-                v = v | (uint64_t(c) << (8 * r));
-
-                if (r == 7)
-                {
-                    if (vId % 6 == 0)
-                    {
-                        fprintf(fpo, " ");
-                    }
-
-                    fprintf(fpo, " 0x%016llXULL", v);
-                    v = 0;
-
-                    if (vId < vCnt - 1)
-                    {
-                        fprintf(fpo, ",");
-
-                        if (vId % 6 == 5)
-                            fprintf(fpo, "\n");
-                    }
-
-                    vId++;
-                }
-
-                i++;
-            }
-
-            fprintf(fpo, "\n};\n\n");
-            fclose(fp);
-        }
-    //} uncomment for rtbz
-    fprintf(fpo, "#endif\n");
-    fclose(fpo);
-    exit(0);
-}
-#endif
 // If the corresponding file exists two new objects TBTable<WDL> and TBTable<DTZ>
 // are created and added to the lists and hash table. Called at init time.
 void TBTables::add(const std::vector<PieceType>& pieces) {
@@ -690,25 +478,12 @@ void TBTables::add(const std::vector<PieceType>& pieces) {
     for (PieceType pt : pieces)
         code += PieceToChar[pt];
 
-    code.insert(code.find('K', 1), "v"); // KRK -> KRvK
+    TBFile file(code.insert(code.find('K', 1), "v") + ".rtbw"); // KRK -> KRvK
 
-    if (internal4Men)
-    {
-        if (!get_4men(code + ".rtbw"))
-            return;
-    }
-    else
-    {
-        TBFile file(code + ".rtbw");
+    if (!file.is_open()) // Only WDL file is checked
+        return;
 
-        if (!file.is_open()) // Only WDL file is checked
-            return;
-
-        file.close();
-#if 0
-        dump_tb(); // creates header file
-#endif
-    }
+    file.close();
 
     MaxCardinality = std::max((int)pieces.size(), MaxCardinality);
 
@@ -997,7 +772,7 @@ Ret do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* resu
     // piece is below RANK_5.
     if (rank_of(squares[0]) > RANK_4)
         for (int i = 0; i < size; ++i)
-             squares[i] = flip_rank(squares[i]);
+            squares[i] = flip_rank(squares[i]);
 
     // Look for the first piece of the leading group not on the A1-D4 diagonal
     // and ensure it is mapped below the diagonal.
@@ -1494,8 +1269,6 @@ void Tablebases::init(const std::string& paths) {
     if (paths.empty() || paths == "<empty>")
         return;
 
-    internal4Men = paths == "<4-men>";
-
     // MapB1H1H7[] encodes a square below a1-h8 diagonal to 0..27
     int code = 0;
     for (Square s = SQ_A1; s <= SQ_H8; ++s)
@@ -1787,7 +1560,7 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
                : dtz < 0 ? (-dtz * 2 + cnt50 < 100 ? -1000 : -1000 + (-dtz + cnt50))
                : 0;
         m.tbRank = r;
-#ifndef Noir
+
         // Determine the score to be displayed for this move. Assign at least
         // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
         // closer to a real win.
@@ -1796,18 +1569,8 @@ bool Tablebases::root_probe(Position& pos, Search::RootMoves& rootMoves) {
                    : r == 0     ? VALUE_DRAW
                    : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
                    :             -VALUE_MATE + MAX_PLY + 1;
-
-#else
-        // Determine the score to be displayed for this move. Assign at least
-        // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
-        // closer to a real win.
-        m.tbScore =  r >= bound ? VALUE_TB_WIN - PawnValueEg * (1 + popcount(pos.pieces(~pos.side_to_move())))
-                   : r >  0     ? Value((std::max( 3, r - 800) * int(PawnValueEg)) / 200)
-                   : r == 0     ? VALUE_DRAW
-                   : r > -bound ? Value((std::min(-3, r + 800) * int(PawnValueEg)) / 200)
-                   :             -VALUE_TB_WIN + PawnValueEg * (1 + popcount(pos.pieces( pos.side_to_move())));
-#endif
     }
+
     return true;
 }
 
