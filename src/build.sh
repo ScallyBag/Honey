@@ -27,7 +27,7 @@ function mke() {
 CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
 }
 make clean
-if true; then
+if false; then
   for ENG in "WEAK=yes"
     do
     for ARCH in "x86-64"

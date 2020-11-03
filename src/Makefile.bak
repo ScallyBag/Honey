@@ -1199,20 +1199,20 @@ icc-profile-use:
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
 ### Based on commits through 10/28/2020:
 ### ======================================================
-### Black-Diamond-12-R2.bench:Nodes searched  : 27529516
-### Black-Diamond-12-R2.bench:Nodes/second    : 2130602
-### Black-Diamond-12-R2-60_Cores.bench:Nodes searched  : 1236922979
-### Black-Diamond-12-R2-60_Cores.bench:Nodes/second    : 89482k
-### Bluefish-12-R2.bench:Nodes searched  : 13018936
-### Bluefish-12-R2.bench:Nodes/second    : 2205104
-### Bluefish-12-R2-60_Cores.bench:Nodes searched  : 979330765
-### Bluefish-12-R2-60_Cores.bench:Nodes/second    : 113073k
-### Honey-12-R2.bench:Nodes searched  : 12577727
-### Honey-12-R2.bench:Nodes/second    : 2190478
-### Honey-12-R2-60_Cores.bench:Nodes searched  : 944852198
-### Honey-12-R2-60_Cores.bench:Nodes/second    : 113155k
-### Oki-Maguro-12-R2.bench:Nodes searched  : 10446248
-### Oki-Maguro-12-R2.bench:Nodes/second    : 2148107
-### Oki-Maguro-12-R2-60_Cores.bench:Nodes searched  : 719725528
-### Oki-Maguro-12-R2-60_Cores.bench:Nodes/second    : 109580k
+### Black-Diamond-12-R2.bench:Nodes searched  : 29562543
+### Black-Diamond-12-R2.bench:Nodes/second    : 2063270
+### Black-Diamond-12-R2-60_Cores.bench:Nodes searched  : 1003877416
+### Black-Diamond-12-R2-60_Cores.bench:Nodes/second    : 63384k
+### Bluefish-12-R2.bench:Nodes searched  : 14904297
+### Bluefish-12-R2.bench:Nodes/second    : 2062307
+### Bluefish-12-R2-60_Cores.bench:Nodes searched  : 863619420
+### Bluefish-12-R2-60_Cores.bench:Nodes/second    : 99598k
+### Honey-12-R2.bench:Nodes searched  : 11786543
+### Honey-12-R2.bench:Nodes/second    : 1954974
+### Honey-12-R2-60_Cores.bench:Nodes searched  : 822158603
+### Honey-12-R2-60_Cores.bench:Nodes/second    : 103533k
+### Oki-Maguro-12-R2.bench:Nodes searched  : 10106674
+### Oki-Maguro-12-R2.bench:Nodes/second    : 2002511
+### Oki-Maguro-12-R2-60_Cores.bench:Nodes searched  : 655675046
+### Oki-Maguro-12-R2-60_Cores.bench:Nodes/second    : 106268k
 ### ======================================================
