@@ -1200,19 +1200,19 @@ icc-profile-use:
 ### Based on commits through 11/09/2020:
 ### ======================================================
 ### Black-Diamond-12-R2.bench:Nodes searched  : 25659315
-### Black-Diamond-12-R2.bench:Nodes/second    : 2024084
-### Black-Diamond-12-R2-60_Cores.bench:Nodes searched  : 972296264
-### Black-Diamond-12-R2-60_Cores.bench:Nodes/second    : 77647k
+### Black-Diamond-12-R2.bench:Nodes/second    : 2090882
+### Black-Diamond-12-R2-60_Cores.bench:Nodes searched  : 1052453684
+### Black-Diamond-12-R2-60_Cores.bench:Nodes/second    : 82377k
 ### Bluefish-12-R2.bench:Nodes searched  : 14247024
-### Bluefish-12-R2.bench:Nodes/second    : 1980678
-### Bluefish-12-R2-60_Cores.bench:Nodes searched  : 927274169
-### Bluefish-12-R2-60_Cores.bench:Nodes/second    : 105744k
+### Bluefish-12-R2.bench:Nodes/second    : 2164872
+### Bluefish-12-R2-60_Cores.bench:Nodes searched  : 878599343
+### Bluefish-12-R2-60_Cores.bench:Nodes/second    : 106008k
 ### Honey-12-R2.bench:Nodes searched  : 12973490
-### Honey-12-R2.bench:Nodes/second    : 2086105
-### Honey-12-R2-60_Cores.bench:Nodes searched  : 875901169
-### Honey-12-R2-60_Cores.bench:Nodes/second    : 102720k
+### Honey-12-R2.bench:Nodes/second    : 2159728
+### Honey-12-R2-60_Cores.bench:Nodes searched  : 924453116
+### Honey-12-R2-60_Cores.bench:Nodes/second    : 106161k
 ### Oki-Maguro-12-R2.bench:Nodes searched  : 10279621
-### Oki-Maguro-12-R2.bench:Nodes/second    : 1991402
-### Oki-Maguro-12-R2-60_Cores.bench:Nodes searched  : 713862779
-### Oki-Maguro-12-R2-60_Cores.bench:Nodes/second    : 104702k
+### Oki-Maguro-12-R2.bench:Nodes/second    : 2086385
+### Oki-Maguro-12-R2-60_Cores.bench:Nodes searched  : 692214588
+### Oki-Maguro-12-R2-60_Cores.bench:Nodes/second    : 104108k
 ### ======================================================
