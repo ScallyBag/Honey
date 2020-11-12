@@ -3122,7 +3122,7 @@ namespace {
 
               // Futility pruning: parent node (~5 Elo)
               if (   lmrDepth < 3
-                  && !ss->inCheck
+                  &&  bestValue > VALUE_TB_LOSS_IN_MAX_PLY
                   && ss->staticEval + 283 + 170 * lmrDepth <= alpha
                   &&  (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
@@ -3258,13 +3258,17 @@ namespace {
           if (thisThread->ttHitAverage > 509 * ttHitAverageResolution * ttHitAverageWindow / 1024)
               r--;
 
-          // Reduction if other threads are searching this position
+          // Increase reduction if other threads are searching this position
           if (th.marked())
               r++;
 
           // Decrease reduction if position is or has been on the PV (~10 Elo)
           if (ss->ttPv)
               r -= 2;
+
+          // Increase reduction at root and non-PV nodes when the best move does not change frequently
+          if ((rootNode || !PvNode) && depth > 10 && thisThread->bestMoveChanges <= 2)
+              r++;
 
           if (rootDepth > 10 && pos.king_danger())
               r -= 1;
@@ -3672,7 +3676,7 @@ namespace {
          }
 
          // Do not search moves with negative SEE values
-         if (   !ss->inCheck
+         if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
              && !(givesCheck && pos.is_discovery_check_on_king(~pos.side_to_move(), move))
              && !pos.see_ge(move))
              continue;
