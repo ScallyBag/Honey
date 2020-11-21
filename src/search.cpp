@@ -388,11 +388,8 @@ void MainThread::search() {
          else if (Options["Engine_Level"] == "Novice")
              uci_elo = 1000;
 skipLevels:
-#ifdef Weakfish
-         if (limitStrength || weakFish)
-#else
+
          if (limitStrength)
-#endif
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              benchKnps = 1000 * (Options["Bench_KNPS"]);
 #ifdef Weakfish
@@ -418,11 +415,9 @@ skipLevels:
              //int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps);
              //sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
              //sync_cout << "Limit Nodes: " <<  Limits.nodes << sync_endl;//for debug
-#ifdef Weakfish
-             if (uci_sleep || weakFish)
-#else
+
              if (uci_sleep)
-#endif
+
                  {
                    sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime << " milliseconds\n" << sync_endl;// for debug
                    sync_cout << sync_endl;
