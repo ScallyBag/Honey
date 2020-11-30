@@ -38,7 +38,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-07
+RELVERSION = 12-R2-08
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -1197,22 +1197,22 @@ icc-profile-use:
 ### Black-Diamond-12.bench:Nodes searched  : 18570126
 ### Black-Diamond-12.bench:Nodes/second    : 1915235
 ### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
-### Based on commits through 11/15/2020:
+### Based on commits through 11/30/2020:
 ### ======================================================
-### Black-Diamond-12-R2-07.bench:Nodes searched  : 25908901
-### Black-Diamond-12-R2-07.bench:Nodes/second    : 2013280
-### Black-Diamond-12-R2-07-60_Cores.bench:Nodes searched  : 1075677071
-### Black-Diamond-12-R2-07-60_Cores.bench:Nodes/second    : 83025k
-### Bluefish-12-R2-07.bench:Nodes searched  : 13415821
-### Bluefish-12-R2-07.bench:Nodes/second    : 2037021
-### Bluefish-12-R2-07-60_Cores.bench:Nodes searched  : 829995273
-### Bluefish-12-R2-07-60_Cores.bench:Nodes/second    : 104362k
-### Honey-12-R2-07.bench:Nodes searched  : 12071817
-### Honey-12-R2-07.bench:Nodes/second    : 2028876
-### Honey-12-R2-07-60_Cores.bench:Nodes searched  : 735783256
-### Honey-12-R2-07-60_Cores.bench:Nodes/second    : 102591k
-### Oki-Maguro-12-R2-07.bench:Nodes searched  : 10236029
-### Oki-Maguro-12-R2-07.bench:Nodes/second    : 2046387
-### Oki-Maguro-12-R2-07-60_Cores.bench:Nodes searched  : 622681146
-### Oki-Maguro-12-R2-07-60_Cores.bench:Nodes/second    : 102347k
+### Black-Diamond-12-R2-08.bench:Nodes searched  : 27206902
+### Black-Diamond-12-R2-08.bench:Nodes/second    : 2047633
+### Black-Diamond-12-R2-08-60_Cores.bench:Nodes searched  : 1051816047
+### Black-Diamond-12-R2-08-60_Cores.bench:Nodes/second    : 81764k
+### Bluefish-12-R2-08.bench:Nodes searched  : 15214351
+### Bluefish-12-R2-08.bench:Nodes/second    : 2184087
+### Bluefish-12-R2-08-60_Cores.bench:Nodes searched  : 1032208961
+### Bluefish-12-R2-08-60_Cores.bench:Nodes/second    : 113056k
+### Honey-12-R2-08.bench:Nodes searched  : 13157850
+### Honey-12-R2-08.bench:Nodes/second    : 2186052
+### Honey-12-R2-08-60_Cores.bench:Nodes searched  : 799968139
+### Honey-12-R2-08-60_Cores.bench:Nodes/second    : 108294k
+### Oki-Maguro-12-R2-08.bench:Nodes searched  : 10914330
+### Oki-Maguro-12-R2-08.bench:Nodes/second    : 2056591
+### Oki-Maguro-12-R2-08-60_Cores.bench:Nodes searched  : 674340212
+### Oki-Maguro-12-R2-08-60_Cores.bench:Nodes/second    : 103141k
 ### ======================================================

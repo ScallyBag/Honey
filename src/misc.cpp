@@ -70,7 +70,7 @@ namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 #if (defined Add_Features && ReleaseVer)
-const string Version = " v12-R2.07";
+const string Version = " v12-R2.08";
 #else
 const string Version = "";
 #endif
@@ -750,11 +750,10 @@ namespace CommandLine {
 string argv0;            // path+name of the executable binary, as given by argv[0]
 string binaryDirectory;  // path of the executable directory
 string workingDirectory; // path of the working directory
-string pathSeparator;    // Separator for our current OS
 
 void init(int argc, char* argv[]) {
     (void)argc;
-    string separator;
+    string pathSeparator;
 
     // extract the path+name of the executable binary
     argv0 = argv[0];
