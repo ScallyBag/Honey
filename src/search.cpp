@@ -1581,14 +1581,11 @@ namespace {
              continue;
       }
 
-//<<<<<<< HEAD
-//=======
       // Do not search moves with negative SEE values
       if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
           && !pos.see_ge(move))
-          continue;
+          continue;crystak
 
-//>>>>>>> 736400675746c6b84a0bdf131babce1b07ade0df
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
 
