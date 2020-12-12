@@ -1200,7 +1200,19 @@ icc-profile-use:
 ### Based on commits through 12/12/2020:
 ### ======================================================
 ### Black-Diamond-12-R2-08.bench:Nodes searched  : 27474346
-### Black-Diamond-12-R2-08.bench:Nodes/second    : 2014986
-### Black-Diamond-12-R2-08-60_Cores.bench:Nodes searched  : 1018665645
-### Black-Diamond-12-R2-08-60_Cores.bench:Nodes/second    : 80342k
+### Black-Diamond-12-R2-08.bench:Nodes/second    : 2003087
+### Black-Diamond-12-R2-08-60_Cores.bench:Nodes searched  : 1005044035
+### Black-Diamond-12-R2-08-60_Cores.bench:Nodes/second    : 80810k
+### Bluefish-12-R2-08.bench:Nodes searched  : 12901652
+### Bluefish-12-R2-08.bench:Nodes/second    : 1773179
+### Bluefish-12-R2-08-60_Cores.bench:Nodes searched  : 1243161713
+### Bluefish-12-R2-08-60_Cores.bench:Nodes/second    : 92174k
+### Honey-12-R2-08.bench:Nodes searched  : 12744238
+### Honey-12-R2-08.bench:Nodes/second    : 1815418
+### Honey-12-R2-08-60_Cores.bench:Nodes searched  : 980229476
+### Honey-12-R2-08-60_Cores.bench:Nodes/second    : 89929k
+### Oki-Maguro-12-R2-08.bench:Nodes searched  : 11007237
+### Oki-Maguro-12-R2-08.bench:Nodes/second    : 1778516
+### Oki-Maguro-12-R2-08-60_Cores.bench:Nodes searched  : 997724375
+### Oki-Maguro-12-R2-08-60_Cores.bench:Nodes/second    : 94517k
 ### ======================================================
