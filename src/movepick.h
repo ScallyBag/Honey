@@ -136,7 +136,6 @@ public:
                                            const Move*,
                                            int);
   Move next_move(bool skipQuiets = false);
-
 private:
   template<PickType T, typename Pred> Move select(Pred);
   template<GenType> void score();

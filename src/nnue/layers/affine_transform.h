@@ -68,41 +68,45 @@ namespace Eval::NNUE::Layers {
         weights_[i] = read_little_endian<WeightType>(stream);
 
 #if defined (USE_SSSE3)
+      // Determine if quadruplets of weight and input products can be summed using 16bits
+      // without saturation. We assume worst case combinations of 0 and 127 for all inputs.
       if (!stream.fail())
       {
-          // Determine if quadruplets of weight and input products can be summed using 16bits without saturation.
-          // We assume worst case combinations of 0 and 128 for all inputs.
+          auto can_saturate = [](const WeightType* w, int idx[4]) {
+              int pSum = 0, nSum = 0;
+              for (int p = 0; p < 4; ++p)
+                  if (w[idx[p]] > 0)
+                      pSum += w[idx[p]];
+                  else
+                      nSum += w[idx[p]];
+
+              return pSum > 258 || nSum < -258;
+          };
+
           for (IndexType i = 0; i < kOutputDimensions; ++i)
           {
               canSaturate16[i] = false;
               const WeightType* w = &weights_[i * kPaddedInputDimensions];
-#if defined (USE_AVX2)
+#if defined (USE_AVX512)
+              for (IndexType j = 0; j < (kPaddedInputDimensions & ~127) && !canSaturate16[i]; j += 128)
+                  for (int k = 0; k < 64 && !canSaturate16[i]; k += 2)
+                  {
+                      int spacing[4] = { 0, 1, 64, 65 };
+                      canSaturate16[i] = can_saturate(&w[j + k], spacing);
+                  }
+#elif defined (USE_AVX2)
               for (IndexType j = 0; j < (kPaddedInputDimensions & ~63) && !canSaturate16[i]; j += 64)
                   for (int k = 0; k < 32 && !canSaturate16[i]; k += 2)
                   {
-                      int pSum = 0, nSum = 0;
-                      for (int p : { 0, 1, 32, 33 })
-                          if (w[j + k + p] > 0)
-                              pSum += w[j + k + p];
-                          else
-                              nSum += w[j + k + p];
-
-                      if (pSum >= 256 || nSum <= -256)
-                          canSaturate16[i] = true;
+                      int spacing[4] = { 0, 1, 32, 33 };
+                      canSaturate16[i] = can_saturate(&w[j + k], spacing);
                   }
 #elif defined (USE_SSSE3)
               for (IndexType j = 0; j < (kPaddedInputDimensions & ~31) && !canSaturate16[i]; j += 32)
                   for (int k = 0; k < 16 && !canSaturate16[i]; k += 2)
                   {
-                      int pSum = 0, nSum = 0;
-                      for (int p : { 0, 1, 16, 17 })
-                          if (w[j + k + p] > 0)
-                              pSum += w[j + k + p];
-                          else
-                              nSum += w[j + k + p];
-
-                      if (pSum >= 256 || nSum <= -256)
-                          canSaturate16[i] = true;
+                      int spacing[4] = { 0, 1, 16, 17 };
+                      canSaturate16[i] = can_saturate(&w[j + k], spacing);
                   }
 #endif
           }
@@ -229,6 +233,19 @@ namespace Eval::NNUE::Layers {
         acc = _mm512_dpbusd_epi32(acc, a, b);
 #else
         __m512i product0 = _mm512_maddubs_epi16(a, b);
+        product0 = _mm512_madd_epi16(product0, kOnes512);
+        acc = _mm512_add_epi32(acc, product0);
+#endif
+      };
+
+      [[maybe_unused]] auto m512_add_dpbusd_epi32x2 = [=](__m512i& acc, __m512i a0, __m512i b0, __m512i a1, __m512i b1) {
+#if defined (USE_VNNI)
+        acc = _mm512_dpbusd_epi32(acc, a0, b0);
+        acc = _mm512_dpbusd_epi32(acc, a1, b1);
+#else
+        __m512i product0 = _mm512_maddubs_epi16(a0, b0);
+        __m512i product1 = _mm512_maddubs_epi16(a1, b1);
+        product0 = _mm512_adds_epi16(product0, product1);
         product0 = _mm512_madd_epi16(product0, kOnes512);
         acc = _mm512_add_epi32(acc, product0);
 #endif
@@ -416,7 +433,21 @@ namespace Eval::NNUE::Layers {
             const auto row2 = reinterpret_cast<const __m512i*>(&weights_[offset2]);
             const auto row3 = reinterpret_cast<const __m512i*>(&weights_[offset3]);
 
-            for (IndexType j = 0; j < kNumChunks512; ++j)
+            int j = 0;
+            if (!canSaturate16x4[i / 4])
+            {
+                for (; j < (int)kNumChunks512 - 1; j += 2)
+                {
+                    const __m512i in0 = input_vector512[j];
+                    const __m512i in1 = input_vector512[j + 1];
+
+                    m512_add_dpbusd_epi32x2(sum0, in0, row0[j], in1, row0[j + 1]);
+                    m512_add_dpbusd_epi32x2(sum1, in0, row1[j], in1, row1[j + 1]);
+                    m512_add_dpbusd_epi32x2(sum2, in0, row2[j], in1, row2[j + 1]);
+                    m512_add_dpbusd_epi32x2(sum3, in0, row3[j], in1, row3[j + 1]);
+                }
+            }
+            for (; j < (int)kNumChunks512; ++j)
             {
               const __m512i in = input_vector512[j];
 
@@ -526,7 +557,7 @@ namespace Eval::NNUE::Layers {
           const auto row3 = reinterpret_cast<const __m256i*>(&weights_[offset3]);
 
           int j = 0;
-          if (!*(const uint32_t*)&canSaturate16[i])
+          if (!canSaturate16x4[i / 4])
           {
               for (; j < (int)kNumChunks - 1; j += 2)
               {
@@ -606,7 +637,7 @@ namespace Eval::NNUE::Layers {
           const auto row3 = reinterpret_cast<const __m128i*>(&weights_[offset3]);
 
           int j = 0;
-          if (!*(const uint32_t*)&canSaturate16[i])
+          if (!canSaturate16x4[i / 4])
           {
               for (; j < (int)kNumChunks - 1; j += 2)
               {
@@ -761,7 +792,10 @@ namespace Eval::NNUE::Layers {
 
     alignas(kCacheLineSize) BiasType biases_[kOutputDimensions];
     alignas(kCacheLineSize) WeightType weights_[kOutputDimensions * kPaddedInputDimensions];
-    alignas(uint32_t) uint8_t canSaturate16[kOutputDimensions];
+    union {
+        uint32_t canSaturate16x4[(kOutputDimensions + 3) / 4];
+        bool canSaturate16[kOutputDimensions];
+    };
   };
 
 }  // namespace Eval::NNUE::Layers
