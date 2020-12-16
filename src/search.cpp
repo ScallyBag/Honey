@@ -1595,6 +1595,11 @@ namespace {
              continue;
       }
 
+      // Do not search moves with negative SEE values
+      if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+          && !pos.see_ge(move))
+          continue;
+
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
 
