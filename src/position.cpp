@@ -77,6 +77,8 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
       && !pos.can_castle(ANY_CASTLING))
   {
       StateInfo st;
+      ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
+
       Position p;
       p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
       Tablebases::ProbeState s1, s2;
@@ -195,7 +197,6 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 
   std::memset(this, 0, sizeof(Position));
   std::memset(si, 0, sizeof(StateInfo));
-  std::fill_n(&pieceList[0][0], sizeof(pieceList) / sizeof(Square), SQ_NONE);
   st = si;
 
   ss >> std::noskipws;
@@ -279,6 +280,8 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
   chess960 = isChess960;
   thisThread = th;
   set_state(st);
+  st->accumulator.state[WHITE] = Eval::NNUE::INIT;
+  st->accumulator.state[BLACK] = Eval::NNUE::INIT;
 
   assert(pos_is_ok());
 
@@ -701,7 +704,8 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
   ++st->pliesFromNull;
 
   // Used by NNUE
-  st->accumulator.computed_accumulation = false;
+  st->accumulator.state[WHITE] = Eval::NNUE::EMPTY;
+  st->accumulator.state[BLACK] = Eval::NNUE::EMPTY;
   auto& dp = st->dirtyPiece;
   dp.dirty_num = 1;
 
@@ -994,15 +998,15 @@ void Position::do_null_move(StateInfo& newSt) {
   assert(!checkers());
   assert(&newSt != st);
 
-  if (Eval::useNNUE)
-  {
-      std::memcpy(&newSt, st, sizeof(StateInfo));
-  }
-  else
-      std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
+  std::memcpy(&newSt, st, offsetof(StateInfo, accumulator));
 
   newSt.previous = st;
   st = &newSt;
+
+  st->dirtyPiece.dirty_num = 0;
+  st->dirtyPiece.piece[0] = NO_PIECE; // Avoid checks in UpdateAccumulator()
+  st->accumulator.state[WHITE] = Eval::NNUE::EMPTY;
+  st->accumulator.state[BLACK] = Eval::NNUE::EMPTY;
 
   if (st->epSquare != SQ_NONE)
   {
@@ -1367,20 +1371,16 @@ bool Position::pos_is_ok() const {
               assert(0 && "pos_is_ok: Bitboards");
 
   StateInfo si = *st;
+  ASSERT_ALIGNED(&si, Eval::NNUE::kCacheLineSize);
+
   set_state(&si);
   if (std::memcmp(&si, st, sizeof(StateInfo)))
       assert(0 && "pos_is_ok: State");
 
   for (Piece pc : Pieces)
-  {
       if (   pieceCount[pc] != popcount(pieces(color_of(pc), type_of(pc)))
           || pieceCount[pc] != std::count(board, board + SQUARE_NB, pc))
           assert(0 && "pos_is_ok: Pieces");
-
-      for (int i = 0; i < pieceCount[pc]; ++i)
-          if (board[pieceList[pc][i]] != pc || index[pieceList[pc][i]] != i)
-              assert(0 && "pos_is_ok: Index");
-  }
 
   for (Color c : { WHITE, BLACK })
       for (CastlingRights cr : {c & KING_SIDE, c & QUEEN_SIDE})
