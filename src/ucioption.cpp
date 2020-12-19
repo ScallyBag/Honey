@@ -174,9 +174,28 @@ void init(OptionsMap& o) {
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
     o["UseNN"]                    << Option(true, on_use_NNUE);
     o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
+
     o["Tal"]                      << Option(false);
     o["Capablanca"]               << Option(false);
     o["Petrosian"]                << Option(false);
+
+#if defined (Blau) || (Weakfish)
+    o["NNUE_Scale"]            << Option(125, 250, 600, on_use_NNUE);
+    o["NNUE_Threshold1"]       << Option(550, 8000, 40000, on_use_NNUE);
+    o["NNUE_Threshold2"]       << Option(150, 2000, 40000, on_use_NNUE);
+#else
+#if defined (Noir) || (Stockfish)
+    o["NNUE_Scale"]            << Option(125, 150, 600, on_use_NNUE);
+    o["NNUE_Threshold1"]       << Option(550, 8000, 40000, on_use_NNUE);
+    o["NNUE_Threshold2"]       << Option(150, 2000, 40000, on_use_NNUE);
+#else
+    o["NNUE_Scale"]            << Option(125, 100, 600, on_use_NNUE);
+    o["NNUE_Threshold1"]       << Option(550, 682, 40000, on_use_NNUE);
+    o["NNUE_Threshold2"]       << Option(150, 176, 40000, on_use_NNUE);
+    o["NNUE_Tempo"]            << Option(false, on_use_NNUE);
+#endif
+#endif
+
 }
 
 

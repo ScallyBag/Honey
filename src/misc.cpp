@@ -70,7 +70,7 @@ namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 #if (defined Add_Features && ReleaseVer)
-const string Version = " v12-R2.09";
+const string Version = " v12-R2.09v1";
 #else
 const string Version = "";
 #endif
@@ -209,7 +209,7 @@ const std::string splash() {
 #endif
 
 #ifdef Sullivan
-
+#ifndef Beth
 const std::string splash() {
 
      stringstream sp;
@@ -228,6 +228,7 @@ const std::string splash() {
 
   return sp.str();
 }
+#endif
 #endif
 #ifdef Weakfish
 
@@ -250,6 +251,27 @@ const std::string splash() {
 }
 #endif
 
+#ifdef Beth
+
+const std::string splash() {
+
+     stringstream sp;
+     sp <<  FontColor::engine << "\n";
+     sp <<  "                                                                                  \n";
+     sp <<  "                                                                                  \n";
+     sp <<  "    #     #                             #     #   //\"\"\"\\\\     #     ###           \n";
+     sp <<  "    #     #   ##   #####  #    #  ####  ##    #  //^   ^\\\\   ##    #   #          \n";
+     sp <<  "    #     #  #  #  #    # ##  ## #    # # #   #   |O   O|   # #    #  #           \n";
+     sp <<  "    ####### #    # #    # # ## # #    # #  #  #   !  ~  !     #      #            \n";
+     sp <<  "    #     # ###### #####  #    # #    # #   # #    \\ O /      #     #             \n";
+     sp <<  "    #     # #    # #   #  #    # #    # #    ##   __| |__     #    #              \n";
+     sp <<  "    #     # #    # #    # #    #  ####  #     #  /       \\  #####  #####          \n\n";
+
+
+  return sp.str();
+}
+#endif
+
 
 /// engine_info() returns the full name of the current Stockfish version. This
 /// will be either "Stockfish <Tag> DD-MM-YY" (where DD-MM-YY is the date when
@@ -264,14 +286,16 @@ const string engine_info(bool to_uci) {
 
 #ifdef Blau
     ss <<  "    Bluefish " << Version << Suffix << setfill('0');
-#elif Sullivan
-    ss <<  "    Honey "         << Version << Suffix << setfill('0') ;
 #elif Noir
 	  ss <<  "    Black Diamond " << Version << Suffix << setfill('0');
 #elif Stockfish
     ss <<  "    Oki Maguro "     << Version << Suffix << setfill('0');
 #elif Weakfish
     ss <<  "    Weakfish "      << Version << Suffix << setfill('0');
+#elif Beth
+    ss <<  "    Harmon "      << Version << Suffix << setfill('0');
+#elif Sullivan
+    ss <<  "    Honey "         << Version << Suffix << setfill('0') ;
 #endif
 #if (defined Sullivan && defined Test)
 	if (Version.empty())
@@ -287,12 +311,8 @@ const string engine_info(bool to_uci) {
         ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << " ";
     }
 #endif
-#ifdef Sullivan
-      ss	<< (to_uci  ? "\nid author ": "by ") << "M. Byrne and scores of others...\n" << FontColor::reset ;
-#else
        ss << (to_uci  ? "\nid author ": " by ")
-          << "Stockfish Developers as noted in the AUTHORS file" << FontColor::reset ;
-#endif
+          << "Poppy & the Stockfish Developers as noted in the AUTHORS file" << FontColor::reset ;
 #ifdef Pi
 	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally\n") << FontColor::reset ;
 #endif
@@ -821,6 +841,14 @@ void init(int argc, char* argv[]) {
             | ,___|
             |   /
            /____\
+
+           //"\\
+         ||^   ^\\
+          |O   O|
+          |  ~  !
+           \ O /
+          __| |__
+
 
             /''*._
        .-*'`    `*-.._.-'\

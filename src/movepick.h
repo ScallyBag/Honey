@@ -123,12 +123,16 @@ public:
   MovePicker& operator=(const MovePicker&) = delete;
   MovePicker(const Position&, Move, Value, const CapturePieceToHistory*);
   MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
+#ifdef Noir
                                            const ButterflyHistory*,
+#endif
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
                                            Square);
   MovePicker(const Position&, Move, Depth, const ButterflyHistory*,
+#ifdef Noir
                                            const ButterflyHistory*,
+#endif
                                            const LowPlyHistory*,
                                            const CapturePieceToHistory*,
                                            const PieceToHistory**,
@@ -144,7 +148,9 @@ private:
 
   const Position& pos;
   const ButterflyHistory* mainHistory;
+#ifdef Noir
   const ButterflyHistory* staticHistory;
+#endif
   const LowPlyHistory* lowPlyHistory;
   const CapturePieceToHistory* captureHistory;
   const PieceToHistory** continuationHistory;

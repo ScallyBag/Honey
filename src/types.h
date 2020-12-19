@@ -236,7 +236,7 @@ enum Value : int {
 
 #endif
 
-  PawnValueMg   = 124*PVM,   PawnValueEg   = 208*PVE,
+  PawnValueMg   = 126*PVM,   PawnValueEg   = 208*PVE,
   KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
   BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
   RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,

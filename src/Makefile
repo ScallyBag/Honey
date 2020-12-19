@@ -38,7 +38,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-09
+RELVERSION = 12-R2-09v2
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -92,7 +92,7 @@ ifeq ($(HONEY),yes)
 							EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
 		        else
 			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-                        endif
+            endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
@@ -105,6 +105,7 @@ ifeq ($(HONEY),yes)
 		endif
 	endif
 endif
+
 
 ### Note:  For building cur-dev stockfish with the features added.
 ifeq ($(NOIR),yes)
@@ -158,6 +159,31 @@ ifneq ($(HONEY),yes)
 	endif
 endif
 
+ifeq ($(BETH),yes)
+ifeq ($(HONEY),yes)
+    NAME=$(PRE)Harmon$(SUF)
+    CXXFLAGS += -DBeth
+		ifeq ($(RELEASEVER),no)
+			ifeq ($(TEST),no)
+				ifeq ($(COMP),mingw)
+					EXE  = $(NAME)-dev-$(DATE).exe
+					EXE2 = $(NAME)-dev-$(DATE)
+				else
+					EXE = $(NAME)-dev-$(DATE)
+				endif
+			endif
+			ifeq ($(TEST),yes)
+							ifeq ($(COMP),mingw)
+								EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+								EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+							else
+								EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+							endif
+			endif
+		endif
+endif
+endif
+
 ### Installation dir definitions
 PREFIX = /opt/local
 #PREFIX = /usr/local
@@ -175,6 +201,12 @@ endif
 ifeq  ($(STOCKFISH),yes)
 PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
 PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+endif
+ifeq  ($(HONEY),yes)
+ifneq  ($(BETH),yes)
+PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+endif
 endif
 ifeq  ($(HONEY),yes)
 PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin

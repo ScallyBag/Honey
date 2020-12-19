@@ -1204,16 +1204,8 @@ namespace {
 
     if ((ss-1)->moveCount > 1 && is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture && depth < 7)
     {
-        int bonus = std::clamp(- (depth+1) * 2 * int((ss-1)->staticEval + ss->staticEval - 2 * Tempo), -1000, 1000);
+        int bonus = std::clamp(-depth * 4 * int((ss-1)->staticEval + ss->staticEval - 2 * Tempo), -1000, 1000);
         thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
-    }
-    // Update static history for previous move
-    if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
-    {
-        int bonus = ss->staticEval > -(ss-1)->staticEval + 2 * Tempo ? -stat_bonus(depth) :
-                    ss->staticEval < -(ss-1)->staticEval + 2 * Tempo ? stat_bonus(depth) :
-                    0;
-        thisThread->staticHistory[~us][from_to((ss-1)->currentMove)] << bonus;
     }
 
     // Step 7. Razoring (~1 Elo)
@@ -1403,7 +1395,9 @@ moves_loop: // When in check, search starts from here
     Move countermove = thisThread->counterMoves[pos.piece_on(prevSq)][prevSq];
 
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->staticHistory,
+//#ifdef Noir
+//                                      &thisThread->staticHistory,//
+//#endif
                                       &thisThread->lowPlyHistory,
                                       &captureHistory,
                                       contHist,
@@ -1563,6 +1557,7 @@ moves_loop: // When in check, search starts from here
       else if (    givesCheck
                && (pos.is_discovery_check_on_king(~us, move) || pos.see_ge(move)))
           extension = 1;
+
 #ifndef Stockfish
       // Passed pawn extension
       else if (   move == ss->killers[0]
@@ -1575,6 +1570,7 @@ moves_loop: // When in check, search starts from here
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
 #endif
+
       // Castling extension
       if (   type_of(move) == CASTLING
           && popcount(pos.pieces(us) & ~pos.pieces(PAWN) & (to_sq(move) & KingSide ? KingSide : QueenSide)) <= 2)
@@ -1584,20 +1580,21 @@ moves_loop: // When in check, search starts from here
       if (   move == ttMove
           && pos.rule50_count() > 80
           && (captureOrPromotion || type_of(movedPiece) == PAWN))
-          extension = 1;
+          extension = 2;
 
       // Add extension to new depth
       newDepth += extension;
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
+
 #ifndef Stockfish
-// Check for legality just before making the move
+      // Check for legality just before making the move
       if (!rootNode && !pos.legal(move))
-      {
-          ss->moveCount = --moveCount;
-          continue;
-      }
+       {
+           ss->moveCount = --moveCount;
+           continue;
+       }
 #endif
       // Update the current move (this must be done after singular extension search)
       ss->currentMove = move;
@@ -1633,7 +1630,6 @@ moves_loop: // When in check, search starts from here
               || thisThread->ttHitAverage < 432 * TtHitAverageResolution * TtHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);
-
           // Decrease reduction at non-check cut nodes for second move at low depths
           if (   cutNode
               && depth <= 10
@@ -2025,7 +2021,6 @@ moves_loop: // When in check, search starts from here
     // queen and checking knight promotions, and other checks(only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
-                                      &thisThread->staticHistory,
                                       &thisThread->captureHistory,
                                       contHist,
                                       to_sq((ss-1)->currentMove));
@@ -2173,12 +2168,13 @@ moves_loop: // When in check, search starts from here
   // and the graph history interaction, we return an optimal TB score instead.
 
   Value value_from_tt(Value v, int ply, int r50c) {
-
     return   v == VALUE_NONE ? VALUE_NONE
           :  v <= VALUE_MATED_IN_MAX_PLY ? v + ply
           : (v >= VALUE_MATE_IN_MAX_PLY) && (VALUE_MATE - v > 99 - r50c) ? VALUE_MATE_IN_MAX_PLY - 1
           :  v >= VALUE_MATE_IN_MAX_PLY ? v - ply : v;
     }
+
+
 
   // update_pv() adds current move and appends child pv[]
 
