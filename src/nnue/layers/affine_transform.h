@@ -66,6 +66,53 @@ namespace Eval::NNUE::Layers {
         biases_[i] = read_little_endian<BiasType>(stream);
       for (std::size_t i = 0; i < kOutputDimensions * kPaddedInputDimensions; ++i)
         weights_[i] = read_little_endian<WeightType>(stream);
+
+#if defined (USE_SSSE3)
+      // Determine if quadruplets of weight and input products can be summed using 16bits
+      // without saturation. We assume worst case combinations of 0 and 127 for all inputs.
+      if (!stream.fail())
+      {
+          auto can_saturate = [](const WeightType* w, int idx[4]) {
+              int pSum = 0, nSum = 0;
+              for (int p = 0; p < 4; ++p)
+                  if (w[idx[p]] > 0)
+                      pSum += w[idx[p]];
+                  else
+                      nSum += w[idx[p]];
+
+              return pSum > 258 || nSum < -258;
+          };
+
+          for (IndexType i = 0; i < kOutputDimensions; ++i)
+          {
+              canSaturate16[i] = false;
+              const WeightType* w = &weights_[i * kPaddedInputDimensions];
+#if defined (USE_AVX512)
+              for (IndexType j = 0; j < (kPaddedInputDimensions & ~127) && !canSaturate16[i]; j += 128)
+                  for (int k = 0; k < 64 && !canSaturate16[i]; k += 2)
+                  {
+                      int spacing[4] = { 0, 1, 64, 65 };
+                      canSaturate16[i] = can_saturate(&w[j + k], spacing);
+                  }
+#elif defined (USE_AVX2)
+              for (IndexType j = 0; j < (kPaddedInputDimensions & ~63) && !canSaturate16[i]; j += 64)
+                  for (int k = 0; k < 32 && !canSaturate16[i]; k += 2)
+                  {
+                      int spacing[4] = { 0, 1, 32, 33 };
+                      canSaturate16[i] = can_saturate(&w[j + k], spacing);
+                  }
+#elif defined (USE_SSSE3)
+              for (IndexType j = 0; j < (kPaddedInputDimensions & ~31) && !canSaturate16[i]; j += 32)
+                  for (int k = 0; k < 16 && !canSaturate16[i]; k += 2)
+                  {
+                      int spacing[4] = { 0, 1, 16, 17 };
+                      canSaturate16[i] = can_saturate(&w[j + k], spacing);
+                  }
+#endif
+          }
+      }
+#endif
+
       return !stream.fail();
     }
 
@@ -186,6 +233,19 @@ namespace Eval::NNUE::Layers {
         acc = _mm512_dpbusd_epi32(acc, a, b);
 #else
         __m512i product0 = _mm512_maddubs_epi16(a, b);
+        product0 = _mm512_madd_epi16(product0, kOnes512);
+        acc = _mm512_add_epi32(acc, product0);
+#endif
+      };
+
+      [[maybe_unused]] auto m512_add_dpbusd_epi32x2 = [=](__m512i& acc, __m512i a0, __m512i b0, __m512i a1, __m512i b1) {
+#if defined (USE_VNNI)
+        acc = _mm512_dpbusd_epi32(acc, a0, b0);
+        acc = _mm512_dpbusd_epi32(acc, a1, b1);
+#else
+        __m512i product0 = _mm512_maddubs_epi16(a0, b0);
+        __m512i product1 = _mm512_maddubs_epi16(a1, b1);
+        product0 = _mm512_adds_epi16(product0, product1);
         product0 = _mm512_madd_epi16(product0, kOnes512);
         acc = _mm512_add_epi32(acc, product0);
 #endif
@@ -373,7 +433,21 @@ namespace Eval::NNUE::Layers {
             const auto row2 = reinterpret_cast<const __m512i*>(&weights_[offset2]);
             const auto row3 = reinterpret_cast<const __m512i*>(&weights_[offset3]);
 
-            for (IndexType j = 0; j < kNumChunks512; ++j)
+            int j = 0;
+            if (!canSaturate16x4[i / 4])
+            {
+                for (; j < (int)kNumChunks512 - 1; j += 2)
+                {
+                    const __m512i in0 = input_vector512[j];
+                    const __m512i in1 = input_vector512[j + 1];
+
+                    m512_add_dpbusd_epi32x2(sum0, in0, row0[j], in1, row0[j + 1]);
+                    m512_add_dpbusd_epi32x2(sum1, in0, row1[j], in1, row1[j + 1]);
+                    m512_add_dpbusd_epi32x2(sum2, in0, row2[j], in1, row2[j + 1]);
+                    m512_add_dpbusd_epi32x2(sum3, in0, row3[j], in1, row3[j + 1]);
+                }
+            }
+            for (; j < (int)kNumChunks512; ++j)
             {
               const __m512i in = input_vector512[j];
 
@@ -482,24 +556,28 @@ namespace Eval::NNUE::Layers {
           const auto row2 = reinterpret_cast<const __m256i*>(&weights_[offset2]);
           const auto row3 = reinterpret_cast<const __m256i*>(&weights_[offset3]);
 
-          for (int j = 0; j < (int)kNumChunks - 1; j += 2)
+          int j = 0;
+          if (!canSaturate16x4[i / 4])
           {
-              const __m256i in0 = input_vector[j];
-              const __m256i in1 = input_vector[j + 1];
+              for (; j < (int)kNumChunks - 1; j += 2)
+              {
+                  const __m256i in0 = input_vector[j];
+                  const __m256i in1 = input_vector[j + 1];
 
-              m256_add_dpbusd_epi32x2(sum0, in0, row0[j], in1, row0[j + 1]);
-              m256_add_dpbusd_epi32x2(sum1, in0, row1[j], in1, row1[j + 1]);
-              m256_add_dpbusd_epi32x2(sum2, in0, row2[j], in1, row2[j + 1]);
-              m256_add_dpbusd_epi32x2(sum3, in0, row3[j], in1, row3[j + 1]);
+                  m256_add_dpbusd_epi32x2(sum0, in0, row0[j], in1, row0[j + 1]);
+                  m256_add_dpbusd_epi32x2(sum1, in0, row1[j], in1, row1[j + 1]);
+                  m256_add_dpbusd_epi32x2(sum2, in0, row2[j], in1, row2[j + 1]);
+                  m256_add_dpbusd_epi32x2(sum3, in0, row3[j], in1, row3[j + 1]);
+              }
           }
-          if constexpr (kNumChunks & 0x1)
+          for (; j < (int)kNumChunks; ++j)
           {
-              const __m256i in = input_vector[kNumChunks - 1];
+                const __m256i in = input_vector[j];
 
-              m256_add_dpbusd_epi32(sum0, in, row0[kNumChunks - 1]);
-              m256_add_dpbusd_epi32(sum1, in, row1[kNumChunks - 1]);
-              m256_add_dpbusd_epi32(sum2, in, row2[kNumChunks - 1]);
-              m256_add_dpbusd_epi32(sum3, in, row3[kNumChunks - 1]);
+                m256_add_dpbusd_epi32(sum0, in, row0[j]);
+                m256_add_dpbusd_epi32(sum1, in, row1[j]);
+                m256_add_dpbusd_epi32(sum2, in, row2[j]);
+                m256_add_dpbusd_epi32(sum3, in, row3[j]);
           }
 
           *outptr = m256_haddx4(sum0, sum1, sum2, sum3, bias);
@@ -513,7 +591,7 @@ namespace Eval::NNUE::Layers {
 
         for (IndexType j = 0; j < kNumChunks; ++j)
         {
-          const __m256i in = input_vector[j];
+            const __m256i in = input_vector[j];
 
             m256_add_dpbusd_epi32(sum0, in, row0[j]);
         }
@@ -558,24 +636,28 @@ namespace Eval::NNUE::Layers {
           const auto row2 = reinterpret_cast<const __m128i*>(&weights_[offset2]);
           const auto row3 = reinterpret_cast<const __m128i*>(&weights_[offset3]);
 
-          for (int j = 0; j < (int)kNumChunks - 1; j += 2)
+          int j = 0;
+          if (!canSaturate16x4[i / 4])
           {
-            const __m128i in0 = input_vector[j];
-            const __m128i in1 = input_vector[j + 1];
+              for (; j < (int)kNumChunks - 1; j += 2)
+              {
+                  const __m128i in0 = input_vector[j];
+                  const __m128i in1 = input_vector[j + 1];
 
-            m128_add_dpbusd_epi32x2(sum0, in0, row0[j], in1, row0[j + 1]);
-            m128_add_dpbusd_epi32x2(sum1, in0, row1[j], in1, row1[j + 1]);
-            m128_add_dpbusd_epi32x2(sum2, in0, row2[j], in1, row2[j + 1]);
-            m128_add_dpbusd_epi32x2(sum3, in0, row3[j], in1, row3[j + 1]);
+                  m128_add_dpbusd_epi32x2(sum0, in0, row0[j], in1, row0[j + 1]);
+                  m128_add_dpbusd_epi32x2(sum1, in0, row1[j], in1, row1[j + 1]);
+                  m128_add_dpbusd_epi32x2(sum2, in0, row2[j], in1, row2[j + 1]);
+                  m128_add_dpbusd_epi32x2(sum3, in0, row3[j], in1, row3[j + 1]);
+              }
           }
-          if constexpr (kNumChunks & 0x1)
+          for (; j < (int)kNumChunks; ++j)
           {
-            const __m128i in = input_vector[kNumChunks - 1];
+              const __m128i in = input_vector[j];
 
-            m128_add_dpbusd_epi32(sum0, in, row0[kNumChunks - 1]);
-            m128_add_dpbusd_epi32(sum1, in, row1[kNumChunks - 1]);
-            m128_add_dpbusd_epi32(sum2, in, row2[kNumChunks - 1]);
-            m128_add_dpbusd_epi32(sum3, in, row3[kNumChunks - 1]);
+              m128_add_dpbusd_epi32(sum0, in, row0[j]);
+              m128_add_dpbusd_epi32(sum1, in, row1[j]);
+              m128_add_dpbusd_epi32(sum2, in, row2[j]);
+              m128_add_dpbusd_epi32(sum3, in, row3[j]);
           }
 
           *outptr = m128_haddx4(sum0, sum1, sum2, sum3, bias);
@@ -587,7 +669,7 @@ namespace Eval::NNUE::Layers {
 
         const auto row0 = reinterpret_cast<const __m128i*>(&weights_[0]);
 
-        for (int j = 0; j < (int)kNumChunks; j += 1)
+        for (int j = 0; j < (int)kNumChunks; ++j)
         {
           const __m128i in = input_vector[j];
 
@@ -638,9 +720,8 @@ namespace Eval::NNUE::Layers {
         for (IndexType j = 0; j < kNumChunks; ++j) {
           __m128i row_j = _mm_load_si128(&row[j]);
           __m128i input_j = _mm_load_si128(&input_vector[j]);
-          __m128i row_signs = _mm_cmpgt_epi8(kZeros, row_j);
-          __m128i extended_row_lo = _mm_unpacklo_epi8(row_j, row_signs);
-          __m128i extended_row_hi = _mm_unpackhi_epi8(row_j, row_signs);
+          __m128i extended_row_lo = _mm_srai_epi16(_mm_unpacklo_epi8(row_j, row_j), 8);
+          __m128i extended_row_hi = _mm_srai_epi16(_mm_unpackhi_epi8(row_j, row_j), 8);
           __m128i extended_input_lo = _mm_unpacklo_epi8(input_j, kZeros);
           __m128i extended_input_hi = _mm_unpackhi_epi8(input_j, kZeros);
           __m128i product_lo = _mm_madd_epi16(extended_row_lo, extended_input_lo);
@@ -662,9 +743,8 @@ namespace Eval::NNUE::Layers {
         for (IndexType j = 0; j < kNumChunks; ++j) {
           __m64 row_j = row[j];
           __m64 input_j = input_vector[j];
-          __m64 row_signs = _mm_cmpgt_pi8(kZeros, row_j);
-          __m64 extended_row_lo = _mm_unpacklo_pi8(row_j, row_signs);
-          __m64 extended_row_hi = _mm_unpackhi_pi8(row_j, row_signs);
+          __m64 extended_row_lo = _mm_srai_pi16(_mm_unpacklo_pi8(row_j, row_j), 8);
+          __m64 extended_row_hi = _mm_srai_pi16(_mm_unpackhi_pi8(row_j, row_j), 8);
           __m64 extended_input_lo = _mm_unpacklo_pi8(input_j, kZeros);
           __m64 extended_input_hi = _mm_unpackhi_pi8(input_j, kZeros);
           __m64 product_lo = _mm_madd_pi16(extended_row_lo, extended_input_lo);
@@ -711,8 +791,11 @@ namespace Eval::NNUE::Layers {
     PreviousLayer previous_layer_;
 
     alignas(kCacheLineSize) BiasType biases_[kOutputDimensions];
-    alignas(kCacheLineSize)
-        WeightType weights_[kOutputDimensions * kPaddedInputDimensions];
+    alignas(kCacheLineSize) WeightType weights_[kOutputDimensions * kPaddedInputDimensions];
+    union {
+        uint32_t canSaturate16x4[(kOutputDimensions + 3) / 4];
+        bool canSaturate16[kOutputDimensions];
+    };
   };
 
 }  // namespace Eval::NNUE::Layers

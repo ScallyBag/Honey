@@ -60,14 +60,17 @@ function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
 }
 
-for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes WEAKFISH=yes "
-#for ENG in   "BLAU=yes"
+#for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+for ENG in   "HONEY=yes"
   do
   for ARCH in "x86-64-avx2"
     do
-    mke $ENG ARCH=$ARCH && wait
-    rename 12-R1.exe 12-R1-$OS-$NAME_ARCH.exe *.exe
-  done
+      for NET in "BETH" "NINU" "EVAL"
+        do
+        mke $ENG ARCH=$ARCH "$NET=yes" && wait
+        rename 12-R9.exe 12-R9-$OS-$NAME_ARCH-$NET.exe *.exe
+        done
+    done
 done
 
 #read # hack to stop script

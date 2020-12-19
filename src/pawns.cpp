@@ -37,10 +37,10 @@ namespace {
   constexpr Score WeakUnopposed = S(13, 25);
 
   // Bonus for blocked pawns at 5th or 6th rank
-  constexpr Score BlockedPawn[2] = { S(-13, -4), S(-5, 2) };
+  constexpr Score BlockedPawn[2] = { S(-15, -3), S(-6, 3) };
 
   constexpr Score BlockedStorm[RANK_NB] = {
-    S(0, 0), S(0, 0), S(76, 78), S(-10, 15), S(-7, 10), S(-4, 6), S(-1, 2)
+    S(0, 0), S(0, 0), S(75, 78), S(-8, 16), S(-6, 10), S(-6, 6), S(0, 2)
   };
 
   // Connected pawn bonus
@@ -65,6 +65,7 @@ namespace {
     { V( -8), V(  51), V( 167), V( 35), V( -4), V(-16), V(-12) },
     { V(-17), V( -13), V( 100), V(  4), V(  9), V(-16), V(-31) }
   };
+
 
   // KingOnFile[semi-open Us][semi-open Them] contains bonuses/penalties
   // for king when the king is on a semi-open or open file.
@@ -91,7 +92,7 @@ namespace {
     Square s;
     bool backward, passed, doubled;
     Score score = SCORE_ZERO;
-    const Square* pl = pos.squares<PAWN>(Us);
+    Bitboard b = pos.pieces(Us, PAWN);
 
     Bitboard ourPawns   = pos.pieces(  Us, PAWN);
     Bitboard theirPawns = pos.pieces(Them, PAWN);
@@ -104,8 +105,9 @@ namespace {
     e->blockedCount += popcount(shift<Up>(ourPawns) & (theirPawns | doubleAttackThem));
 
     // Loop through all pawns of the current color and score each pawn
-    while ((s = *pl++) != SQ_NONE)
-    {
+    while (b) {
+        s = pop_lsb(&b);
+
         assert(pos.piece_on(s) == make_piece(Us, PAWN));
 
         Rank r = relative_rank(Us, s);
@@ -176,8 +178,8 @@ namespace {
             score -=  Doubled * doubled
                     + WeakLever * more_than_one(lever);
 
-        if (blocked && r > RANK_4)
-            score += BlockedPawn[r-4];
+        if (blocked && r >= RANK_5)
+            score += BlockedPawn[r - RANK_5];
     }
 
     return score;

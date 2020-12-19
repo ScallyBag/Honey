@@ -17,6 +17,9 @@
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 
+
+
+
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
@@ -38,7 +41,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-07
+RELVERSION = 12-R2-09
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -70,6 +73,18 @@ endif
 ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
+
+##  Assign net for Build
+ifeq ($(BETH),yes)
+  CXXFLAGS += -DBeth
+	ifeq ($(NINU),yes)
+	  CXXFLAGS += -DNiNu
+	  ifeq ($(TOGA),yes)
+	    CXXFLAGS += -DToga
+		endif
+  endif
+endif
+
 ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
