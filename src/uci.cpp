@@ -177,7 +177,7 @@ void set(istringstream& is) {
       Options["UseNN"] = {value};
       sync_cout << FontColor::engine << "Confirmation: "<< "UseNN" << " set to " << value << FontColor::reset << sync_endl;
       if (Options["UseNN"])
-          sync_cout << "info string: NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+          sync_cout << "info string: NN evaluation using " << string(EvalFileDefaultName)  << " enabled." << sync_endl;
       else
           sync_cout << "info string: Classical evaluation enabled." << FontColor::reset << sync_endl;
     }
@@ -341,7 +341,7 @@ void set(istringstream& is) {
                else
                    cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
                if (Options["UseNN"])
-                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+                   cerr << "NN evaluation using " << string(EvalFileDefaultName) << " enabled." << sync_endl;
                 else
                    cerr << "Classical evaluation enabled." <<  sync_endl;
             }

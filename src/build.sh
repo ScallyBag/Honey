@@ -20,7 +20,7 @@ COMP="COMP=mingw"
 #COMP="COMP=icc"
 
 #BUILD="profile-build"
-BUILD="build"
+BUILD="profile-build"
 OS=W
 #BUILD="build"
 function mke() {
@@ -60,14 +60,17 @@ function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
 }
 
-for ENG in   "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "WEAKFISH=yes"
-#for ENG in   "BLAU=yes"
+for ENG in "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+#for ENG in   "HONEY=yes"
   do
   for ARCH in "x86-64-avx2"
     do
-    mke $ENG ARCH=$ARCH && wait
-    rename 12-R1.exe 12-R1-$OS-$NAME_ARCH.exe *.exe
-  done
+      for NET in  "NiNu" "EvalNu"
+        do
+        mke "$NET=yes" $ENG ARCH=$ARCH && wait
+        rename  R2-09-$Net.exe R2-9-$NET-$OS-$NAME_ARCH.exe *.exe
+        done
+    done
 done
 
 #read # hack to stop script

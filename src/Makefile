@@ -17,6 +17,9 @@
 DATE=$(shell date +"%m%d%y")
 DATE2=$(shell date +"%m%d")
 
+
+
+
 ### Fortress Detection code that will help in positions such as this:
 ### 3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 6, bm Rxg4
 ### Fortress Detection code by Joe Ellis:
@@ -38,7 +41,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-09v2
+RELVERSION = 12-R2-09
 CORES = 60
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -70,6 +73,25 @@ endif
 ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
+NNET = EvalNu
+##  Assign net for Build
+ifeq ($(Beth),yes)
+  CXXFLAGS += -DBeth
+  NNET = Beth
+endif
+ifeq ($(NiNu),yes)
+  CXXFLAGS += -DNiNu
+  NNET = NiNu
+endif
+ifeq ($(Toga),yes)
+  CXXFLAGS += -DToga
+  NNET = Toga
+endif
+ifeq ($(EvalNu),yes)
+  CXXFLAGS += -DEvalNu
+  NNET = Eval
+endif
+
 ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
     CXXFLAGS += -DSullivan
@@ -92,20 +114,19 @@ ifeq ($(HONEY),yes)
 							EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
 		        else
 			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-            endif
+                        endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE  = $(NAME)-$(RELVERSION).exe
-			EXE2 = $(NAME)-$(RELVERSION)
+			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
+			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 			EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
 endif
-
 
 ### Note:  For building cur-dev stockfish with the features added.
 ifeq ($(NOIR),yes)
@@ -151,38 +172,38 @@ ifneq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE  = $(NAME)-$(RELVERSION).exe
-			EXE2 = $(NAME)-$(RELVERSION)
+			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
+			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
 endif
 
-ifeq ($(BETH),yes)
-ifeq ($(HONEY),yes)
-    NAME=$(PRE)Harmon$(SUF)
-    CXXFLAGS += -DBeth
-		ifeq ($(RELEASEVER),no)
-			ifeq ($(TEST),no)
-				ifeq ($(COMP),mingw)
-					EXE  = $(NAME)-dev-$(DATE).exe
-					EXE2 = $(NAME)-dev-$(DATE)
-				else
-					EXE = $(NAME)-dev-$(DATE)
-				endif
-			endif
-			ifeq ($(TEST),yes)
-							ifeq ($(COMP),mingw)
-								EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
-								EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
-							else
-								EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-							endif
-			endif
-		endif
-endif
-endif
+#ifeq ($(BETH),yes)
+#ifeq ($(HONEY),yes)
+#    NAME=$(PRE)Harmon$(SUF)
+#    CXXFLAGS += -DBeth
+#		ifeq ($(RELEASEVER),no)
+#			ifeq ($(TEST),no)
+#				ifeq ($(COMP),mingw)
+#					EXE  = $(NAME)-dev-$(DATE).exe
+#					EXE2 = $(NAME)-dev-$(DATE)
+#				else
+#					EXE = $(NAME)-dev-$(DATE)
+#				endif
+#			endif
+#			ifeq ($(TEST),yes)
+#							ifeq ($(COMP),mingw)
+#								EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+#								EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+#							else
+#								EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+#							endif
+#			endif
+#		endif
+#endif
+#endif
 
 ### Installation dir definitions
 PREFIX = /opt/local
@@ -191,30 +212,25 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
-PGOBENCH2  = ./$(EXE) bench 16 2 13 true eval.bin
+PGOBENCH  = ./$(EXE) bench 16 1 13 true
+PGOBENCH2  = ./$(EXE) bench 16 2 13 true
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH = ./$(EXE) bench 16 1 13 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 13 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 13 true
+PGOBENCH2 = ./$(EXE) bench 16 2 13 true
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
+
 ifeq  ($(HONEY),yes)
-ifneq  ($(BETH),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
-endif
-endif
-ifeq  ($(HONEY),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eva
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
 ifeq  ($(RASPBERRY),Pi)
 PGOBENCH = ./$(EXE) bench 16 1 8 true eval.bin
@@ -1177,82 +1193,3 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 09/17/2020:
-### ======================================================
-### Black-Diamond-12.bench:Nodes searched  : 18570126
-### Black-Diamond-12.bench:Nodes/second    : 1915235
-### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
-### Based on commits through 12/15/2020:
-### ======================================================
-### Black-Diamond-12-R2-08.bench:Nodes searched  : 27474346
-### Black-Diamond-12-R2-08.bench:Nodes/second    : 2034232
-### Black-Diamond-12-R2-08-60_Cores.bench:Nodes searched  : 989146690
-### Black-Diamond-12-R2-08-60_Cores.bench:Nodes/second    : 81357k
-### Black-Diamond-12-R2-09.bench:Nodes searched  : 27474346
-### Black-Diamond-12-R2-09.bench:Nodes/second    : 2104830
-### Black-Diamond-12-R2-09-60_Cores.bench:Nodes searched  : 1005801870
-### Black-Diamond-12-R2-09-60_Cores.bench:Nodes/second    : 85841k
-### Bluefish-12-R2-09.bench:Nodes searched  : 16292924
-### Bluefish-12-R2-09.bench:Nodes/second    : 1951248
-### Bluefish-12-R2-09-60_Cores.bench:Nodes searched  : 1151023302
-### Bluefish-12-R2-09-60_Cores.bench:Nodes/second    : 92177k
-### Honey-12-R2-09.bench:Nodes searched  : 13917044
-### Honey-12-R2-09.bench:Nodes/second    : 1909845
-### Honey-12-R2-09-60_Cores.bench:Nodes searched  : 945216213
-### Honey-12-R2-09-60_Cores.bench:Nodes/second    : 91484k
-### Oki-Maguro-12-R2-08.bench:Nodes searched  : 11439428
-### Oki-Maguro-12-R2-08.bench:Nodes/second    : 1842097
-### Oki-Maguro-12-R2-08-60_Cores.bench:Nodes searched  : 809440684
-### Oki-Maguro-12-R2-08-60_Cores.bench:Nodes/second    : 91887k
-### Oki-Maguro-12-R2-09.bench:Nodes searched  : 11439428
-### Oki-Maguro-12-R2-09.bench:Nodes/second    : 1874394
-### Oki-Maguro-12-R2-09-60_Cores.bench:Nodes searched  : 834212446
-### Oki-Maguro-12-R2-09-60_Cores.bench:Nodes/second    : 95941k
-### ======================================================

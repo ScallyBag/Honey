@@ -25,6 +25,21 @@
 
 class Position;
 
+#ifdef Beth
+#define PreEvalFileDefaultName     "harmon.bin"
+#elif defined (NiNu)
+#define PreEvalFileDefaultName     "ninu.bin"
+#elif defined (EvalNu)
+#define PreEvalFileDefaultName     "eval.bin"
+#endif
+#if defined (Weakfish)
+#define PreEvalFileDefaultName     "toga.bin"
+#endif
+#if defined (Noir)
+#define PreEvalFileDefaultName     "eval.bin"
+#endif
+
+
 namespace Eval {
 
   std::string trace(const Position& pos);
@@ -37,12 +52,9 @@ namespace Eval {
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
 
-#ifdef Beth
-  #define EvalFileDefaultName     "harmon.bin"  //shasum 256 fb54e3607fa7
-#else
-  #define EvalFileDefaultName     "eval.bin"   //62ef826d1a6d
-#endif
-  #define SHA256NET   "nn-62ef826d1a6d.nnue"  //Night Nurse 0.3 by Dietrich Kappe
+  #define EvalFileDefaultName  PreEvalFileDefaultName
+
+  #define SHA256NET   "nn-62ef826d1a6d.nnue"
 
   namespace NNUE {
 

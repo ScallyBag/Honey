@@ -70,7 +70,7 @@ namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 #if (defined Add_Features && ReleaseVer)
-const string Version = " v12-R2.09v1";
+const string Version = " v12-R2.09";
 #else
 const string Version = "";
 #endif
@@ -148,6 +148,7 @@ public:
 } // namespace
 
 #ifdef Blau
+#ifndef Beth
 const std::string splash() {
 
      stringstream sp;
@@ -166,7 +167,7 @@ const std::string splash() {
   return sp.str();
 }
 #endif
-
+#endif
 #ifdef Noir
 const std::string splash() {
 
@@ -189,6 +190,7 @@ const std::string splash() {
 #endif
 
 #ifdef Stockfish
+#ifndef Beth
 const std::string splash() {
 
      stringstream sp;
@@ -207,7 +209,7 @@ const std::string splash() {
   return sp.str();
 }
 #endif
-
+#endif
 #ifdef Sullivan
 #ifndef Beth
 const std::string splash() {
@@ -289,13 +291,11 @@ const string engine_info(bool to_uci) {
 #elif Noir
 	  ss <<  "    Black Diamond " << Version << Suffix << setfill('0');
 #elif Stockfish
-    ss <<  "    Oki Maguro "     << Version << Suffix << setfill('0');
+    ss <<  "    Oki Maguro "  << Version << Suffix << setfill('0');
 #elif Weakfish
-    ss <<  "    Weakfish "      << Version << Suffix << setfill('0');
-#elif Beth
-    ss <<  "    Harmon "      << Version << Suffix << setfill('0');
+    ss <<  "    Weakfish "    << Version << Suffix << setfill('0');
 #elif Sullivan
-    ss <<  "    Honey "         << Version << Suffix << setfill('0') ;
+    ss <<  "    Honey "       << Version << Suffix << setfill('0');
 #endif
 #if (defined Sullivan && defined Test)
 	if (Version.empty())
@@ -770,10 +770,11 @@ namespace CommandLine {
 string argv0;            // path+name of the executable binary, as given by argv[0]
 string binaryDirectory;  // path of the executable directory
 string workingDirectory; // path of the working directory
+string pathSeparator;    // Separator for our current OS
 
 void init(int argc, char* argv[]) {
     (void)argc;
-    string pathSeparator;
+    string separator;
 
     // extract the path+name of the executable binary
     argv0 = argv[0];
