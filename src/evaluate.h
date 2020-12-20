@@ -25,6 +25,21 @@
 
 class Position;
 
+#ifdef Beth
+#define PreEvalFileDefaultName     "harmon.bin"
+#elif defined (NiNu)
+#define PreEvalFileDefaultName     "ninu.bin"
+#elif defined (EvalNu)
+#define PreEvalFileDefaultName     "eval.bin"
+#endif
+#if defined (Weakfish)
+#define PreEvalFileDefaultName     "toga.bin"
+#endif
+#if defined (Noir)
+#define PreEvalFileDefaultName     "eval.bin"
+#endif
+
+
 namespace Eval {
 
   std::string trace(const Position& pos);
@@ -36,15 +51,8 @@ namespace Eval {
   // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
-#ifdef Beth
-#define EvalFileDefaultName     "harmon.bin"
-#elif  NiNu
-#define EvalFileDefaultName     "ninu.bin"
-#elif Weakfish
-#define EvalFileDefaultName     "toga.bin"
-#else
-#define EvalFileDefaultName     "eval.bin"
-#endif
+
+  #define EvalFileDefaultName  PreEvalFileDefaultName
 
   #define SHA256NET   "nn-62ef826d1a6d.nnue"
 

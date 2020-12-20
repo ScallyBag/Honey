@@ -73,16 +73,23 @@ endif
 ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
-
+NNET = EvalNu
 ##  Assign net for Build
-ifeq ($(BETH),yes)
+ifeq ($(Beth),yes)
   CXXFLAGS += -DBeth
-	ifeq ($(NINU),yes)
-	  CXXFLAGS += -DNiNu
-	  ifeq ($(TOGA),yes)
-	    CXXFLAGS += -DToga
-		endif
-  endif
+  NNET = Beth
+endif
+ifeq ($(NiNu),yes)
+  CXXFLAGS += -DNiNu
+  NNET = NiNu
+endif
+ifeq ($(Toga),yes)
+  CXXFLAGS += -DToga
+  NNET = Toga
+endif
+ifeq ($(EvalNu),yes)
+  CXXFLAGS += -DEvalNu
+  NNET = Eval
 endif
 
 ifeq ($(HONEY),yes)
@@ -113,8 +120,8 @@ ifeq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE  = $(NAME)-$(RELVERSION).exe
-			EXE2 = $(NAME)-$(RELVERSION)
+			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
+			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 			EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -165,13 +172,38 @@ ifneq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE  = $(NAME)-$(RELVERSION).exe
-			EXE2 = $(NAME)-$(RELVERSION)
+			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
+			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 		EXE = $(NAME)-$(RELVERSION)
 		endif
 	endif
 endif
+
+#ifeq ($(BETH),yes)
+#ifeq ($(HONEY),yes)
+#    NAME=$(PRE)Harmon$(SUF)
+#    CXXFLAGS += -DBeth
+#		ifeq ($(RELEASEVER),no)
+#			ifeq ($(TEST),no)
+#				ifeq ($(COMP),mingw)
+#					EXE  = $(NAME)-dev-$(DATE).exe
+#					EXE2 = $(NAME)-dev-$(DATE)
+#				else
+#					EXE = $(NAME)-dev-$(DATE)
+#				endif
+#			endif
+#			ifeq ($(TEST),yes)
+#							ifeq ($(COMP),mingw)
+#								EXE  = $(NAME)-$(TESTv1)-$(TESTv2).exe
+#								EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
+#							else
+#								EXE = $(NAME)-$(TESTv1)-$(TESTv2)
+#							endif
+#			endif
+#		endif
+#endif
+#endif
 
 ### Installation dir definitions
 PREFIX = /opt/local
@@ -180,24 +212,25 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq  ($(WEAK),yes)
-PGOBENCH  = ./$(EXE) bench 16 1 13 true eval.bin
-PGOBENCH2  = ./$(EXE) bench 16 2 13 true eval.bin
+PGOBENCH  = ./$(EXE) bench 16 1 13 true
+PGOBENCH2  = ./$(EXE) bench 16 2 13 true
 endif
 ifeq  ($(NOIR),yes)
-PGOBENCH = ./$(EXE) bench 16 1 13 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 13 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 13 true
+PGOBENCH2 = ./$(EXE) bench 16 2 13 true
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
+
 ifeq  ($(HONEY),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eval.bin
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true eval.bin
+PGOBENCH = ./$(EXE) bench 16 1 15 true eva
+PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
 ifeq  ($(RASPBERRY),Pi)
 PGOBENCH = ./$(EXE) bench 16 1 8 true eval.bin
@@ -1151,83 +1184,6 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 09/17/2020:
+### Based on commits through 12/19/2020:
 ### ======================================================
-### Black-Diamond-12.bench:Nodes searched  : 18570126
-### Black-Diamond-12.bench:Nodes/second    : 1915235
-### Black-Diamond-12-60_Cores.bench:Nodes searched  : 2062644561
-### Based on commits through 11/15/2020:
-### ======================================================
-### Black-Diamond-12-R2-07.bench:Nodes searched  : 25908901
-### Black-Diamond-12-R2-07.bench:Nodes/second    : 2013280
-### Black-Diamond-12-R2-07-60_Cores.bench:Nodes searched  : 1075677071
-### Black-Diamond-12-R2-07-60_Cores.bench:Nodes/second    : 83025k
-### Bluefish-12-R2-07.bench:Nodes searched  : 13415821
-### Bluefish-12-R2-07.bench:Nodes/second    : 2037021
-### Bluefish-12-R2-07-60_Cores.bench:Nodes searched  : 829995273
-### Bluefish-12-R2-07-60_Cores.bench:Nodes/second    : 104362k
-### Honey-12-R2-07.bench:Nodes searched  : 12071817
-### Honey-12-R2-07.bench:Nodes/second    : 2028876
-### Honey-12-R2-07-60_Cores.bench:Nodes searched  : 735783256
-### Honey-12-R2-07-60_Cores.bench:Nodes/second    : 102591k
-### Oki-Maguro-12-R2-07.bench:Nodes searched  : 10236029
-### Oki-Maguro-12-R2-07.bench:Nodes/second    : 2046387
-### Oki-Maguro-12-R2-07-60_Cores.bench:Nodes searched  : 622681146
-### Oki-Maguro-12-R2-07-60_Cores.bench:Nodes/second    : 102347k
 ### ======================================================

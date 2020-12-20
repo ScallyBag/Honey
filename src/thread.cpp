@@ -64,6 +64,9 @@ void Thread::clear() {
 
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
+#ifdef Noir
+  staticHistory.fill(0);
+#endif
   lowPlyHistory.fill(0);
   captureHistory.fill(0);
 

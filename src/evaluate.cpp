@@ -58,6 +58,11 @@ using namespace Eval::NNUE;
 namespace Eval {
 
   bool useNNUE;
+  //bool nnue_tempo;
+  //int nnue_scale;
+  //Value NNUEThreshold1, NNUEThreshold2;
+  //bool playNNUE = true;
+
   string eval_file_loaded = "None";
 
   /// NNUE::init() tries to load a nnue network at startup time, or when the engine
@@ -73,6 +78,13 @@ namespace Eval {
     useNNUE = Options["UseNN"];
     if (!useNNUE)
         return;
+
+    //nnue_tempo = Options["NNUE_Tempo"];
+    //nnue_scale = Options["NNUE_Scale"];
+    //int temp = Options["NNUE_Threshold1"];
+    //NNUEThreshold1 = Value(temp);
+    //temp = Options["NNUE_Threshold2"];
+    //NNUEThreshold2 = Value(temp);
 
     string eval_file = string(Options["EvalFile"]);
 
@@ -1053,7 +1065,8 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&](){
          int mat = pos.non_pawn_material() + PawnValueMg * pos.count<PAWN>();
-         return NNUE::evaluate(pos) * (679 + mat / 32) / 1024 + Tempo;
+          return NNUE::evaluate(pos) * (679 + mat / 32) / 1024 + Tempo;
+         //return NNUE::evaluate(pos) * ((679 + mat / 32) / 1024 * Eval::nnue_scale / 100) + (Eval::nnue_tempo?Tempo:0);
       };
 
       // If there is PSQ imbalance use classical eval, with small probability if it is small
@@ -1065,6 +1078,8 @@ Value Eval::evaluate(const Position& pos) {
       // Use classical evaluation for really low piece endgames.
       // The most critical case is a bishop + A/H file pawn vs naked king draw.
       bool strongClassical = pos.non_pawn_material() < 2 * RookValueMg && pos.count<PAWN>() < 2;
+      //if (strongClassical)  playNNUE = false;
+
 
       v = classical || strongClassical ? Evaluation<NO_TRACE>(pos).value() : adjusted_NNUE();
 
@@ -1133,6 +1148,7 @@ std::string Eval::trace(const Position& pos) {
 
   ss << "\nClassical evaluation: " << to_cp(v) << " (white side)\n";
 
+  //if (Eval::useNNUE || playNNUE)
   if (Eval::useNNUE)
   {
       v = NNUE::evaluate(pos);

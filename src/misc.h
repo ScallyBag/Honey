@@ -163,6 +163,7 @@ namespace FontColor {
        return os << "\033[40m\033[1;92m";  //green
     }
 #ifdef Stockfish
+#ifndef Beth
   template < class CharT, class Traits >
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
@@ -170,7 +171,9 @@ namespace FontColor {
      return os << "\033[40m\033[1;92m";  //green
   }
 #endif
+#endif
 #ifdef Sullivan
+#ifndef Beth
   template < class CharT, class Traits >
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
@@ -178,13 +181,16 @@ namespace FontColor {
      return os << "\033[40m\033[1;93m";  //yellow
   }
 #endif
+#endif
 #ifdef Blau
+#ifndef Beth
   template < class CharT, class Traits >
   constexpr
   std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
   {
-     return os << "\033[1;106m\033[1;94m";  //blue & cyan
+     return os << "\033[1;106m\033[1;94m";  //blue & v
   }
+#endif
 #endif
 #ifdef Weakfish
   template < class CharT, class Traits >
@@ -202,6 +208,15 @@ namespace FontColor {
      return os << "\033[1;107m\033[1;90m";  //black
   }
 #endif
+#ifdef Beth
+  template < class CharT, class Traits >
+  constexpr
+  std::basic_ostream< CharT, Traits > & engine( std::basic_ostream< CharT, Traits > &os )
+  {
+     return os << "\033[40m\033[38;5;206m";  //pink
+  }
+#endif
+
   template < class CharT, class Traits >
   constexpr
   std::basic_ostream< CharT, Traits > & blue( std::basic_ostream< CharT, Traits > &os )
