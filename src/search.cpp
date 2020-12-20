@@ -754,15 +754,18 @@ namespace {
             ss->staticEval = eval = -(ss-1)->staticEval + 2 * Tempo;
     }
 
+    ss->staticEval = eval = eval * std::max(0, (100 - pos.rule50_count())) / 100;
+
     if (gameCycle)
         ss->staticEval = eval = eval * std::max(0, (100 - pos.rule50_count())) / 100;
 
     if (!ss->ttHit)
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
 
-    if ((ss-1)->moveCount > 1 && is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture && depth < 7)
+    // Use static evaluation difference to improve quiet move ordering
+    if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
     {
-        int bonus = std::clamp(- (depth+1) * 2 * int((ss-1)->staticEval + ss->staticEval - 2 * Tempo), -1000, 1000);
+        int bonus = std::clamp(-depth * 4 * int((ss-1)->staticEval + ss->staticEval - 2 * Tempo), -1000, 1000);
         thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
     }
 
@@ -1179,8 +1182,8 @@ namespace {
               r -= 1;
 
           // Increase reduction at root and non-PV nodes when the best move does not change frequently
-          if ((rootNode || !PvNode) && thisThread->rootDepth > 10 && thisThread->bestMoveChanges <= 2)
-              r++;  //mfb
+          /*if ((rootNode || !PvNode) && thisThread->rootDepth > 10 && thisThread->bestMoveChanges <= 2)
+              r++;*/
 
           // More reductions for late moves if position was not in previous PV
           if (moveCountPruning && !formerPv)
@@ -1519,6 +1522,8 @@ namespace {
             (ss-1)->currentMove != MOVE_NULL ? evaluate(pos)
                                              : -(ss-1)->staticEval + 2 * Tempo;
 
+        ss->staticEval = bestValue = bestValue * std::max(0, (100 - pos.rule50_count())) / 100;
+
         if (gameCycle)
             ss->staticEval = bestValue = bestValue * std::max(0, (100 - pos.rule50_count())) / 100;
 
@@ -1611,6 +1616,7 @@ namespace {
 
       // CounterMove based pruning
       if (  !captureOrPromotion
+          && !PvNode
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
           && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
           && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)
