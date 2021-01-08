@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -185,17 +185,17 @@ enum Value : int {
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
 //Code idea below by Ed Schröder
-#if defined (Weakfish)
-  #define PVM 80/100
-  #define PVE 80/100
-  #define NVM 70/100
-  #define NVE 70/100
-  #define BVM 60/100
-  #define BVE 60/100
-  #define RVM 50/100
-  #define RVE 50/100
-  #define QVM 40/100
-  #define QVE 40/100
+#ifdef Harmon
+#define PVM 130/100
+#define PVE 130/100
+#define NVM 130/100
+#define NVE 130/100
+#define BVM 130/100
+#define BVE 130/100
+#define RVM 130/100
+#define RVE 130/100
+#define QVM 130/100
+#define QVE 130/100
 
 
 #elif (defined Blau)

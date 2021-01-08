@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -118,10 +118,7 @@ void init(OptionsMap& o) {
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var Centipawn"
                                            ,"Centipawn");
-#ifdef Weakfish
-    o["Level"]                    << Option(10, 1, 20);
-#endif
-#ifndef Weakfish
+
 #if defined (Sullivan) || (Blau)
     o["Deep Pro Analysis"]        << Option(false);
     o["Pro Analysis"]             << Option(false);
@@ -130,7 +127,6 @@ void init(OptionsMap& o) {
     o["Deep Pro Analysis"]        << Option(false);
     o["Pro Analysis"]             << Option(false);
     o["Pro Value"]                << Option( 0, 0, 63);
-#endif
 #endif
     o["Defensive"]                << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
@@ -147,10 +143,12 @@ void init(OptionsMap& o) {
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
-    o["UCI_LimitStrength"]        << Option(false);
-    o["Slow Play"]                << Option(false);
+
 
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*///
+
+    o["UCI_LimitStrength"]        << Option(false);
+    o["Slow Play"]                << Option(false);
     o["UCI_Elo"]                  << Option(1750, 1000, 2900);
     o["FIDE_Ratings"]             << Option(true);
     // A separate weaker play level from the predefined levels below. The difference
@@ -179,7 +177,7 @@ void init(OptionsMap& o) {
     o["Capablanca"]               << Option(false);
     o["Petrosian"]                << Option(false);
 
-#if defined (Blau) || (Weakfish)
+#if defined (Blau)
     o["NNUE_Scale"]            << Option(125, 250, 600, on_use_NNUE);
     o["NNUE_Threshold1"]       << Option(550, 8000, 40000, on_use_NNUE);
     o["NNUE_Threshold2"]       << Option(150, 2000, 40000, on_use_NNUE);

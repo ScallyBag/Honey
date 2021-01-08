@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -48,10 +48,6 @@ namespace Search {
   bool ctempt;
   bool defensive;
   bool dpa;
-#ifdef Weakfish
-  bool weakFish = true;
-  int  weakLevel;
-#endif
   bool profound=false;
   int benchKnps;
   int dct;
@@ -87,15 +83,10 @@ namespace {
   constexpr uint64_t ttHitAverageWindow     = 4096;
   constexpr uint64_t ttHitAverageResolution = 1024;
 #endif
-  // Razor and futility margins
-#ifndef Noir
-  constexpr int RazorMargin = 510;
-#endif
-#ifndef Weakfish
+  // Futility margin
   Value futility_margin(Depth d, bool improving) {
     return Value(234 * (d - improving));
   }
-#endif
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
@@ -110,7 +101,7 @@ namespace {
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth d) {
-    return d > 13 ? 29 : 17 * d * d + 134 * d - 134;
+    return d > 14 ? 29 : 8 * d * d + 224 * d - 215;
   }
 #ifndef Noir
   // Add a small random component to draw evaluations to avoid 3fold-blindness
@@ -257,9 +248,7 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
-#ifdef Weakfish
-    ponder = false;
-#endif
+
     PRNG rng(now());
 
     adaptive            = Options["Adaptive_Play"];
@@ -270,16 +259,11 @@ void MainThread::search() {
     uci_elo             = (Options["UCI_Elo"]);
     uci_sleep           = Options["Slow Play"];
     mpv                 = Options["MultiPV"];
-#ifndef Weakfish
+
     proValue            = Options["Pro Value"];
     profound            = Options["Pro Analysis"];
     dpa                 = Options["Deep Pro Analysis"];
-#else
-    proValue            = 0;
-    profound            = 0;
-    dpa                 = 0;
-    weakLevel           = Options["Level"] - 1 ;
-#endif
+
 
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
@@ -392,11 +376,6 @@ skipLevels:
          if (limitStrength)
          {  //note varietry strength is capped around ~2150-2200 due to its robustness
              benchKnps = 1000 * (Options["Bench_KNPS"]);
-#ifdef Weakfish
-             adaptive  = true;
-             weakLevel = 100 * weakLevel;
-             if (weakFish) uci_elo = 1000 + weakLevel;
-#endif
              int random = (rand() % 20 - 10);
              uci_elo = uci_elo + random;
              //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
@@ -654,9 +633,6 @@ void Thread::search() {
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
   size_t multiPV = size_t(Options["MultiPV"]);
-#ifdef Weakfish
-  if (weakFish)  multiPV = 1;
-#endif
 
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
@@ -821,7 +797,7 @@ void Thread::search() {
                   beta = std::min(bestValue + delta, VALUE_INFINITE);
                   ++failedHighCnt;
               }
-#if defined (Stockfish) || (Weakfish)
+#if defined (Stockfish)
               else
                   break;
 #else
@@ -981,11 +957,7 @@ namespace {
     Key posKey;
     Move ttMove, move, excludedMove, bestMove;
     Depth extension, newDepth;
-#ifdef Weakfish
-    Value bestValue, value, ttValue, eval, maxValue;
-#else
     Value bestValue, value, ttValue, eval, maxValue, probCutBeta;
-#endif
     bool formerPv, givesCheck, improving, didLMR, priorCapture;
     bool captureOrPromotion, doFullDepthSearch, moveCountPruning,
          ttCapture, singularQuietLMR;
@@ -1199,7 +1171,7 @@ namespace {
         // Save static evaluation into transposition table
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
-#ifndef Weakfish  // no search reductons in Weakfish
+
     updateShashinValues(pos,eval);//from ShashChess
     // Use static evaluation difference to improve quiet move ordering
     if (is_ok((ss-1)->currentMove) && !(ss-1)->inCheck && !priorCapture)
@@ -1207,14 +1179,6 @@ namespace {
         int bonus = std::clamp(-depth * 4 * int((ss-1)->staticEval + ss->staticEval - 2 * Tempo), -1000, 1000);
         thisThread->mainHistory[~us][from_to((ss-1)->currentMove)] << bonus;
     }
-
-    // Step 7. Razoring (~1 Elo)
-    if (   !rootNode // The required rootNode PV handling is not available in qsearch
-        &&  depth == 1
-        &&  !(pos.this_thread()->profound_test)
-        && (pos.this_thread()->shashinQuiescentCapablancaMaxScore)
-        &&  eval <= alpha - RazorMargin)
-        return qsearch<NT>(pos, ss, alpha, beta);
 
     // Set up improving flag that is used in various pruning heuristics
     // We define position as improving if static evaluation of position is better
@@ -1224,23 +1188,21 @@ namespace {
                ? ss->staticEval > (ss-4)->staticEval || (ss-4)->staticEval == VALUE_NONE
                : ss->staticEval > (ss-2)->staticEval;
 
-    // Step 8. Futility pruning: child node (~50 Elo)
+    // Step 7. Futility pruning: child node (~50 Elo)
     if (   !PvNode
-        &&  depth < 8
+        &&  depth < 9
         &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
         return eval;
-#endif // Weakfish
-    // Step 9. Null move search with verification search (~40 Elo)
+
+    // Step 8.. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22977
         &&  eval >= beta
         &&  eval >= ss->staticEval
-#ifndef Weakfish
         &&  ss->staticEval >= beta - 30 * depth - 28 * improving + 84 * ss->ttPv + 168
-#endif
         && !excludedMove
 #ifdef Stockfish
         &&  pos.non_pawn_material(us)
@@ -1297,11 +1259,10 @@ namespace {
                 return nullValue;
         }
     }
-#ifndef Weakfish // no reductions in Weakfish
 
-    probCutBeta = beta + 183 - 49 * improving;
+    probCutBeta = beta + 194 - 49 * improving;
 
-    // Step 10. ProbCut (~10 Elo)
+    // Step 9. ProbCut (~10 Elo)
     // If we have a good enough capture and a reduced search returns a value
     // much above beta, we can (almost) safely prune the previous move.
     if (   !PvNode
@@ -1378,9 +1339,8 @@ namespace {
             }
          ss->ttPv = ttPv;
     }
-#endif  //ifndef Weakfish
 
-    // Step 11. If the position is not in TT, decrease depth by 2
+    // Step 10. If the position is not in TT, decrease depth by 2
     if (   PvNode
         && depth >= 6
         && !ttMove)
@@ -1409,7 +1369,7 @@ moves_loop: // When in check, search starts from here
     // Mark this node as being searched
     ThreadHolding th(thisThread, posKey, ss->ply);
 
-    // Step 12. Loop through all pseudo-legal moves until no moves remain
+    // Step 11. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
     while ((move = mp.next_move(moveCountPruning)) != MOVE_NONE)
     {
@@ -1446,7 +1406,7 @@ moves_loop: // When in check, search starts from here
 
       // Calculate new depth for this move
       newDepth = depth - 1;
-#ifndef Weakfish
+
       // Step 13. Pruning at shallow depth (~200 Elo)
       if (  !rootNode
           && pos.non_pawn_material(us)
@@ -1470,11 +1430,11 @@ moves_loop: // When in check, search starts from here
               // Futility pruning: parent node (~5 Elo)
               if (   lmrDepth < ((pos.this_thread()->shashinQuiescentCapablancaMiddleHighScore)? 7:3) //lmrDepth patch
                   && !ss->inCheck
-                  && ss->staticEval + 266 + 170 * lmrDepth <= alpha
+                  && ss->staticEval + 254 + 159 * lmrDepth <= alpha
                   &&  (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
                     + (*contHist[3])[movedPiece][to_sq(move)]
-                    + (*contHist[5])[movedPiece][to_sq(move)] / 2 < 27376)
+                    + (*contHist[5])[movedPiece][to_sq(move)] / 2 < 26394)
                   continue;
 
               // Prune moves with negative SEE (~20 Elo)
@@ -1496,11 +1456,10 @@ moves_loop: // When in check, search starts from here
 	                //from Shashin end
 
               // See based pruning
-              if (!pos.see_ge(move, Value(-213) * depth)) // (~25 Elo)
+              if (!pos.see_ge(move, Value(-218) * depth)) // (~25 Elo)
                   continue;
           }
       }
-#endif
       // Step 14. Extensions (~75 Elo)
 
       // Singular extension search (~70 Elo). If all moves but one fail low on a
@@ -1573,12 +1532,6 @@ moves_loop: // When in check, search starts from here
           && popcount(pos.pieces(us) & ~pos.pieces(PAWN) & (to_sq(move) & KingSide ? KingSide : QueenSide)) <= 2)
           extension = 1;
 
-      // Late irreversible move extension
-      if (   move == ttMove
-          && pos.rule50_count() > 80
-          && (captureOrPromotion || type_of(movedPiece) == PAWN))
-          extension = 2;
-
       // Add extension to new depth
       newDepth += extension;
 
@@ -1615,16 +1568,14 @@ moves_loop: // When in check, search starts from here
         &&  moveCount > 1 + 2 * rootNode + 2 * (PvNode && abs(bestValue) < 2)
 #ifndef Stockfish
 #ifndef Noir
-#ifndef Weakfish
           && (!rootNode || thisThread->best_move_count(move) == 0)
-#endif
 #endif
 #endif
           && (  !captureOrPromotion
               || moveCountPruning
               || ss->staticEval + PieceValue[EG][pos.captured_piece()] <= alpha
               || cutNode
-              || (!PvNode && !formerPv)
+              || (!PvNode && !formerPv && thisThread->captureHistory[movedPiece][to_sq(move)][type_of(pos.captured_piece())] < 4506)
               || thisThread->ttHitAverage < 432 * TtHitAverageResolution * TtHitAverageWindow / 1024))
       {
           Depth r = reduction(improving, depth, moveCount);

@@ -1,5 +1,5 @@
 ### Honey, a UCI chess playing engine derived from Glaurung 2.1
-### Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+### Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
 ### Honey is free software: you can redistribute it and/or modify
 ### it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ DATE2=$(shell date +"%m%d")
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
 RELVERSION = 12-R2-09
-CORES = 60
+CORES = 64
 
 ### TEST versions, enter yes and labels below to build named test exe's
 TEST = no
@@ -73,23 +73,15 @@ endif
 ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
-NNET = EvalNu
-##  Assign net for Build
-ifeq ($(Beth),yes)
-  CXXFLAGS += -DBeth
-  NNET = Beth
-endif
+
 ifeq ($(NiNu),yes)
   CXXFLAGS += -DNiNu
   NNET = NiNu
-endif
-ifeq ($(Toga),yes)
-  CXXFLAGS += -DToga
-  NNET = Toga
-endif
-ifeq ($(EvalNu),yes)
+  NETBIN = ninu.bin
+  else ifeq ($(EvalNu),yes)
   CXXFLAGS += -DEvalNu
   NNET = Eval
+  NETBIN = eval.bin
 endif
 
 ifeq ($(HONEY),yes)
@@ -138,14 +130,14 @@ ifneq ($(HONEY),yes)
 		ifeq ($(BLAU),yes)
 			CXXFLAGS += -DBlau
 			PRE=Blue
-		else ifeq ($(WEAK),yes)
-			CXXFLAGS += -DWeakfish
-			PRE=Weak
+		else ifeq ($(BETH),yes)
+			CXXFLAGS += -DHarmon
+			NAME=Harmon$(SUF)
 		else
 			PRE=Stock
 			STOCKFISH = yes
+			NAME=$(PRE)fish$(SUF)
 		endif
-	NAME=$(PRE)fish$(SUF)
   endif
 	ifeq ($(STOCKFISH),yes)
 		NAME=Oki-Maguro
@@ -211,7 +203,7 @@ PREFIX = /opt/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
-ifeq  ($(WEAK),yes)
+ifeq  ($(BETH),yes)
 PGOBENCH  = ./$(EXE) bench 16 1 13 true
 PGOBENCH2  = ./$(EXE) bench 16 2 13 true
 endif
@@ -229,7 +221,7 @@ PGOBENCH = ./$(EXE) bench 16 1 15 true
 PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
 ifeq  ($(BLAU),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true eva
+PGOBENCH = ./$(EXE) bench 16 1 15 true
 PGOBENCH2 = ./$(EXE) bench 16 2 15 true
 endif
 ifeq  ($(RASPBERRY),Pi)
@@ -995,8 +987,8 @@ else
 #	strip $(EXE)
 endif
 ifeq ($(COMP),mingw)
-	$(EXE) bench 16 1 13 true >/dev/null 2> $(EXE2).bench
-	$(EXE) bench 2048 $(CORES) 16 true >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench
+	$(EXE) bench 16 1 13 true $(NETBIN) >/dev/null 2> $(EXE2).bench
+	$(EXE) bench 2048 $(CORES) 16 true $(NETBIN) >/dev/null 2> $(EXE2)-$(CORES)_Cores.bench
 endif
 	rm -f *.o syzygy/*.o llvm-profdata
 	#	touch * syzygy/*
@@ -1184,6 +1176,63 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 12/19/2020:
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+### Based on commits through 01/07/2021:
 ### ======================================================
+### Black-Diamond-12-R2-09-Eval.bench:Nodes searched  : 26921803
+### Black-Diamond-12-R2-09-Eval.bench:Nodes/second    : 2017218
+### Black-Diamond-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1037856866
+### Black-Diamond-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 58546k
+### Black-Diamond-12-R2-09-NiNu.bench:Nodes searched  : 34273090
+### Black-Diamond-12-R2-09-NiNu.bench:Nodes/second    : 1933056
+### Black-Diamond-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 1116855098
+### Black-Diamond-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 56785k
+### Harmon-12-R2-09-.bench:Nodes searched  : 12309729
+### Harmon-12-R2-09-.bench:Nodes/second    : 2178327
+### Harmon-12-R2-09--64_Cores.bench:Nodes searched  : 864813268
+### Harmon-12-R2-09--64_Cores.bench:Nodes/second    : 109331k
+### Harmon-12-R2-09-Eval.bench:Nodes searched  : 12309729
+### Harmon-12-R2-09-Eval.bench:Nodes/second    : 2182189
+### Harmon-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 814293203
+### Harmon-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 99413k
+### Harmon-12-R2-09-NiNu.bench:Nodes searched  : 11440459
+### Harmon-12-R2-09-NiNu.bench:Nodes/second    : 2075554
+### Harmon-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 747160405
+### Harmon-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 99277k
+### Honey-12-R2-09-Eval.bench:Nodes searched  : 12499897
+### Honey-12-R2-09-Eval.bench:Nodes/second    : 1913933
+### Honey-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 805508150
+### Honey-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 97696k
+### Honey-12-R2-09-NiNu.bench:Nodes searched  : 12022565
+### Honey-12-R2-09-NiNu.bench:Nodes/second    : 1927310
+### Honey-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 755701123
+### Honey-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 93204k
+### Oki-Maguro-12-R2-09-Eval.bench:Nodes searched  : 10458599
+### Oki-Maguro-12-R2-09-Eval.bench:Nodes/second    : 2005099
+### Oki-Maguro-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 759989094
+### Oki-Maguro-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 93687k
+### Oki-Maguro-12-R2-09-NiNu.bench:Nodes searched  : 12385728
+### Oki-Maguro-12-R2-09-NiNu.bench:Nodes/second    : 2010670
+### Oki-Maguro-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 557410163
+### Oki-Maguro-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 98274k
 ### ======================================================

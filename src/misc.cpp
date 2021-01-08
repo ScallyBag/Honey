@@ -148,7 +148,7 @@ public:
 } // namespace
 
 #ifdef Blau
-#ifndef Beth
+#ifndef Harmon
 const std::string splash() {
 
      stringstream sp;
@@ -190,7 +190,7 @@ const std::string splash() {
 #endif
 
 #ifdef Stockfish
-#ifndef Beth
+#ifndef Harmon
 const std::string splash() {
 
      stringstream sp;
@@ -211,7 +211,7 @@ const std::string splash() {
 #endif
 #endif
 #ifdef Sullivan
-#ifndef Beth
+#ifndef Harmon
 const std::string splash() {
 
      stringstream sp;
@@ -226,48 +226,32 @@ const std::string splash() {
      sp <<  "     #     # #    # #  # # #         #      \\  .-'''-.  /     #     #    \n";
      sp <<  "     #     # #    # #   ## #         #       '-\\__Y__/-'      #    #     \n";
      sp <<  "     #     #  ####  #    # ######    #          `---`       #####  ##### \n\n";
-
-
-  return sp.str();
-}
-#endif
-#endif
-#ifdef Weakfish
-
-const std::string splash() {
-
-     stringstream sp;
-
-     sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                  \n";
-     sp <<  "                                                           |\\/\\/\\/|               \n";
-     sp <<  "    #      #                                      #    #   |      |    #     ###  \n";
-     sp <<  "    #      # ######   ##   #    # ###### #  ####  #    #   |  /  \\|   ##    #   # \n";
-     sp <<  "    #      # #       #  #  #   #  #      # #      #    #   | (-)(-)  # #    #  #  \n";
-     sp <<  "    #   #  # #####  #    # ####   #####  #  ####  ######  c      _)    #      #   \n";
-     sp <<  "    #   #  # #      ###### #  #   #      #      # #    #   | ,___|     #     #    \n";
-     sp <<  "    #   #  # #      #    # #   #  #      # #    # #    #   |   /       #    #     \n";
-     sp <<  "    ### ###  ###### #    # #    # #      #  ####  #    #  /____\\     #####  ##### \n\n";
+     sp <<  "                                                                                     \n";
+     sp <<  "                                                                                     \n";
 
   return sp.str();
 }
 #endif
-
-#ifdef Beth
+#endif
+#ifdef Harmon
 
 const std::string splash() {
 
      stringstream sp;
      sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                  \n";
-     sp <<  "                                                                                  \n";
-     sp <<  "    #     #                             #     #   //\"\"\"\\\\     #     ###           \n";
-     sp <<  "    #     #   ##   #####  #    #  ####  ##    #  //^   ^\\\\   ##    #   #          \n";
-     sp <<  "    #     #  #  #  #    # ##  ## #    # # #   #   |O   O|   # #    #  #           \n";
-     sp <<  "    ####### #    # #    # # ## # #    # #  #  #   !  ~  !     #      #            \n";
-     sp <<  "    #     # ###### #####  #    # #    # #   # #    \\ O /      #     #             \n";
-     sp <<  "    #     # #    # #   #  #    # #    # #    ##   __| |__     #    #              \n";
-     sp <<  "    #     # #    # #    # #    #  ####  #     #  /       \\  #####  #####          \n\n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "    #     #                             #     #          //\"\"\"\\\\            #     ###           \n";
+     sp <<  "    #     #   ##   #####  #    #  ####  ##    #         //^   ^\\\\          ##    #   #          \n";
+     sp <<  "    #     #  #  #  #    # ##  ## #    # # #   #         ||O   O||         # #    #  #           \n";
+     sp <<  "    ####### #    # #    # # ## # #    # #  #  #         !|  ~  |!           #      #            \n";
+     sp <<  "    #     # ###### #####  #    # #    # #   # #           \\ O /             #     #             \n";
+     sp <<  "    #     # #    # #   #  #    # #    # #    ##          __| |__            #    #              \n";
+     sp <<  "    #     # #    # #    # #    #  ####  #     #         /       \\         #####  #####          \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
 
 
   return sp.str();
@@ -292,8 +276,8 @@ const string engine_info(bool to_uci) {
 	  ss <<  "    Black Diamond " << Version << Suffix << setfill('0');
 #elif Stockfish
     ss <<  "    Oki Maguro "  << Version << Suffix << setfill('0');
-#elif Weakfish
-    ss <<  "    Weakfish "    << Version << Suffix << setfill('0');
+#elif Harmon
+    ss <<  "    Harmon "    << Version << Suffix << setfill('0');
 #elif Sullivan
     ss <<  "    Honey "       << Version << Suffix << setfill('0');
 #endif
@@ -312,7 +296,7 @@ const string engine_info(bool to_uci) {
     }
 #endif
        ss << (to_uci  ? "\nid author ": " by ")
-          << "Poppy & the Stockfish Developers as noted in the AUTHORS file" << FontColor::reset ;
+          << "The Stockfish Developers as noted in the AUTHORS file" << FontColor::reset ;
 #ifdef Pi
 	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally\n") << FontColor::reset ;
 #endif

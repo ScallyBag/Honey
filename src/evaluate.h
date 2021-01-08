@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -25,19 +25,8 @@
 
 class Position;
 
-#ifdef Beth
-#define PreEvalFileDefaultName     "harmon.bin"
-#elif defined (NiNu)
-#define PreEvalFileDefaultName     "ninu.bin"
-#elif defined (EvalNu)
-#define PreEvalFileDefaultName     "eval.bin"
-#endif
-#if defined (Weakfish)
-#define PreEvalFileDefaultName     "toga.bin"
-#endif
-#if defined (Noir)
-#define PreEvalFileDefaultName     "eval.bin"
-#endif
+
+
 
 
 namespace Eval {
@@ -52,9 +41,15 @@ namespace Eval {
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
 
-  #define EvalFileDefaultName  PreEvalFileDefaultName
+  #ifdef NiNu
+  #define EvalFileDefaultName     "ninu.bin"
+  #else
+  #define EvalFileDefaultName     "eval.bin"
+  #endif
 
-  #define SHA256NET   "nn-62ef826d1a6d.nnue"
+//  #define   PreEvalFileDefaultName
+
+  #define SHA256NET   "nn-62ef826d1a6d.nnue" // eval.bin
 
   namespace NNUE {
 

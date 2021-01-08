@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ struct RootMove {
   Value previousScore = -VALUE_INFINITE;
   int selDepth = 0;
   int tbRank = 0;
-#if defined (Sullivan) || (Blau) || (Noir)
+#if defined (Sullivan) || (Blau) || (Noir) || (Harmon)
   int best_move_count = 0;
 #endif
   Value tbScore;
