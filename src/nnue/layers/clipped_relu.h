@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -74,18 +74,17 @@ namespace Eval::NNUE::Layers {
       const auto out = reinterpret_cast<__m256i*>(output);
       for (IndexType i = 0; i < kNumChunks; ++i) {
         const __m256i words0 = _mm256_srai_epi16(_mm256_packs_epi32(
-          _mm256_load_si256(&in[i * 4 + 0]),
-          _mm256_load_si256(&in[i * 4 + 1])), kWeightScaleBits);
+            _mm256_load_si256(&in[i * 4 + 0]),
+            _mm256_load_si256(&in[i * 4 + 1])), kWeightScaleBits);
         const __m256i words1 = _mm256_srai_epi16(_mm256_packs_epi32(
-          _mm256_load_si256(&in[i * 4 + 2]),
-          _mm256_load_si256(&in[i * 4 + 3])), kWeightScaleBits);
-        _mm256_store_si256(
-            &out[i], _mm256_permutevar8x32_epi32(_mm256_max_epi8(
+            _mm256_load_si256(&in[i * 4 + 2]),
+            _mm256_load_si256(&in[i * 4 + 3])), kWeightScaleBits);
+        _mm256_store_si256(&out[i], _mm256_permutevar8x32_epi32(_mm256_max_epi8(
             _mm256_packs_epi16(words0, words1), kZero), kOffsets));
       }
       constexpr IndexType kStart = kNumChunks * kSimdWidth;
 
-  #elif defined(USE_SSSE3)
+  #elif defined(USE_SSE2)
       constexpr IndexType kNumChunks = kInputDimensions / kSimdWidth;
 
   #ifdef USE_SSE41
@@ -114,6 +113,24 @@ namespace Eval::NNUE::Layers {
 
         );
       }
+      constexpr IndexType kStart = kNumChunks * kSimdWidth;
+
+  #elif defined(USE_MMX)
+      constexpr IndexType kNumChunks = kInputDimensions / kSimdWidth;
+      const __m64 k0x80s = _mm_set1_pi8(-128);
+      const auto in = reinterpret_cast<const __m64*>(input);
+      const auto out = reinterpret_cast<__m64*>(output);
+      for (IndexType i = 0; i < kNumChunks; ++i) {
+        const __m64 words0 = _mm_srai_pi16(
+            _mm_packs_pi32(in[i * 4 + 0], in[i * 4 + 1]),
+            kWeightScaleBits);
+        const __m64 words1 = _mm_srai_pi16(
+            _mm_packs_pi32(in[i * 4 + 2], in[i * 4 + 3]),
+            kWeightScaleBits);
+        const __m64 packedbytes = _mm_packs_pi16(words0, words1);
+        out[i] = _mm_subs_pi8(_mm_adds_pi8(packedbytes, k0x80s), k0x80s);
+      }
+      _mm_empty();
       constexpr IndexType kStart = kNumChunks * kSimdWidth;
 
   #elif defined(USE_NEON)

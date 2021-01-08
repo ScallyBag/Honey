@@ -1,16 +1,16 @@
 /*
-Honey, a UCI chess playing engine derived from Glaurung 2.1
-Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-Honey is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Honey is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Honey is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Honey is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -92,7 +92,7 @@ namespace {
     Position p;
     p.set(pos.fen(), Options["UCI_Chess960"], &states->back(), Threads.main());
 
-    Eval::verify_NNUE();
+    Eval::NNUE::verify();
 
     sync_cout << "\n" << Eval::trace(p) << sync_endl;
   }
@@ -143,6 +143,11 @@ void set(istringstream& is) {
         Options[name] = value;
         sync_cout << FontColor::engine << "Confirmation: "<< name << " set to " << value << FontColor::reset << sync_endl;
     }
+    else if (name == "50")
+    {
+      Options["Syzygy50MoveRule"] = {value};
+      sync_cout << FontColor::engine << "Confirmation: "<< "Syzygy50MoveRule" << " set to " << value << FontColor::reset << sync_endl;
+    }
     else if (name == "960")
     {
       Options["UCI_Chess960"] = {value};
@@ -172,7 +177,7 @@ void set(istringstream& is) {
       Options["UseNN"] = {value};
       sync_cout << FontColor::engine << "Confirmation: "<< "UseNN" << " set to " << value << FontColor::reset << sync_endl;
       if (Options["UseNN"])
-          sync_cout << "info string: NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+          sync_cout << "info string: NN evaluation using " << string(EvalFileDefaultName)  << " enabled." << sync_endl;
       else
           sync_cout << "info string: Classical evaluation enabled." << FontColor::reset << sync_endl;
     }
@@ -200,6 +205,11 @@ void set(istringstream& is) {
     Options["Tactical"] = {value};
     sync_cout << FontColor::engine << "Confirmation: "<< "Tactical" << " set to " << value << FontColor::reset << sync_endl;
     }
+    else if (name == "tal")
+    {
+    Options["Tal"] = {value};
+    sync_cout << FontColor::engine << "Confirmation: "<< "Tal" << " set to " << value << FontColor::reset << sync_endl;
+    }
     else if (name == "z")
     {
       Tablebases::init(value);
@@ -214,7 +224,8 @@ void set(istringstream& is) {
       sync_cout << FontColor::engine << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
       sync_cout << FontColor::reset << "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
       sync_cout << "\n Shortcuts:"  << sync_endl;
-      sync_cout << FontColor::engine << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
+      sync_cout << FontColor::engine << "    '50'  -> shortcut for 'Syzygy50MoveRule'"  <<  sync_endl;
+      sync_cout << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
       sync_cout << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
       sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
@@ -316,7 +327,7 @@ void set(istringstream& is) {
         if (token == "go" || token == "eval")
         {
 
-            cerr << FontColor::reset << "\nPosition: " << cnt++ << '/' << num << endl;
+            cerr << "\nPosition: " << cnt++ << '/' << num  << "\nFEN: " << pos.fen() << endl;
             if (token == "go")
             {
                lap_time_elapsed = now();
@@ -330,9 +341,9 @@ void set(istringstream& is) {
                else
                    cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
                if (Options["UseNN"])
-                   cerr << "NN evaluation using " << std::string(Options["EvalFile"]) << " enabled." << sync_endl;
+                   cerr << "NN evaluation using " << string(EvalFileDefaultName) << " enabled." << sync_endl;
                 else
-                   cerr << "Classical evaluation enabled." << FontColor::reset << sync_endl;
+                   cerr << "Classical evaluation enabled." <<  sync_endl;
             }
             else
                trace_eval(pos);
@@ -358,7 +369,7 @@ void set(istringstream& is) {
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
     dbg_print(); // Just before exiting
-
+    cerr << FontColor::reset  << endl;
     cerr << "\n================================="
          << "\nTotal time (ms) : " << elapsed
          << "\nNodes searched  : " << nodes << endl;
@@ -384,7 +395,7 @@ void set(istringstream& is) {
      double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
 
      // Transform eval to centipawns with limited range
-     double x = Utility::clamp(double(100 * v) / PawnValueEg, -2000.0, 2000.0);
+     double x = std::clamp(double(100 * v) / PawnValueEg, -2000.0, 2000.0);
 
      // Return win rate in per mille (rounded to nearest)
      return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
@@ -481,8 +492,10 @@ void UCI::loop(int argc, char* argv[]) {
       else if (token == "compiler") sync_cout << compiler_info() << sync_endl;
       else if (token == "c++") sync_cout << compiler_info() << sync_endl;
       else if (token == "")  {
-        Eval::init_NNUE();
-        Eval::verify_NNUE();
+        //Eval::init_NNUE();
+        Eval::NNUE::init();
+        //Eval::verify_NNUE();
+        Eval::NNUE::verify();
         sync_cout << sync_endl;
       }
       else
@@ -517,7 +530,7 @@ string UCI::value(Value v) {
         ss << "cp " << fixed << setprecision(0) << vs * vf;
         }
   else
-      ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+      ss  << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
   return ss.str();
 }
@@ -622,7 +635,7 @@ string UCI::value(Value v, Value v2) {
            ss << "cp " << fixed << setprecision(0) << vs * vf;
   }
   else
-       ss << FontColor::engine << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
+       ss  << "mate " << (v > 0 ? VALUE_MATE - v + 1 : -VALUE_MATE - v) / 2;
 
   return ss.str();
 }

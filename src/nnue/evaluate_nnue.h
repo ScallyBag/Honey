@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -41,7 +41,18 @@ namespace Eval::NNUE {
   };
 
   template <typename T>
+  struct LargePageDeleter {
+    void operator()(T* ptr) const {
+      ptr->~T();
+      aligned_large_pages_free(ptr);
+    }
+  };
+
+  template <typename T>
   using AlignedPtr = std::unique_ptr<T, AlignedDeleter<T>>;
+
+  template <typename T>
+  using LargePagePtr = std::unique_ptr<T, LargePageDeleter<T>>;
 
 }  // namespace Eval::NNUE
 

@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #include <fstream>
 #include <iostream>
 #include <istream>
@@ -27,7 +26,6 @@
 using namespace std;
 
 namespace {
-
 const vector<string> Defaults = {
   "setoption name UCI_Chess960 value false",
   "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
@@ -65,7 +63,6 @@ const vector<string> Defaults = {
   "r3k2r/3nnpbp/q2pp1p1/p7/Pp1PPPP1/4BNN1/1P5P/R2Q1RK1 w kq - 0 16",
   "3Qb1k1/1r2ppb1/pN1n2q1/Pp1Pp1Pr/4P2p/4BP2/4B1R1/1R5K b - - 11 40",
   "4k3/3q1r2/1N2r1b1/3ppN2/2nPP3/1B1R2n1/2R1Q3/3K4 w - - 5 1",
-#if defined (Sullivan) || (Blau)
   "8/1p2KP2/1p4q1/1Pp5/2P5/N1Pp1k2/3P4/1N6 b - - 76 40", //draw
 
   // 5-man positions
@@ -80,20 +77,6 @@ const vector<string> Defaults = {
   // 7-man position
   "8/4n3/8/2n5/kp1N2P1/8/8/3K4 b - - 0 1", // Mate
 
-#else
-  // 5-man positions
-  "8/8/8/8/5kp1/P7/8/1K1N4 w - - 0 1",     // Kc2 - mate
-  "8/8/8/5N2/8/p7/8/2NK3k w - - 0 1",      // Na2 - mate
-  "8/3k4/8/8/8/4B3/4KB2/2B5 w - - 0 1",    // draw
-
-  // 6-man positions
-  "8/8/1P6/5pr1/8/4R3/7k/2K5 w - - 0 1",   // Re5 - mate
-  "8/2p4P/8/kr6/6R1/8/8/1K6 w - - 0 1",    // Ka2 - mate
-  "8/8/3P3k/8/1p6/8/1P6/1K3n2 b - - 0 1",  // Nd2 - draw
-
-  // 7-man position
-  "8/R7/2q5/8/6k1/8/1P5p/K6R w - - 0 124", // Draw
-#endif
 
   // Mate and stalemate positions
   "6k1/3b3r/1p1p4/p1n2p2/1PPNpP1q/P3Q1p1/1R1RB1P1/5K2 b - - 0 1",
@@ -103,6 +86,67 @@ const vector<string> Defaults = {
   "setoption name UCI_Chess960 value true",
   "bbqnnrkr/pppppppp/8/8/8/8/PPPPPPPP/BBQNNRKR w HFhf - 0 1 moves g2g3 d7d5 d2d4 c8h3 c1g5 e8d6 g5e7 f7f6",
   "setoption name UCI_Chess960 value false"
+
+#if 1 // for compiling with extended bench
+  ,
+  //extended bench
+  //http://talkchess.com/forum3/viewtopic.php?f=2&t=74992
+  //Tough Tactical Test, the 35 hardest positions
+
+  "r1b1r1k1/p3nppp/2p1p3/q3P1B1/2P5/P1pB4/5PPP/1R1Q1RK1 w - - 0 1 bm Bxh7+; id TTT1.004",
+  "2b2rk1/N1p3b1/p2p1n2/2PPp1q1/2B1Pn1p/PrN2P2/5RPB/R1Q4K b - - 0 1 bm N6h5; id TTT1.005",
+  "r2b4/1r5k/2p1p1p1/1pPpPpPp/pQ1P1P1P/1bP3KB/8/1N6 b - - 0 1 bm a3; id TTT1.009",
+  "1qrr1b2/6p1/ppkn1P2/3pP3/1PP5/2BP1pP1/BQ3P2/1RRN1n1K b - - 0 1 bm Be7; id TTT1.011",
+  "b1r1r3/b1q2ppk/1p2pP1p/2Pp3Q/p2Nn3/3R4/1B4PP/5RK1 w - - 0 1 bm Bc1; id TTT1.016",
+  "8/Q2qk1p1/p3p2p/3p4/1Pp5/P3PP1P/6P1/5K2 w - - 0 1 bm Qxd7+; id TTT1.019",
+  "r1b3r1/b4p1k/P1p5/Pp2p1q1/4Pp1p/2PN3P/4QPPK/RR3B2 b - - 0 1 bm Bxh3; id TTT1.022",
+  "3rr1bk/6np/2p1n3/1pPpNpPp/pP1QpP1P/P2PP3/2K5/B7 w - - 0 1 bm Ng6+; id TTT1.023",
+  "1k5r/pbq2p2/4pP2/p1P3P1/5P1r/2p1Q3/P3B1P1/3R1RK1 w - - 0 1 bm Rb1; id TTT1.026",
+  "3r1bk1/1Q1b1r2/1B3qn1/PN1Pp2n/4Pp1p/1P3P2/4B1PK/2R1N1R1 b - - 0 1 bm Qg5; id TTT1.029",
+  "5r2/2p2r1k/1p1pNp2/3P1Pp1/PpP3Pp/1P5P/6K1/1R6 w - - 0 1 bm Re1; id TTT1.030",
+  "r1b2rk1/1pqnbp1p/p3p1p1/4n1N1/3B4/PN1B2Q1/2P3PP/3R1R1K w - - 0 1 bm Nc5; id TTT1.034",
+  "1rb2rk1/2q3pp/p2ppbP1/n1nB4/1p1NP2P/2N1B3/PPP1Q3/2KR2R1 w - - 0 1 bm Nf5; id TTT1.036",
+  "8/r4b2/3p2k1/p1pPpR2/PpP1P3/1P3Pp1/6KP/8 w - - 0 1 bm Rxf7; id TTT1.041",
+  "2k5/8/1p2q1p1/1P1p2r1/p1pP1p1p/P1P1pPP1/4P1BP/4N1RK w - - 0 1 bm Bh3; id TTT1.044",
+  "1r1qr1k1/3bb1p1/3p1pPB/2p1pP2/2PnP3/p1Q2N1P/P2RB2K/6R1 w - - 0 1 bm Nxd4; id TTT1.046",
+  "2b2rk1/3nbppp/1q2p3/n2pP3/p1pP1PN1/prP2N1P/2BB2PK/1R2QR2 w - - 0 1 bm Bxh7+; id TTT1.048",
+  "k4r1r/Pp6/bP1bq1p1/3N2p1/R1pPppB1/4P1PP/5PK1/3QBR2 b - - 0 1 bm f3+; id TTT1.049",
+  "1b2r1r1/5p1k/3pb1pB/2pnP1Q1/q2P1N2/p1P5/1p3PP1/1R2R1K1 w - - 0 1 bm Re4; id TTT1.050",
+  "b4rk1/6np/3p1pp1/1r2p1PP/1p2P3/1PqN1P2/2P3RQ/1KBR4 b - - 0 1 bm Bxe4; id TTT1.053",
+  "r4r1k/1p4pp/1p1p3q/p2Np1n1/P3Ppb1/2PP1N2/1P1RKPPP/R2Q4 b - - 0 1 bm Nxf3 Bxf3+; id TTT1.054",
+  "rn3rk1/4bpp1/1qp4p/pp1nP3/2pP1B1N/P1N2BPb/1P5P/1R1Q1R1K w - - 0 1 bm Bxh6; id TTT1.055",
+  "Q4nk1/3r1p2/1p4b1/pP2P1B1/7P/P1pp3P/7K/8 b - - 0 1 bm Be4; id TTT1.057",
+  "r2q1rk1/2n1bpp1/b2p4/3Pp1PQ/1p6/p3B2P/PPPN1P2/2KR2R1 w - - 0 1 bm Rg4; id TTT1.060",
+  "r4r1k/6p1/1pp1b1Bp/p5q1/8/2P2Q1P/1P3PP1/3RR1K1 w - - 0 1 bm Qxf8+; id TTT1.062",
+  "5rqk/4R2p/5Pp1/1p4P1/4Q3/2p3P1/6K1/8 w - - 0 1 bm Qe5 Qc6 Qb7 Kg1; id TTT1.064",
+  "1rr4k/1bq2pb1/p2ppNp1/2n1n1Pp/B3P2Q/2B2P1R/PPP4P/2KR4 w - - 0 1 bm Bxe5; id TTT1.067",
+  "6k1/1p6/1Rb2p2/6p1/PKP2r2/2B5/1P6/8 w - - 0 1 bm Rxc6; id TTT1.074",
+  "6k1/1b2rr1p/4R1pP/3p1pP1/p1pPpK2/PpP5/1P6/2B3N1 b - - 0 1 bm e3; id TTT1.079",
+  "2rq1rk1/3bbpp1/3np3/2ppB1PQ/p1p2P2/1PP1P1N1/P6P/R4RK1 w - - 0 1 bm Rf3; id TTT1.080",
+  "r1N2r2/2R2p2/5Rp1/p1P4p/2Kn1P1k/1P6/8/8 w - - 0 1 bm Kxd4; id TTT1.081",
+  "n2r2k1/1p1r1ppp/3N4/2pQP3/P1Pb1P2/2N3PK/1P1P3P/R1B3q1 b - - 0 1 bm Rxd6; id TTT1.082",
+  "2r3k1/1r3ppp/q1p1p3/2P1RP1P/b1pP2P1/P1n5/1P6/KBQ3R1 w - - 0 1 bm f6; id TTT1.087",
+  "1k6/6Bq/b6p/2p2p2/1pPp3r/pP1Pb3/P1K3Q1/6Rr w - - 0 1 bm Be5+; id TTT1.088",
+  "8/5pkp/1p6/p4p2/3P4/B5rP/1R6/7K w - - 0 1 bm Rg2; id TTT1.100",
+  "8/3P3k/n2K3p/2p3n1/1b4N1/2p1p1P1/8/3B4 w - - 0 1 bm Ng6+; id Plaskett's Puzzle \
+   https://en.wikipedia.org/wiki/Plaskett%27s_Puzzle",
+  "rn3r1k/pn1p1ppq/bpp4p/7P/4N1Q1/6P1/PP3PB1/R1B1R1K1 w - - 3 21 bm Bg5; \
+   Alpha Zero move vs Stockfish https://arxiv.org/pdf/1712.01815.pdf pg `7 2nd game",
+  "2b1rk2/5p2/p1P5/2p2P2/2p5/7B/P7/2KR4 w - - 0 1 bm f6; Smyslov Study",
+  "6R1/P2k4/r7/5N1P/r7/p7/7K/8 w - - 0 1 ; D. Djaja 1972 White to play, draw",
+  "3B4/1r2p3/r2p1p2/bkp1P1p1/1p1P1PPp/p1P1K2P/PPB5/8 w - - 0 1;  W.E. Rudolph, La Stratégie 1912, draw",
+  "8/1p6/1Pp2N1Q/p1Ppk2p/P3p3/3PPpPp/3K1P1P/1R6 w - - 0 1; J. Hašek, Národní Listy 1951, draw",
+  "n2Bqk2/5p1p/Q4KP1/p7/8/8/8/8 w - - 0 1; M. Matous, 1.hm Szachy 1975, win",
+  "8/8/8/5Bp1/7k/8/4pPKP/8 w - - 0 1; Vitaly Chekhover, Gatchinskaja Pravda, 1954, draw",
+  "1R6/8/8/5bp1/4p2k/8/B1p2PKP/8 w - - 0 1 bm Rh8+; Vitaly Chekhover, Gatchinskaja Pravda, 1954, draw",
+  "1R4bq/p1p3p1/2p3Pb/k1P3PR/2P4P/p1K5/P7/8 w - - 0 1; A. A. Troitzky, Magyar Sakkvilág 1931, win",
+  "1R4bq/p1p3p1/2p3Pb/k1P4R/2P4P/p5P1/P7/1K6 w - - 0 1; A. A. Troitzky, version Pal Benko, 2007, win",
+  "k7/n1p1p1K1/P1p1Pp2/5P2/3R3P/pB6/2p5/2r5 w - - 0 1; Sandipan Chanda, 2009, win",
+  "7r/p3k3/2p5/1pPp4/3P4/PP4P1/3P1PB1/2K5 w - - 0 1; Vitaly Chekhover, Parna Ty Bull 1947, draw",
+  "2br4/r2pp3/8/1p1p1kN1/pP1P4/2P3R1/PP3PP1/2K5 w - - 0 1; F. Simkovitch, L'Italia Scacchistica 1923, draw",
+  "8/1p6/1p6/kPp2P1K/2P5/N1Pp4/q2P4/1N6 w - - 0 1; Noam Elkies, 1991, draw",
+  "4K1k1/8/1p5p/1Pp3b1/8/1P3P2/P1B2P2/8 w - - 0 1 bm f4; 1st Prize, Ladislav Salai Jr, Šachová skladba 2011-12, win"
+#endif
 };
 
 } // namespace
@@ -125,11 +169,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string go, token;
 
   // Assign default values to missing arguments
-#if defined (Stockfish) || (Weakfish)
-  string ttSize    = (is >> token) ? token : "16";
-#else
   string ttSize    = (is >> token) ? token : "256";
-#endif
   string threads   = (is >> token) ? token  : "1";
   string limit     = (is >> token) ? token  : "13";
   string limitNN  =  (is >> token) ? token  : "false";
@@ -177,6 +217,8 @@ vector<string> setup_bench(const Position& current, istream& is) {
           list.emplace_back("position fen " + fen);
           list.emplace_back(go);
       }
+
+  list.emplace_back("setoption name UseNN value true");
 
   return list;
 }

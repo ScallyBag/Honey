@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -10,7 +10,7 @@
   Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
+  GNU General Public License for more details..
 
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -25,6 +25,10 @@
 
 class Position;
 
+
+
+
+
 namespace Eval {
 
   std::string trace(const Position& pos);
@@ -32,15 +36,27 @@ namespace Eval {
 
   extern bool useNNUE;
   extern std::string eval_file_loaded;
-  void init_NNUE();
-  void verify_NNUE();
+
+  // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
+  // for the build process (profile-build and fishtest) to work. Do not change the
+  // name of the macro, as it is used in the Makefile.
+
+  #ifdef NiNu
+  #define EvalFileDefaultName     "ninu.bin"
+  #else
+  #define EvalFileDefaultName     "eval.bin"
+  #endif
+
+//  #define   PreEvalFileDefaultName
+
+  #define SHA256NET   "nn-62ef826d1a6d.nnue" // eval.bin
 
   namespace NNUE {
 
     Value evaluate(const Position& pos);
-    Value compute_eval(const Position& pos);
-    void  update_eval(const Position& pos);
-    bool  load_eval_file(const std::string& evalFile);
+    bool load_eval(std::string name, std::istream& stream);
+    void init();
+    void verify();
 
   } // namespace NNUE
 

@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -23,25 +23,14 @@
 
 namespace Eval::NNUE::Features {
 
-  // Find the index of the feature quantity from the king position and PieceSquare
-  template <Side AssociatedKing>
-  inline IndexType HalfKP<AssociatedKing>::MakeIndex(Square sq_k, PieceSquare p) {
-    return static_cast<IndexType>(PS_END) * static_cast<IndexType>(sq_k) + p;
+  // Orient a square according to perspective (rotates by 180 for black)
+  inline Square orient(Color perspective, Square s) {
+    return Square(int(s) ^ (bool(perspective) * 63));
   }
 
-  // Get pieces information
-  template <Side AssociatedKing>
-  inline void HalfKP<AssociatedKing>::GetPieces(
-      const Position& pos, Color perspective,
-      PieceSquare** pieces, Square* sq_target_k) {
-
-    *pieces = (perspective == BLACK) ?
-        pos.eval_list()->piece_list_fb() :
-        pos.eval_list()->piece_list_fw();
-    const PieceId target = (AssociatedKing == Side::kFriend) ?
-        static_cast<PieceId>(PIECE_ID_KING + perspective) :
-        static_cast<PieceId>(PIECE_ID_KING + ~perspective);
-    *sq_target_k = static_cast<Square>(((*pieces)[target] - PS_W_KING) % SQUARE_NB);
+  // Index of a feature for a given king position and another piece on some square
+  inline IndexType make_index(Color perspective, Square s, Piece pc, Square ksq) {
+    return IndexType(orient(perspective, s) + kpp_board_index[perspective][pc] + PS_END * ksq);
   }
 
   // Get a list of indices for active features
@@ -49,41 +38,28 @@ namespace Eval::NNUE::Features {
   void HalfKP<AssociatedKing>::AppendActiveIndices(
       const Position& pos, Color perspective, IndexList* active) {
 
-    // Do nothing if array size is small to avoid compiler warning
-    if (RawFeatures::kMaxActiveDimensions < kMaxActiveDimensions) return;
-
-    PieceSquare* pieces;
-    Square sq_target_k;
-    GetPieces(pos, perspective, &pieces, &sq_target_k);
-    for (PieceId i = PIECE_ID_ZERO; i < PIECE_ID_KING; ++i) {
-      if (pieces[i] != PS_NONE) {
-        active->push_back(MakeIndex(sq_target_k, pieces[i]));
-      }
+    Square ksq = orient(perspective, pos.square<KING>(perspective));
+    Bitboard bb = pos.pieces() & ~pos.pieces(KING);
+    while (bb) {
+      Square s = pop_lsb(&bb);
+      active->push_back(make_index(perspective, s, pos.piece_on(s), ksq));
     }
   }
 
   // Get a list of indices for recently changed features
   template <Side AssociatedKing>
   void HalfKP<AssociatedKing>::AppendChangedIndices(
-      const Position& pos, Color perspective,
+      const Position& pos, const DirtyPiece& dp, Color perspective,
       IndexList* removed, IndexList* added) {
 
-    PieceSquare* pieces;
-    Square sq_target_k;
-    GetPieces(pos, perspective, &pieces, &sq_target_k);
-    const auto& dp = pos.state()->dirtyPiece;
+    Square ksq = orient(perspective, pos.square<KING>(perspective));
     for (int i = 0; i < dp.dirty_num; ++i) {
-      if (dp.pieceId[i] >= PIECE_ID_KING) continue;
-      const auto old_p = static_cast<PieceSquare>(
-          dp.old_piece[i].from[perspective]);
-      if (old_p != PS_NONE) {
-        removed->push_back(MakeIndex(sq_target_k, old_p));
-      }
-      const auto new_p = static_cast<PieceSquare>(
-          dp.new_piece[i].from[perspective]);
-      if (new_p != PS_NONE) {
-        added->push_back(MakeIndex(sq_target_k, new_p));
-      }
+      Piece pc = dp.piece[i];
+      if (type_of(pc) == KING) continue;
+      if (dp.from[i] != SQ_NONE)
+        removed->push_back(make_index(perspective, dp.from[i], pc, ksq));
+      if (dp.to[i] != SQ_NONE)
+        added->push_back(make_index(perspective, dp.to[i], pc, ksq));
     }
   }
 

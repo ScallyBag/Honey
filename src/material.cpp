@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -70,6 +70,7 @@ namespace {
           && pos.count<PAWN  >(us) >= 1;
   }
 #else
+  // Helper used to detect a given material distribution
   bool is_KXK(const Position& pos, Color us) {
     return  !more_than_one(pos.pieces(~us))
           && pos.non_pawn_material(us) >= KnightValueMg;
@@ -147,7 +148,7 @@ Entry* probe(const Position& pos) {
 
   Value npm_w = pos.non_pawn_material(WHITE);
   Value npm_b = pos.non_pawn_material(BLACK);
-  Value npm   = Utility::clamp(npm_w + npm_b, EndgameLimit, MidgameLimit);
+  Value npm   = std::clamp(npm_w + npm_b, EndgameLimit, MidgameLimit);
 
   // Map total non-pawn material into [PHASE_ENDGAME, PHASE_MIDGAME]
   e->gamePhase = Phase(((npm - EndgameLimit) * PHASE_MIDGAME) / (MidgameLimit - EndgameLimit));

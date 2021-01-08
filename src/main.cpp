@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -22,9 +22,6 @@
 #include "endgame.h"
 #include "position.h"
 #include "search.h"
-/*#ifdef Sullivan  //  Replace Mobility table with log equations (with rook mg exception). #1784
-#include "evaluate.h"
-#endif*/
 #include "thread.h"
 #include "tt.h"
 #include "uci.h"
@@ -40,6 +37,7 @@ int main(int argc, char* argv[]) {
   std::cout << splash() << std::endl;
   std::cout << engine_info() << std::endl;
 
+  CommandLine::init(argc, argv);
   UCI::init(Options);
   Tune::init();
   PSQT::init();
@@ -58,7 +56,7 @@ int main(int argc, char* argv[]) {
   Threads.set(size_t(Options["Threads"]));
 #endif
   Search::clear(); // After threads are up
-  Eval::init_NNUE();
+  Eval::NNUE::init();
 
   UCI::loop(argc, argv);
 

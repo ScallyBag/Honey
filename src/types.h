@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -57,6 +57,12 @@
 /// _WIN32             Building on Windows (any)
 /// _WIN64             Building on Windows 64 bit
 
+#if defined(__GNUC__ ) && (__GNUC__ < 9 || (__GNUC__ == 9 && __GNUC_MINOR__ <= 2)) && defined(_WIN32) && !defined(__clang__)
+#define ALIGNAS_ON_STACK_VARIABLES_BROKEN
+#endif
+
+#define ASSERT_ALIGNED(ptr, alignment) assert(reinterpret_cast<uintptr_t>(ptr) % alignment == 0)
+
 #if defined(_WIN64) && defined(_MSC_VER) // No Makefile used
 #  include <intrin.h> // Microsoft header for _BitScanForward64()
 #  define IS_64BIT
@@ -99,7 +105,7 @@ typedef uint64_t Key;
 typedef uint64_t Bitboard;
 
 constexpr int MAX_MOVES = 256;
-constexpr int MAX_PLY   = 246;
+constexpr int MAX_PLY   = 256;
 
 /// A move needs 16 bits to be stored
 ///
@@ -179,17 +185,17 @@ enum Value : int {
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
 //Code idea below by Ed Schröder
-#if defined (Weakfish)
-  #define PVM 80/100
-  #define PVE 80/100
-  #define NVM 70/100
-  #define NVE 70/100
-  #define BVM 60/100
-  #define BVE 60/100
-  #define RVM 50/100
-  #define RVE 50/100
-  #define QVM 40/100
-  #define QVE 40/100
+#ifdef Harmon
+#define PVM 130/100
+#define PVE 130/100
+#define NVM 130/100
+#define NVE 130/100
+#define BVM 130/100
+#define BVE 130/100
+#define RVM 130/100
+#define RVE 130/100
+#define QVM 130/100
+#define QVE 130/100
 
 
 #elif (defined Blau)
@@ -205,16 +211,16 @@ enum Value : int {
   #define QVE 78/100
 
 #elif (defined Sullivan)
-  #define PVM 100/100
-  #define PVE 100/100
-  #define NVM 100/100
-  #define NVE 100/100
-  #define BVM 100/100
-  #define BVE 100/100
-  #define RVM 100/100
-  #define RVE 100/100
-  #define QVM 100/100
-  #define QVE 100/100
+  #define PVM 95/100
+  #define PVE 95/100
+  #define NVM 95/100
+  #define NVE 95/100
+  #define BVM 95/100
+  #define BVE 95/100
+  #define RVM 95/100
+  #define RVE 95/100
+  #define QVM 95/100
+  #define QVE 95/100
 
 #else
   #define PVM 100/100
@@ -230,7 +236,7 @@ enum Value : int {
 
 #endif
 
-  PawnValueMg   = 124*PVM,   PawnValueEg   = 206*PVE,
+  PawnValueMg   = 126*PVM,   PawnValueEg   = 208*PVE,
   KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
   BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
   RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
@@ -258,22 +264,6 @@ enum Piece {
   PIECE_NB = 16
 };
 
-// An ID used to track the pieces. Max. 32 pieces on board.
-enum PieceId {
-  PIECE_ID_ZERO   = 0,
-  PIECE_ID_KING   = 30,
-  PIECE_ID_WKING  = 30,
-  PIECE_ID_BKING  = 31,
-  PIECE_ID_NONE   = 32
-};
-
-inline PieceId operator++(PieceId& d, int) {
-
-  PieceId x = d;
-  d = PieceId(int(d) + 1);
-  return x;
-}
-
 constexpr Value PieceValue[PHASE_NB][PIECE_NB] = {
   { VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO,
     VALUE_ZERO, PawnValueMg, KnightValueMg, BishopValueMg, RookValueMg, QueenValueMg, VALUE_ZERO, VALUE_ZERO },
@@ -289,7 +279,8 @@ enum : int {
   DEPTH_QS_RECAPTURES = -5,
 
   DEPTH_NONE   = -6,
-  DEPTH_OFFSET = DEPTH_NONE
+
+  DEPTH_OFFSET = -7 // value used only for TT entry occupancy check
 };
 
 enum Square : int {
@@ -327,94 +318,34 @@ enum Rank : int {
   RANK_1, RANK_2, RANK_3, RANK_4, RANK_5, RANK_6, RANK_7, RANK_8, RANK_NB
 };
 
-// unique number for each piece type on each square
-enum PieceSquare : uint32_t {
-  PS_NONE     =  0,
-  PS_W_PAWN   =  1,
-  PS_B_PAWN   =  1 * SQUARE_NB + 1,
-  PS_W_KNIGHT =  2 * SQUARE_NB + 1,
-  PS_B_KNIGHT =  3 * SQUARE_NB + 1,
-  PS_W_BISHOP =  4 * SQUARE_NB + 1,
-  PS_B_BISHOP =  5 * SQUARE_NB + 1,
-  PS_W_ROOK   =  6 * SQUARE_NB + 1,
-  PS_B_ROOK   =  7 * SQUARE_NB + 1,
-  PS_W_QUEEN  =  8 * SQUARE_NB + 1,
-  PS_B_QUEEN  =  9 * SQUARE_NB + 1,
-  PS_W_KING   = 10 * SQUARE_NB + 1,
-  PS_END      = PS_W_KING, // pieces without kings (pawns included)
-  PS_B_KING   = 11 * SQUARE_NB + 1,
-  PS_END2     = 12 * SQUARE_NB + 1
-};
-
-struct ExtPieceSquare {
-  PieceSquare from[COLOR_NB];
-};
-
-// Array for finding the PieceSquare corresponding to the piece on the board
-extern ExtPieceSquare kpp_board_index[PIECE_NB];
-
-constexpr bool is_ok(PieceId pid);
-constexpr Square rotate180(Square sq);
-
-// Structure holding which tracked piece (PieceId) is where (PieceSquare)
-class EvalList {
-
-public:
-  // Max. number of pieces without kings is 30 but must be a multiple of 4 in AVX2
-  static const int MAX_LENGTH = 32;
-
-  // Array that holds the piece id for the pieces on the board
-  PieceId piece_id_list[SQUARE_NB];
-
-  // List of pieces, separate from White and Black POV
-  PieceSquare* piece_list_fw() const { return const_cast<PieceSquare*>(pieceListFw); }
-  PieceSquare* piece_list_fb() const { return const_cast<PieceSquare*>(pieceListFb); }
-
-  // Place the piece pc with piece_id on the square sq on the board
-  void put_piece(PieceId piece_id, Square sq, Piece pc)
-  {
-      assert(is_ok(piece_id));
-      if (pc != NO_PIECE)
-      {
-          pieceListFw[piece_id] = PieceSquare(kpp_board_index[pc].from[WHITE] + sq);
-          pieceListFb[piece_id] = PieceSquare(kpp_board_index[pc].from[BLACK] + rotate180(sq));
-          piece_id_list[sq] = piece_id;
-      }
-      else
-      {
-          pieceListFw[piece_id] = PS_NONE;
-          pieceListFb[piece_id] = PS_NONE;
-          piece_id_list[sq] = piece_id;
-      }
-  }
-
-  // Convert the specified piece_id piece to ExtPieceSquare type and return it
-  ExtPieceSquare piece_with_id(PieceId piece_id) const
-  {
-      ExtPieceSquare eps;
-      eps.from[WHITE] = pieceListFw[piece_id];
-      eps.from[BLACK] = pieceListFb[piece_id];
-      return eps;
-  }
-
-private:
-  PieceSquare pieceListFw[MAX_LENGTH];
-  PieceSquare pieceListFb[MAX_LENGTH];
-};
-
-// For differential evaluation of pieces that changed since last turn
+// Keep track of what a move changes on the board (used by NNUE)
 struct DirtyPiece {
 
   // Number of changed pieces
   int dirty_num;
 
-  // The ids of changed pieces, max. 2 pieces can change in one move
-  PieceId pieceId[2];
+  // Max 3 pieces can change in one move. A promotion with capture moves
+  // both the pawn and the captured piece to SQ_NONE and the piece promoted
+  // to from SQ_NONE to the capture square.
+  Piece piece[3];
 
-  // What changed from the piece with that piece number
-  ExtPieceSquare old_piece[2];
-  ExtPieceSquare new_piece[2];
+  // From and to squares, which may be SQ_NONE
+  Square from[3];
+  Square to[3];
 };
+
+//Shashin section
+enum {
+  SHASHIN_MAX_SCORE = 139 * PawnValueMg/100, SHASHIN_MIDDLE_HIGH_SCORE = 69 * PawnValueMg/100, SHASHIN_MIDDLE_LOW_SCORE=25 * PawnValueMg/100};
+//Positions-algorithms types
+enum {
+  SHASHIN_POSITION_DEFAULT, SHASHIN_POSITION_PETROSIAN, SHASHIN_POSITION_CAPABLANCA, SHASHIN_POSITION_CAPABLANCA_PETROSIAN,
+  SHASHIN_POSITION_TAL,SHASHIN_POSITION_TAL_PETROSIAN,SHASHIN_POSITION_TAL_CAPABLANCA,SHASHIN_POSITION_TAL_CAPABLANCA_PETROSIAN
+};
+enum { SHASHIN_TAL_THRESHOLD = 35 * PawnValueMg/100, SHASHIN_CAPABLANCA_THRESHOLD = 15 * PawnValueMg/100};
+
+//End Shashin section
+
 
 /// Score enum stores a middlegame and an endgame value in a single integer (enum).
 /// The least significant 16 bits are used to store the middlegame value and the
@@ -463,8 +394,6 @@ ENABLE_FULL_OPERATORS_ON(Value)
 ENABLE_FULL_OPERATORS_ON(Direction)
 
 ENABLE_INCR_OPERATORS_ON(Piece)
-ENABLE_INCR_OPERATORS_ON(PieceSquare)
-ENABLE_INCR_OPERATORS_ON(PieceId)
 ENABLE_INCR_OPERATORS_ON(PieceType)
 ENABLE_INCR_OPERATORS_ON(Square)
 ENABLE_INCR_OPERATORS_ON(File)
@@ -561,10 +490,6 @@ inline Color color_of(Piece pc) {
   return Color(pc >> 3);
 }
 
-constexpr bool is_ok(PieceId pid) {
-  return pid < PIECE_ID_NONE;
-}
-
 constexpr bool is_ok(Square s) {
   return s >= SQ_A1 && s <= SQ_H8;
 }
@@ -599,11 +524,6 @@ constexpr Square from_sq(Move m) {
 
 constexpr Square to_sq(Move m) {
   return Square(m & 0x3F);
-}
-
-// Return relative square when turning the board 180 degrees
-constexpr Square rotate180(Square sq) {
-  return (Square)(sq ^ 0x3F);
 }
 
 constexpr int from_to(Move m) {

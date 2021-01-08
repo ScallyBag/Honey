@@ -51,6 +51,11 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #include <sys/mman.h>
 #endif
 
+#if defined(__APPLE__) || defined(__ANDROID__) || defined(__OpenBSD__) || (defined(__GLIBCXX__) && !defined(_GLIBCXX_HAVE_ALIGNED_ALLOC) && !defined(_WIN32))
+#define POSIXALIGNEDALLOC
+#include <stdlib.h>
+#endif
+
 #include "misc.h"
 #include "thread.h"
 #include "uci.h"
@@ -58,17 +63,14 @@ typedef bool(*fun3_t)(HANDLE, CONST GROUP_AFFINITY*, PGROUP_AFFINITY);
 #ifdef USE_MADVISE_HUGEPAGE
   #include <sys/mman.h>
 #endif
-
+size_t allocSizeTest = 0;
 using namespace std;
 
 namespace {
-
-size_t memtest = 0; //lp mem test
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
-
 #if (defined Add_Features && ReleaseVer)
-const string Version = "XIr4 ";
+const string Version = " v12-R2.09";
 #else
 const string Version = "";
 #endif
@@ -80,9 +82,6 @@ const string Suffix = "FD ";
 const string Suffix = "";
 #endif
 
-//#ifdef Sullivan
-//const string Name = "Honey ";
-//#endif
 /// Our fancy logging facility. The trick here is to replace cin.rdbuf() and
 /// cout.rdbuf() with two Tie objects that tie cin and cout to a file stream. We
 /// can toggle the logging of std::cout and std:cin at runtime whilst preserving
@@ -149,40 +148,41 @@ public:
 } // namespace
 
 #ifdef Blau
+#ifndef Harmon
 const std::string splash() {
 
      stringstream sp;
 
      sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                                       \n";
-     sp <<  "                                                                                                       \n";
-     sp <<  "     ######                                       #    # ~~~ ~~~ ~~~ ~~~ ~~ ~~~ ~~~ ~~~ #     # ###    \n";
-     sp <<  "     #     # #      #    # ###### ###### #  ####  #    # ~~~ ~~~ ~~ /''*._ ~~~~ ~~ ~ ~~~ #   #   #     \n";
-     sp <<  "     #     # #      #    # #      #      # #      #    # ~~~ ~~ .-*'`    `*-.._.-'\\ ~ ~~~ # #    #     \n";
-     sp <<  "     ######  #      #    # #####  #####  #  ####  ###### ~~~ ~ < * ) ) )   ,     ( ~~~ ~~~ #     #     \n";
-     sp <<  "     #     # #      #    # #      #      #      # #    # ~~~ ~~ `*-._`._(__.--*'`.) ~ ~~~ # #    #     \n";
-     sp <<  "     #     # #      #    # #      #      # #    # #    # ~~~  ~~~ ~~ ~~~ ~~~ ~~ ~~~~ ~~~ #   #   #     \n";
-     sp <<  "     ######  ######  ####  ###### #      #  ####  #    # ~~~ ~~ ~~~ ~~ ~~~ ~~~ ~~ ~ ~~~ #     # ###    \n\n";
+     sp <<  "                                                                                                        \n";
+     sp <<  "                                                                                                        \n";
+     sp <<  "     ######                                       #    #  ~ ~~~ ~~~ ~~~ ~~ ~~~ ~~~ ~~~ ~~    #     ###  \n";
+     sp <<  "     #     # #      #    # ###### ###### #  ####  #    # ~~ ~~~ ~ /''*._ ~~~~ ~~ ~ ~~~~~    ##    #   # \n";
+     sp <<  "     #     # #      #    # #      #      # #      #    #  ~ ~~ .-*'`    `*-.._.-'\\ ~~~ ~~  # #    #  #  \n";
+     sp <<  "     ######  #      #    # #####  #####  #  ####  ###### ~~  < * ) ) )   ,     ( ~~~ ~~~     #      #   \n";
+     sp <<  "     #     # #      #    # #      #      #      # #    #  ~~ ~~`*-._`._(__.--*'`.) ~ ~~~~    #     #    \n";
+     sp <<  "     #     # #      #    # #      #      # #    # #    # ~  ~~~ ~~ ~~~ ~~~ ~~ ~~~~ ~~ ~~     #    #     \n";
+     sp <<  "     ######  ######  ####  ###### #      #  ####  #    #  ~~ ~~~ ~~ ~~~ ~~~ ~~ ~~ ~~ ~~~~  #####  ##### \n\n";
 
   return sp.str();
 }
 #endif
-
+#endif
 #ifdef Noir
 const std::string splash() {
 
      stringstream sp;
 
      sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                                           \n";
-     sp <<  "                                                                                                           \n";
-     sp <<  "     ######                       #     #   #     ######                                #####   #     # ###\n";
-     sp <<  "     #     # #        ##    ####  #    #   ###    #     # #   ##   #    #  ####  #    # #    #   #   #   # \n";
-     sp <<  "     #     # #       #  #  #    # #   #   #####   #     # #  #  #  ##  ## #    # ##   # #    #    # #    # \n";
-     sp <<  "     ######  #      #    # #      ####   #######  #     # # #    # # ## # #    # # #  # #    #     #     # \n";
-     sp <<  "     #     # #      ###### #      #  #    #####   #     # # ###### #    # #    # #  # # #    #    # #    # \n";
-     sp <<  "     #     # #      #    # #    # #   #    ###    #     # # #    # #    # #    # #   ## #    #   #   #   # \n";
-     sp <<  "     ######  ###### #    #  ####  #    #    #     ######  # #    # #    #  ####  #    # #####   #     # ###\n\n";
+     sp <<  "                                                                                                         \n";
+     sp <<  "                                                                                                         \n";
+     sp <<  "  ######                       #     #   #     ######                                #####     #    ###  \n";
+     sp <<  "  #     # #        ##    ####  #    #   ###    #     # #   ##   #    #  ####  #    # #    #   ##   #   # \n";
+     sp <<  "  #     # #       #  #  #    # #   #   #####   #     # #  #  #  ##  ## #    # ##   # #    #  # #   #  #  \n";
+     sp <<  "  ######  #      #    # #      ####   #######  #     # # #    # # ## # #    # # #  # #    #    #     #   \n";
+     sp <<  "  #     # #      ###### #      #  #    #####   #     # # ###### #    # #    # #  # # #    #    #    #    \n";
+     sp <<  "  #     # #      #    # #    # #   #    ###    #     # # #    # #    # #    # #   ## #    #    #   #     \n";
+     sp <<  "  ######  ###### #    #  ####  #    #    #     ######  # #    # #    #  ####  #    # #####   ##### ##### \n\n";
 
 
   return sp.str();
@@ -190,72 +190,78 @@ const std::string splash() {
 #endif
 
 #ifdef Stockfish
+#ifndef Harmon
 const std::string splash() {
 
      stringstream sp;
 
      sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                                      \n";
-     sp <<  "                                                                                                      \n";
-     sp <<  "      #####                                             #    #       .-'`````'-.   #     # ###        \n";
-     sp <<  "     #     # #####  ####   ####  #    # ###### #  ####  #    #  (\\  /   \\   /   \\   #   #   #         \n";
-     sp <<  "     #         #   #    # #    # #   #  #      # #      #    #  ) \\/   (@) (@)   \\   # #    #         \n";
-     sp <<  "      #####    #   #    # #      ####   #####  #  ####  ###### (__(       W       )   #     #         \n";
-     sp <<  "           #   #   #    # #      #  #   #      #      # #    #    (  V v V V v V  )  # #    #         \n";
-     sp <<  "     #     #   #   #    # #    # #   #  #      # #    # #    #     \\  A A A A A  /  #   #   #         \n";
-     sp <<  "      #####    #    ####   ####  #    # #      #  ####  #    #      \\/\\-.,,,.-/\\/  #     # ###        \n\n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "   ####            #     #                              ####        .-'`````'-.      #     ###  \n";
+     sp <<  "  #    # #   #  #  ##   ##   ##    ####  #    # #####  #    #   (\\  /   \\  /   \\    ##    #   # \n";
+     sp <<  "  #    # #  #   #  # # # #  #  #  #    # #    # #    # #    #  ) \\/   (@) (@)   \\  # #    #  #  \n";
+     sp <<  "  #    # ###    #  #  #  # #    # #      #    # #    # #    # (__(       W       )   #      #   \n";
+     sp <<  "  #    # #  #   #  #     # ###### #  ### #    # #####  #    #    (  V v V V v V  )   #     #    \n";
+     sp <<  "  #    # #   #  #  #     # #    # #    # #    # #   #  #    #     \\  A A A A A  /    #    #     \n";
+     sp <<  "   ####  #    # #  #     # #    #  ####   ####  #    #  ####       \\/\\-.,,,.-/\\/   #####  ##### \n\n";
 
   return sp.str();
 }
 #endif
-
+#endif
 #ifdef Sullivan
-
+#ifndef Harmon
 const std::string splash() {
 
      stringstream sp;
 
      sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                   \n";
-     sp <<  "                                                                                   \n";
-     sp <<  "                                            __         __                          \n";
-     sp <<  "     #     #                      #     #  /  \\.-'''-./  \\  #     # ###            \n";
-     sp <<  "     #     #  ####  #    # ######  #   #   \\    \\   /    /   #   #   #             \n";
-     sp <<  "     #     # #    # ##   # #        # #     (   o   o   )     # #    #             \n";
-     sp <<  "     ####### #    # # #  # #####     #      |     w     |      #     #             \n";
-     sp <<  "     #     # #    # #  # # #         #      \\  .-'''-.  /     # #    #             \n";
-     sp <<  "     #     # #    # #   ## #         #       '-\\__Y__/-'     #   #   #             \n";
-     sp <<  "     #     #  ####  #    # ######    #          `---`       #     # ###            \n\n";
+     sp <<  "                                                                         \n";
+     sp <<  "                                            __         __                \n";
+     sp <<  "     #     #                      #     #  /  \\.-'''-./  \\    #     ###  \n";
+     sp <<  "     #     #  ####  #    # ######  #   #   \\    \\   /    /   ##    #   # \n";
+     sp <<  "     #     # #    # ##   # #        # #     (   o   o   )   # #    #  #  \n";
+     sp <<  "     ####### #    # # #  # #####     #      |     w     |     #      #   \n";
+     sp <<  "     #     # #    # #  # # #         #      \\  .-'''-.  /     #     #    \n";
+     sp <<  "     #     # #    # #   ## #         #       '-\\__Y__/-'      #    #     \n";
+     sp <<  "     #     #  ####  #    # ######    #          `---`       #####  ##### \n\n";
+     sp <<  "                                                                                     \n";
+     sp <<  "                                                                                     \n";
 
   return sp.str();
 }
 #endif
-#ifdef Weakfish
+#endif
+#ifdef Harmon
 
 const std::string splash() {
 
      stringstream sp;
-
      sp <<  FontColor::engine << "\n";
-     sp <<  "                                                                                         \n";
-     sp <<  "                                                                                         \n";
-     sp <<  "                                                            |\\/\\/\\/|                     \n";
-     sp <<  "     #      #                                      #    #   |      |  #     # ###         \n";
-     sp <<  "     #      # ######   ##   #    # ###### #  ####  #    #   |  / \\ |   #   #   #          \n";
-     sp <<  "     #      # #       #  #  #   #  #      # #      #    #   | (-)(-)    # #    #          \n";
-     sp <<  "     #   #  # #####  #    # ####   #####  #  ####  ######  c      _)     #     #          \n";
-     sp <<  "     #   #  # #      ###### #  #   #      #      # #    #   | ,___|     # #    #          \n";
-     sp <<  "     #   #  # #      #    # #   #  #      # #    # #    #   |   /      #   #   #          \n";
-     sp <<  "     ### ###  ###### #    # #    # #      #  ####  #    #  /____\\     #     # ###         \n\n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "    #     #                             #     #          //\"\"\"\\\\            #     ###           \n";
+     sp <<  "    #     #   ##   #####  #    #  ####  ##    #         //^   ^\\\\          ##    #   #          \n";
+     sp <<  "    #     #  #  #  #    # ##  ## #    # # #   #         ||O   O||         # #    #  #           \n";
+     sp <<  "    ####### #    # #    # # ## # #    # #  #  #         !|  ~  |!           #      #            \n";
+     sp <<  "    #     # ###### #####  #    # #    # #   # #           \\ O /             #     #             \n";
+     sp <<  "    #     # #    # #   #  #    # #    # #    ##          __| |__            #    #              \n";
+     sp <<  "    #     # #    # #    # #    #  ####  #     #         /       \\         #####  #####          \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+     sp <<  "                                                                                                \n";
+
 
   return sp.str();
 }
 #endif
 
 
-/// engine_info() returns the full name of the current Honey version. This
-/// will be either "Honey <Tag> Mmm-dd-yy" (where Mmm-dd-yy is the date when
-/// the program was compiled) or "Honey <Version>", depending on whether
+/// engine_info() returns the full name of the current Stockfish version. This
+/// will be either "Stockfish <Tag> DD-MM-YY" (where DD-MM-YY is the date when
+/// the program was compiled) or "Stockfish <Version>", depending on whether
 /// Version is empty.
 
 const string engine_info(bool to_uci) {
@@ -266,14 +272,14 @@ const string engine_info(bool to_uci) {
 
 #ifdef Blau
     ss <<  "    Bluefish " << Version << Suffix << setfill('0');
-#elif Sullivan
-    ss <<  "    Honey "         << Version << Suffix << setfill('0') ;
 #elif Noir
 	  ss <<  "    Black Diamond " << Version << Suffix << setfill('0');
 #elif Stockfish
-    ss <<  "    Stockfish "     << Version << Suffix << setfill('0');
-#elif Weakfish
-    ss <<  "    Weakfish "      << Version << Suffix << setfill('0');
+    ss <<  "    Oki Maguro "  << Version << Suffix << setfill('0');
+#elif Harmon
+    ss <<  "    Harmon "    << Version << Suffix << setfill('0');
+#elif Sullivan
+    ss <<  "    Honey "       << Version << Suffix << setfill('0');
 #endif
 #if (defined Sullivan && defined Test)
 	if (Version.empty())
@@ -289,12 +295,8 @@ const string engine_info(bool to_uci) {
         ss << setw(2) << (1 + months.find(month) / 4) <<setw(2) << day << year.substr(2) << " ";
     }
 #endif
-#ifdef Sullivan
-      ss	<< (to_uci  ? "\nid author ": "by ") << "M. Byrne and scores of others...\n" << FontColor::reset ;
-#else
        ss << (to_uci  ? "\nid author ": " by ")
-          << "Stockfish Developers as noted in the AUTHORS file" << FontColor::reset ;
-#endif
+          << "The Stockfish Developers as noted in the AUTHORS file" << FontColor::reset ;
 #ifdef Pi
 	   ss << (to_uci  ? "":"\nCompiled for Picochess by Scally\n") << FontColor::reset ;
 #endif
@@ -363,14 +365,15 @@ const std::string compiler_info() {
 
   compiler += "\nCompilation settings include: ";
   compiler += (Is64Bit ? " 64bit" : " 32bit");
+  #if defined(USE_VNNI)
+    compiler += " VNNI";
+  #endif
   #if defined(USE_AVX512)
     compiler += " AVX512";
   #endif
+  compiler += (HasPext ? " BMI2" : "");
   #if defined(USE_AVX2)
     compiler += " AVX2";
-  #endif
-  #if defined(USE_SSE42)
-    compiler += " SSE42";
   #endif
   #if defined(USE_SSE41)
     compiler += " SSE41";
@@ -378,11 +381,17 @@ const std::string compiler_info() {
   #if defined(USE_SSSE3)
     compiler += " SSSE3";
   #endif
-  #if defined(USE_SSE3)
-    compiler += " SSE3";
+  #if defined(USE_SSE2)
+    compiler += " SSE2";
   #endif
-    compiler += (HasPext ? " BMI2" : "");
-    compiler += (HasPopCnt ? " POPCNT" : "");
+  compiler += (HasPopCnt ? " POPCNT" : "");
+  #if defined(USE_MMX)
+    compiler += " MMX";
+  #endif
+  #if defined(USE_NEON)
+    compiler += " NEON";
+  #endif
+
   #if !defined(NDEBUG)
     compiler += " DEBUG";
   #endif
@@ -465,14 +474,17 @@ void prefetch(void* addr) {
 
 #endif
 
-/// Wrappers for systems where the c++17 implementation doesn't guarantee the availability of aligned_alloc.
-/// Memory allocated with std_aligned_alloc must be freed with std_aligned_free.
-///
+
+/// std_aligned_alloc() is our wrapper for systems where the c++17 implementation
+/// does not guarantee the availability of aligned_alloc(). Memory allocated with
+/// std_aligned_alloc() must be freed with std_aligned_free().
 
 void* std_aligned_alloc(size_t alignment, size_t size) {
-#if (defined(__APPLE__) && defined(_LIBCPP_HAS_C11_FEATURES)) || defined(__ANDROID__) || defined(__OpenBSD__) || (defined(__GLIBCXX__) && !defined(_GLIBCXX_HAVE_ALIGNED_ALLOC) && !defined(_WIN32))
-  return aligned_alloc(alignment, size);
-#elif (defined(_WIN32) || (defined(__APPLE__) && !defined(_LIBCPP_HAS_C11_FEATURES)))
+
+#if defined(POSIXALIGNEDALLOC)
+  void *mem;
+  return posix_memalign(&mem, alignment, size) ? nullptr : mem;
+#elif defined(_WIN32)
   return _mm_malloc(size, alignment);
 #else
   return std::aligned_alloc(alignment, size);
@@ -480,34 +492,21 @@ void* std_aligned_alloc(size_t alignment, size_t size) {
 }
 
 void std_aligned_free(void* ptr) {
-#if (defined(__APPLE__) && defined(_LIBCPP_HAS_C11_FEATURES)) || defined(__ANDROID__) || defined(__OpenBSD__) || (defined(__GLIBCXX__) && !defined(_GLIBCXX_HAVE_ALIGNED_ALLOC) && !defined(_WIN32))
+
+#if defined(POSIXALIGNEDALLOC)
   free(ptr);
-#elif (defined(_WIN32) || (defined(__APPLE__) && !defined(_LIBCPP_HAS_C11_FEATURES)))
+#elif defined(_WIN32)
   _mm_free(ptr);
 #else
   free(ptr);
 #endif
 }
 
-/// aligned_ttmem_alloc() will return suitably aligned memory, and if possible use large pages.
-/// The returned pointer is the aligned one, while the mem argument is the one that needs
-/// to be passed to free. With c++17 some of this functionality could be simplified.
+/// aligned_large_pages_alloc() will return suitably aligned memory, if possible using large pages.
 
-#if defined(__linux__) && !defined(__ANDROID__)
+#if defined(_WIN32)
 
-void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
-
-  constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page sizes
-  size_t size = ((allocSize + alignment - 1) / alignment) * alignment; // multiple of alignment
-  if (posix_memalign(&mem, alignment, size))
-     mem = nullptr;
-  madvise(mem, allocSize, MADV_HUGEPAGE);
-  return mem;
-}
-
-#elif defined(_WIN64)
-
-static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
+static void* aligned_large_pages_alloc_win(size_t allocSize) {
 
   HANDLE hProcessToken { };
   LUID luid { };
@@ -552,24 +551,32 @@ static void* aligned_ttmem_alloc_large_pages(size_t allocSize) {
   return mem;
 }
 
-void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+void* aligned_large_pages_alloc(size_t allocSize) {
 
   static bool firstCall = true;
+  static bool secondCall = true;
 
   // Try to allocate large pages
-  mem = aligned_ttmem_alloc_large_pages(allocSize);
-
+  void* mem = aligned_large_pages_alloc_win(allocSize);
   // Suppress info strings on the first call. The first call occurs before 'uci'
   // is received and in that case this output confuses some GUIs.
-  if (!firstCall && memtest != allocSize )
+  if (firstCall)
+  goto skip;
+  if (secondCall)
+  goto skip2;
+  if (allocSizeTest != allocSize )
   {
       if (mem)
-          sync_cout << "info string Hash Table: Windows Large Pages, " << (allocSize >> 20)  << " Mb" << sync_endl;
+          sync_cout << "info string Hash Table: Windows Large Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
       else
-          sync_cout << "info string Hash Table: Default, "  << (allocSize >> 20)  << " Mb" << sync_endl;
-      memtest = allocSize;
+          sync_cout << "info string Hash Table: Default Pages enabled: " << (allocSize >> 20) << " Mb" << sync_endl;
+      allocSizeTest  = allocSize ;
   }
-  firstCall = false;
+
+skip2:
+   secondCall = false;
+skip:
+   firstCall = false;
 
   // Fall back to regular, page aligned, allocation if necessary
   if (!mem)
@@ -583,23 +590,32 @@ void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
 
 #else
 
-void* aligned_ttmem_alloc(size_t allocSize, void*& mem) {
+void* aligned_large_pages_alloc(size_t allocSize) {
 
-  constexpr size_t alignment = 64; // assumed cache line size
-  size_t size = allocSize + alignment - 1; // allocate some extra space
-  mem = malloc(size);
-  void* ret = reinterpret_cast<void*>((uintptr_t(mem) + alignment - 1) & ~uintptr_t(alignment - 1));
-  return ret;
+
+//#if defined(__linux__)
+constexpr size_t alignment = 2 * 1024 * 1024; // assumed 2MB page size
+//#else
+//constexpr size_t alignment = 4096; // assumed small page size
+//#endif
+
+  // round up to multiples of alignment
+  size_t size = ((allocSize + alignment - 1) / alignment) * alignment;
+  void *mem = std_aligned_alloc(alignment, size);
+#if defined(MADV_HUGEPAGE)
+  madvise(mem, size, MADV_HUGEPAGE);
+#endif
+  return mem;
 }
 
 #endif
 
 
-/// aligned_ttmem_free() will free the previously allocated ttmem
+/// aligned_large_pages_free() will free the previously allocated ttmem
 
-#if defined(_WIN64)
+#if defined(_WIN32)
 
-void aligned_ttmem_free(void* mem) {
+void aligned_large_pages_free(void* mem) {
 
   if (mem && !VirtualFree(mem, 0, MEM_RELEASE))
   {
@@ -612,8 +628,8 @@ void aligned_ttmem_free(void* mem) {
 
 #else
 
-void aligned_ttmem_free(void *mem) {
-  free(mem);
+void aligned_large_pages_free(void *mem) {
+  std_aligned_free(mem);
 }
 
 #endif
@@ -724,6 +740,65 @@ void bindThisThread(size_t idx) {
 #endif
 
 } // namespace WinProcGroup
+
+#ifdef _WIN32
+#include <direct.h>
+#define GETCWD _getcwd
+#else
+#include <unistd.h>
+#define GETCWD getcwd
+#endif
+
+namespace CommandLine {
+
+string argv0;            // path+name of the executable binary, as given by argv[0]
+string binaryDirectory;  // path of the executable directory
+string workingDirectory; // path of the working directory
+string pathSeparator;    // Separator for our current OS
+
+void init(int argc, char* argv[]) {
+    (void)argc;
+    string separator;
+
+    // extract the path+name of the executable binary
+    argv0 = argv[0];
+
+#ifdef _WIN32
+    pathSeparator = "\\";
+  #ifdef _MSC_VER
+    // Under windows argv[0] may not have the extension. Also _get_pgmptr() had
+    // issues in some windows 10 versions, so check returned values carefully.
+    char* pgmptr = nullptr;
+    if (!_get_pgmptr(&pgmptr) && pgmptr != nullptr && *pgmptr)
+        argv0 = pgmptr;
+  #endif
+#else
+    pathSeparator = "/";
+#endif
+
+    // extract the working directory
+    workingDirectory = "";
+    char buff[40000];
+    char* cwd = GETCWD(buff, 40000);
+    if (cwd)
+        workingDirectory = cwd;
+
+    // extract the binary directory path from argv0
+    binaryDirectory = argv0;
+    size_t pos = binaryDirectory.find_last_of("\\/");
+    if (pos == std::string::npos)
+        binaryDirectory = "." + pathSeparator;
+    else
+        binaryDirectory.resize(pos + 1);
+
+    // pattern replacement: "./" at the start of path is replaced by the working directory
+    if (binaryDirectory.find("." + pathSeparator) == 0)
+        binaryDirectory.replace(0, 1, workingDirectory);
+}
+
+
+} // namespace CommandLine
+
 /* ascii logos
 
                 |
@@ -745,12 +820,20 @@ void bindThisThread(size_t idx) {
 
             |\/\/\/|
             |      |
-            |  / \|
+            |  / \ |
             | (o)(o)
             c      _)
             | ,___|
             |   /
            /____\
+
+           //"\\
+         ||^   ^\\
+          |O   O|
+          |  ~  !
+           \ O /
+          __| |__
+
 
             /''*._
        .-*'`    `*-.._.-'\

@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -43,48 +43,6 @@ namespace Eval::NNUE::Features {
   template <typename Derived>
   class FeatureSetBase {
 
-   public:
-    // Get a list of indices for active features
-    template <typename IndexListType>
-    static void AppendActiveIndices(
-        const Position& pos, TriggerEvent trigger, IndexListType active[2]) {
-
-      for (Color perspective : { WHITE, BLACK }) {
-        Derived::CollectActiveIndices(
-            pos, trigger, perspective, &active[perspective]);
-      }
-    }
-
-    // Get a list of indices for recently changed features
-    template <typename PositionType, typename IndexListType>
-    static void AppendChangedIndices(
-        const PositionType& pos, TriggerEvent trigger,
-        IndexListType removed[2], IndexListType added[2], bool reset[2]) {
-
-      const auto& dp = pos.state()->dirtyPiece;
-      if (dp.dirty_num == 0) return;
-
-      for (Color perspective : { WHITE, BLACK }) {
-        reset[perspective] = false;
-        switch (trigger) {
-          case TriggerEvent::kFriendKingMoved:
-            reset[perspective] =
-                dp.pieceId[0] == PIECE_ID_KING + perspective;
-            break;
-          default:
-            assert(false);
-            break;
-        }
-        if (reset[perspective]) {
-          Derived::CollectActiveIndices(
-              pos, trigger, perspective, &added[perspective]);
-        } else {
-          Derived::CollectChangedIndices(
-              pos, trigger, perspective,
-              &removed[perspective], &added[perspective]);
-        }
-      }
-    }
   };
 
   // Class template that represents the feature set
@@ -104,30 +62,6 @@ namespace Eval::NNUE::Features {
         CompileTimeList<TriggerEvent, FeatureType::kRefreshTrigger>;
     static constexpr auto kRefreshTriggers = SortedTriggerSet::kValues;
 
-   private:
-    // Get a list of indices for active features
-    static void CollectActiveIndices(
-        const Position& pos, const TriggerEvent trigger, const Color perspective,
-        IndexList* const active) {
-      if (FeatureType::kRefreshTrigger == trigger) {
-        FeatureType::AppendActiveIndices(pos, perspective, active);
-      }
-    }
-
-    // Get a list of indices for recently changed features
-    static void CollectChangedIndices(
-        const Position& pos, const TriggerEvent trigger, const Color perspective,
-        IndexList* const removed, IndexList* const added) {
-
-      if (FeatureType::kRefreshTrigger == trigger) {
-        FeatureType::AppendChangedIndices(pos, perspective, removed, added);
-      }
-    }
-
-    // Make the base class and the class template that recursively uses itself a friend
-    friend class FeatureSetBase<FeatureSet>;
-    template <typename... FeatureTypes>
-    friend class FeatureSet;
   };
 
 }  // namespace Eval::NNUE::Features

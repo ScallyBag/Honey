@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 #include <ostream>
 #include <sstream>
 
+#include "evaluate.h"
 #include "misc.h"
 #ifdef Add_Features
 #include "polybook.h"
@@ -43,8 +44,8 @@ void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
-void on_use_NNUE(const Option& ) { Eval::init_NNUE(); }
-void on_eval_file(const Option& ) { Eval::init_NNUE(); }
+void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
+void on_eval_file(const Option& ) { Eval::NNUE::init(); }
 #ifdef Add_Features
 void on_book_file1(const Option& o) { polybook1.init(o); }
 void on_book_file2(const Option& o) { polybook2.init(o); }
@@ -89,11 +90,11 @@ void init(OptionsMap& o) {
     o["Book_Depth_2"] 	          << Option(127, 1, 127, on_book_depth2);
     o["Use_Book_3"] 	            << Option(false);
     o["Book_File_3"]              << Option("", on_book_file3);
-    o["Best_Move_3"]              << Option(true, on_best_book_move3);
+    o["Best_Move_3"]              << Option(false, on_best_book_move3);
     o["Book_Depth_3"]             << Option(127, 1, 127, on_book_depth3);
     o["Use_Book_4"]               << Option(false);
     o["Book_File_4"]              << Option("", on_book_file4);
-    o["Best_Move_4"]              << Option(true, on_best_book_move4);
+    o["Best_Move_4"]              << Option(false, on_best_book_move4);
     o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
 
     o["Contempt_Value"]           << Option(24, -100, 100);
@@ -113,14 +114,11 @@ void init(OptionsMap& o) {
     o["Ponder"]                   << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 	  o["FastPlay"]                 << Option(false);
-	  o["Min Output"]               << Option(true);
+	  o["Minimal Output"]               << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var Centipawn"
                                            ,"Centipawn");
-#ifdef Weakfish
-    o["Level"]                    << Option(10, 1, 20);
-#endif
-#ifndef Weakfish
+
 #if defined (Sullivan) || (Blau)
     o["Deep Pro Analysis"]        << Option(false);
     o["Pro Analysis"]             << Option(false);
@@ -129,7 +127,6 @@ void init(OptionsMap& o) {
     o["Deep Pro Analysis"]        << Option(false);
     o["Pro Analysis"]             << Option(false);
     o["Pro Value"]                << Option( 0, 0, 63);
-#endif
 #endif
     o["Defensive"]                << Option(false);
     o["Clear_Hash"]               << Option(on_clear_hash);
@@ -142,15 +139,17 @@ void init(OptionsMap& o) {
 #endif
 
     o["Tactical"]                 << Option(0, 0, 8);
-    o["ShowWDL"]                  << Option(false);
+    o["UCI_ShowWDL"]              << Option(false);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
                                                       //sleep is auto-on with this play
-    o["UCI_LimitStrength"]        << Option(false);
-    o["Slow Play"]                << Option(false);
+
 
 /* Expanded Range (1000 to 2900 Elo) and roughly in sync with CCRL 40/4, anchored to ShalleoBlue at Elo 1712*///
-    o["UCI_Elo"]               << Option(1750, 1000, 2900);
+
+    o["UCI_LimitStrength"]        << Option(false);
+    o["Slow Play"]                << Option(false);
+    o["UCI_Elo"]                  << Option(1750, 1000, 2900);
     o["FIDE_Ratings"]             << Option(true);
     // A separate weaker play level from the predefined levels below. The difference
     // between both of the methods and the "skill level" is that the engine is only weakened
@@ -165,13 +164,38 @@ void init(OptionsMap& o) {
     o["Nodestime"]                << Option(0, 0, 10000);
     o["UCI_Chess960"]             << Option(false);
     o["AnalyseMode"]              << Option(false);
-    o["SyzygyPath"]               << Option("<empty>", on_tb_path);
+    o["SyzygyPath"]               << Option("c:\\syzygy", on_tb_path);
+    //o["SyzygyPath"]               << Option("<empty>", on_tb_path);
+    //o["SyzygyPath"]               << Option("<4-men>", on_tb_path);
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
-    o["Syzygy50MoveRule"]         << Option(true);
+    o["Syzygy50MoveRule"]         << Option(false);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
-    o["UseNN"]                    << Option(false, on_use_NNUE);
-    o["EvalFile"]                 << Option("eval.bin", on_eval_file);
+    o["UseNN"]                    << Option(true, on_use_NNUE);
+    o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
+
+    o["Tal"]                      << Option(false);
+    o["Capablanca"]               << Option(false);
+    o["Petrosian"]                << Option(false);
+
+#if defined (Blau)
+    o["NNUE_Scale"]            << Option(125, 250, 600, on_use_NNUE);
+    o["NNUE_Threshold1"]       << Option(550, 8000, 40000, on_use_NNUE);
+    o["NNUE_Threshold2"]       << Option(150, 2000, 40000, on_use_NNUE);
+#else
+#if defined (Noir) || (Stockfish)
+    o["NNUE_Scale"]            << Option(125, 150, 600, on_use_NNUE);
+    o["NNUE_Threshold1"]       << Option(550, 8000, 40000, on_use_NNUE);
+    o["NNUE_Threshold2"]       << Option(150, 2000, 40000, on_use_NNUE);
+#else
+    o["NNUE_Scale"]            << Option(125, 100, 600, on_use_NNUE);
+    o["NNUE_Threshold1"]       << Option(550, 682, 40000, on_use_NNUE);
+    o["NNUE_Threshold2"]       << Option(150, 176, 40000, on_use_NNUE);
+    o["NNUE_Tempo"]            << Option(false, on_use_NNUE);
+#endif
+#endif
+
 }
+
 
 /// operator<<() is used to print all the options default values in chronological
 /// insertion order (the idx field) and in the format defined by the UCI protocol.
@@ -218,7 +242,7 @@ Option::Option(const char* v, const char* cur, OnChange f) : type("combo"), min(
 { defaultValue = v; currentValue = cur; }
 
 Option::operator double() const {
-  assert(type == "check" || type == "spin");
+//  assert(type == "check" || type == "spin"); errors in debug mode
   return (type == "spin" ? stof(currentValue) : currentValue == "true");
 }
 

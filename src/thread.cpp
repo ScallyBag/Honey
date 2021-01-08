@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -50,24 +50,23 @@ Thread::~Thread() {
   stdThread.join();
 }
 
-
-/// Thread::bestMoveCount(Move move) return best move counter for the given root move
-
+#if defined (Sullivan) || (Blau) ||  (Noir) || (Harmon)
 int Thread::best_move_count(Move move) const {
-
   auto rm = std::find(rootMoves.begin() + pvIdx,
                       rootMoves.begin() + pvLast, move);
 
-  return rm != rootMoves.begin() + pvLast ? rm->bestMoveCount : 0;
+  return rm != rootMoves.begin() + pvLast ? rm->best_move_count : 0;
 }
-
-
+#endif
 /// Thread::clear() reset histories, usually before a new game
 
 void Thread::clear() {
 
   counterMoves.fill(MOVE_NONE);
   mainHistory.fill(0);
+#ifdef Noir
+  staticHistory.fill(0);
+#endif
   lowPlyHistory.fill(0);
   captureHistory.fill(0);
 
@@ -170,11 +169,6 @@ void ThreadPool::clear() {
   main()->callsCnt = 0;
   main()->bestPreviousScore = VALUE_INFINITE;
   main()->previousTimeReduction = 1.0;
-
-#ifndef Stockfish
-  for (int i = 0; i < 4; ++i)
-      main()->iterValue[i] = VALUE_ZERO;
-#endif
 }
 
 
@@ -244,16 +238,16 @@ Thread* ThreadPool::get_best_thread() const {
         votes[th->rootMoves[0].pv[0]] +=
             (th->rootMoves[0].score - minScore + 14) * int(th->completedDepth);
 
-          if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
-          {
-              // Make sure we pick the shortest mate / TB conversion or stave off mate the longest
-              if (th->rootMoves[0].score > bestThread->rootMoves[0].score)
-                  bestThread = th;
-          }
-          else if (   th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
-                   || (   th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
-                       && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]))
-              bestThread = th;
+        if (abs(bestThread->rootMoves[0].score) >= VALUE_TB_WIN_IN_MAX_PLY)
+        {
+            // Make sure we pick the shortest mate / TB conversion or stave off mate the longest
+            if (th->rootMoves[0].score > bestThread->rootMoves[0].score)
+                bestThread = th;
+        }
+        else if (   th->rootMoves[0].score >= VALUE_TB_WIN_IN_MAX_PLY
+                 || (   th->rootMoves[0].score > VALUE_TB_LOSS_IN_MAX_PLY
+                     && votes[th->rootMoves[0].pv[0]] > votes[bestThread->rootMoves[0].pv[0]]))
+            bestThread = th;
     }
 
     return bestThread;
