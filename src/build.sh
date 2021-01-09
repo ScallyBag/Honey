@@ -44,7 +44,8 @@ if false; then
   function mke() {
   CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
   }
-  for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes BETH=yes"
+  for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
+
     do
     for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
       do
@@ -58,9 +59,10 @@ BUILD="profile-build"
 NAME_ARCH=AMD
 function mke() {
 CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
+#CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
-#BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
+#  for ENG in "BLAU=yes"
   do
   for ARCH in "x86-64-avx2"
     do

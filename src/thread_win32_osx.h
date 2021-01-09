@@ -1,9 +1,5 @@
 /*
-<<<<<<< HEAD
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-=======
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
->>>>>>> master
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify

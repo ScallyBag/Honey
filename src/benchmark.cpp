@@ -2,12 +2,12 @@
   Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -173,7 +173,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   string threads   = (is >> token) ? token  : "1";
   string limit     = (is >> token) ? token  : "13";
   string limitNN  =  (is >> token) ? token  : "false";
-  string limitEvF  =  (is >> token) ? token : "eval.bin";
+  string limitEvF  =  (is >> token) ? token : EvalFileDefaultName;
   string fenFile   = (is >> token) ? token  : "default";
   string limitType = (is >> token) ? token  : "depth";
 

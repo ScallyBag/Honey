@@ -114,7 +114,7 @@ void init(OptionsMap& o) {
     o["Ponder"]                   << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 	  o["FastPlay"]                 << Option(false);
-	  o["Minimal Output"]               << Option(true);
+	  o["Minimal Output"]           << Option(true);
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var Centipawn"
                                            ,"Centipawn");

@@ -58,11 +58,6 @@ using namespace Eval::NNUE;
 namespace Eval {
 
   bool useNNUE;
-  //bool nnue_tempo;
-  //int nnue_scale;
-  //Value NNUEThreshold1, NNUEThreshold2;
-  //bool playNNUE = true;
-
   string eval_file_loaded = "None";
 
   /// NNUE::init() tries to load a nnue network at startup time, or when the engine
@@ -78,13 +73,6 @@ namespace Eval {
     useNNUE = Options["UseNN"];
     if (!useNNUE)
         return;
-
-    //nnue_tempo = Options["NNUE_Tempo"];
-    //nnue_scale = Options["NNUE_Scale"];
-    //int temp = Options["NNUE_Threshold1"];
-    //NNUEThreshold1 = Value(temp);
-    //temp = Options["NNUE_Threshold2"];
-    //NNUEThreshold2 = Value(temp);
 
     string eval_file = string(Options["EvalFile"]);
 
