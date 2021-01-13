@@ -43,8 +43,10 @@ namespace Eval {
 
   #ifdef NiNu
   #define EvalFileDefaultName     "ninu.bin"
-  #else
+  #elif EvalNu
   #define EvalFileDefaultName     "eval.bin"
+  #elif TogaNu
+  #define EvalFileDefaultName     "toga.bin"
   #endif
 
 //  #define   PreEvalFileDefaultName

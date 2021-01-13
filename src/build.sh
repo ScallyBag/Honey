@@ -66,7 +66,8 @@ CXXFLAGS='-flto -mbmi' make -j30 $BUILD  $COMP "$@"
   do
   for ARCH in "x86-64-avx2"
     do
-      for NET in  "NiNu" "EvalNu"
+      for NET in  "Toga"
+#      for NET in  "NiNu" "EvalNu"
         do
         mke "$NET=yes" $ENG ARCH=$ARCH && wait
   #      rename  R2-09-$Net.exe R2-9-$NET-$OS-$NAME_ARCH.exe *.exe

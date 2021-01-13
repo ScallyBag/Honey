@@ -1197,26 +1197,50 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 01/10/2021:
+#
+#
+#
+#
+### Based on commits through 01/09/2021:
 ### ======================================================
-### Black-Diamond-12-R2-09-Toga.bench:Nodes searched  : 30266710
-### Black-Diamond-12-R2-09-Toga.bench:Nodes/second    : 2055324
-### Black-Diamond-12-R2-09-Toga-64_Cores.bench:Nodes searched  : 1032301684
-### Black-Diamond-12-R2-09-Toga-64_Cores.bench:Nodes/second    : 81181k
-### Bluefish-12-R2-09-Toga.bench:Nodes searched  : 14429805
-### Bluefish-12-R2-09-Toga.bench:Nodes/second    : 2144420
-### Bluefish-12-R2-09-Toga-64_Cores.bench:Nodes searched  : 849968839
-### Bluefish-12-R2-09-Toga-64_Cores.bench:Nodes/second    : 102110k
-### Harmon-12-R2-09-Toga.bench:Nodes searched  : 14701949
-### Harmon-12-R2-09-Toga.bench:Nodes/second    : 2254900
-### Harmon-12-R2-09-Toga-64_Cores.bench:Nodes searched  : 901529009
-### Harmon-12-R2-09-Toga-64_Cores.bench:Nodes/second    : 106362k
-### Honey-12-R2-09-Toga.bench:Nodes searched  : 14197439
-### Honey-12-R2-09-Toga.bench:Nodes/second    : 2138490
-### Honey-12-R2-09-Toga-64_Cores.bench:Nodes searched  : 798848020
-### Honey-12-R2-09-Toga-64_Cores.bench:Nodes/second    : 103867k
-### Oki-Maguro-12-R2-09-Toga.bench:Nodes searched  : 12020935
-### Oki-Maguro-12-R2-09-Toga.bench:Nodes/second    : 2098260
-### Oki-Maguro-12-R2-09-Toga-64_Cores.bench:Nodes searched  : 676098642
-### Oki-Maguro-12-R2-09-Toga-64_Cores.bench:Nodes/second    : 101440k
+### Black-Diamond-12-R2-09-Eval.bench:Nodes searched  : 26921803
+### Black-Diamond-12-R2-09-Eval.bench:Nodes/second    : 2106062
+### Black-Diamond-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1050045974
+### Black-Diamond-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 85508k
+### Black-Diamond-12-R2-09-NiNu.bench:Nodes searched  : 34273090
+### Black-Diamond-12-R2-09-NiNu.bench:Nodes/second    : 2180360
+### Black-Diamond-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 1072025581
+### Black-Diamond-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 83354k
+### Bluefish-12-R2-09-Eval.bench:Nodes searched  : 16679394
+### Bluefish-12-R2-09-Eval.bench:Nodes/second    : 2314974
+### Bluefish-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1012338102
+### Bluefish-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 115510k
+### Bluefish-12-R2-09-NiNu.bench:Nodes searched  : 14998877
+### Bluefish-12-R2-09-NiNu.bench:Nodes/second    : 2169034
+### Bluefish-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 773733797
+### Bluefish-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 106780k
+### Harmon-12-R2-09-Eval.bench:Nodes searched  : 14420613
+### Harmon-12-R2-09-Eval.bench:Nodes/second    : 2351314
+### Harmon-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1036199440
+### Harmon-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 121306k
+### Harmon-12-R2-09-NiNu.bench:Nodes searched  : 12410387
+### Harmon-12-R2-09-NiNu.bench:Nodes/second    : 2201984
+### Harmon-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 877364097
+### Harmon-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 112771k
+### Honey-12-R2-09-Eval.bench:Nodes searched  : 14579410
+### Honey-12-R2-09-Eval.bench:Nodes/second    : 2282312
+### Honey-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 963770295
+### Honey-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 113625k
+### Honey-12-R2-09-NiNu.bench:Nodes searched  : 16460199
+### Honey-12-R2-09-NiNu.bench:Nodes/second    : 2302447
+### Honey-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 917090841
+### Honey-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 110253k
+### Oki-Maguro-12-R2-09-Eval.bench:Nodes searched  : 13234381
+### Oki-Maguro-12-R2-09-Eval.bench:Nodes/second    : 2305641
+### Oki-Maguro-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 852124601
+### Oki-Maguro-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 114287k
+### Oki-Maguro-12-R2-09-NiNu.bench:Nodes searched  : 12985716
+### Oki-Maguro-12-R2-09-NiNu.bench:Nodes/second    : 2205829
+### Oki-Maguro-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 642478971
+### Oki-Maguro-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 105014k
 ### ======================================================
