@@ -85,24 +85,23 @@ namespace {
   template<Color Us>
   Score evaluate(const Position& pos, Pawns::Entry* e) {
 
-    constexpr Color     Them = ~Us;
-    constexpr Direction Up   = pawn_push(Us);
-    constexpr Direction Down = -Up;
+    constexpr Color Them = ~Us;
+    constexpr Direction Up   = pawn_push(  Us);
 
-    Bitboard neighbours, stoppers, support, phalanx, opposed;
-    Bitboard lever, leverPush, blocked;
-    Square s;
-    bool backward, passed, doubled;
-    Score score = SCORE_ZERO;
+    bool backward, doubled, early, passed;
+    Bitboard neighbours, opposed, phalanx, stoppers, support;
+    Bitboard blocked, lever, leverPush;
     Bitboard b = pos.pieces(Us, PAWN);
+    Score score = SCORE_ZERO;
+    Square s;
 
     Bitboard ourPawns   = pos.pieces(  Us, PAWN);
     Bitboard theirPawns = pos.pieces(Them, PAWN);
 
     Bitboard doubleAttackThem = pawn_double_attacks_bb<Them>(theirPawns);
+    early = !(shift<Up>(ourPawns) & (theirPawns | pawn_attacks_bb<Them>(theirPawns)));
 
     e->passedPawns[Us] = 0;
-    e->kingSquares[Us] = SQ_NONE;
     e->pawnAttacks[Us] = e->pawnAttacksSpan[Us] = pawn_attacks_bb<Us>(ourPawns);
     e->blockedCount += popcount(shift<Up>(ourPawns) & (theirPawns | doubleAttackThem));
 
@@ -125,12 +124,10 @@ namespace {
         phalanx    = neighbours & rank_bb(s);
         support    = neighbours & rank_bb(s - Up);
 
-        if (doubled)
-        {
-            // Additional doubled penalty if none of their pawns is fixed
-            if (!(ourPawns & shift<Down>(theirPawns | pawn_attacks_bb<Them>(theirPawns))))
-                score -= DoubledEarly;
-        }
+        // Additional doubled penalty if none of our pawns is fixed.
+        // Probably true in an early stage of a game and eventually in the endgame.
+        if (doubled && early)
+            score -= DoubledEarly;
 
         // A pawn is backward when it is behind all pawns of the same color on
         // the adjacent files and cannot safely advance.
@@ -209,11 +206,18 @@ Entry* probe(const Position& pos) {
   Key key = pos.pawn_key();
   Entry* e = pos.this_thread()->pawnsTable[key];
 
+  // Entry already exists
   if (e->key == key)
       return e;
 
+  // Compute a new entry
   e->key = key;
   e->blockedCount = 0;
+  e->kingSquares[WHITE] = e->kingSquares[BLACK] = SQ_NONE;
+  e->kingSafety[WHITE] = e->kingSafety[BLACK] = SCORE_ZERO;
+  e->castlingRights[WHITE] = e->castlingRights[BLACK] = NO_CASTLING;
+
+  // Evaluate the pawn structure for both sides
   e->scores[WHITE] = evaluate<WHITE>(pos, e);
   e->scores[BLACK] = evaluate<BLACK>(pos, e);
 
@@ -269,17 +273,26 @@ Score Entry::do_king_safety(const Position& pos) {
   Square ksq = pos.square<KING>(Us);
   kingSquares[Us] = ksq;
   castlingRights[Us] = pos.castling_rights(Us);
-  auto compare = [](Score a, Score b) { return mg_value(a) < mg_value(b); };
 
   Score shelter = evaluate_shelter<Us>(pos, ksq);
 
   // If we can castle use the bonus after castling if it is bigger
 
   if (pos.can_castle(Us & KING_SIDE))
-      shelter = std::max(shelter, evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1)), compare);
+  {
+      Score kingsideShelter = evaluate_shelter<Us>(pos, relative_square(Us, SQ_G1));
+
+      if (mg_value(kingsideShelter) > mg_value(shelter))
+          shelter = kingsideShelter;
+  }
 
   if (pos.can_castle(Us & QUEEN_SIDE))
-      shelter = std::max(shelter, evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1)), compare);
+  {
+      Score queensideShelter = evaluate_shelter<Us>(pos, relative_square(Us, SQ_C1));
+
+      if (mg_value(queensideShelter) > mg_value(shelter))
+          shelter = queensideShelter;
+  }
 
   // In endgame we like to bring our king near our closest pawn
   Bitboard pawns = pos.pieces(Us, PAWN);

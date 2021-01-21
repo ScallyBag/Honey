@@ -170,6 +170,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
   list.emplace_back("ucinewgame");
 
   for (const string& fen : fens)
+  {
       if (fen.find("setoption") != string::npos)
           list.emplace_back(fen);
       else
@@ -177,6 +178,7 @@ vector<string> setup_bench(const Position& current, istream& is) {
           list.emplace_back("position fen " + fen);
           list.emplace_back(go);
       }
+  }
 
   //list.emplace_back("setoption name Use NNUE value true");
 

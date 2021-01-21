@@ -47,12 +47,12 @@ public:
   Option(OnChange = nullptr);
   Option(bool v, OnChange = nullptr);
   Option(const char* v, OnChange = nullptr);
-  Option(double v, int minv, int maxv, OnChange = nullptr);
+  Option(int v, int minv, int maxv, OnChange = nullptr);
   Option(const char* v, const char* cur, OnChange = nullptr);
 
   Option& operator=(const std::string&);
   void operator<<(const Option&);
-  operator double() const;
+  operator int() const;
   operator std::string() const;
   bool operator==(const char*) const;
 
@@ -71,7 +71,7 @@ std::string value(Value v);
 std::string square(Square s);
 std::string move(Move m, bool chess960);
 std::string pv(const Position& pos, Depth depth, Value alpha, Value beta);
-std::string wdl(Value v, int ply);
+std::string wdl();
 Move to_move(const Position& pos, std::string& str);
 
 } // namespace UCI

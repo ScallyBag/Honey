@@ -178,17 +178,18 @@ namespace {
 
     static_assert(Pt != KING && Pt != PAWN, "Unsupported piece type in generate_moves()");
 
-    Bitboard bb = piecesToMove & pos.pieces(Pt);
+    Bitboard b, bb = piecesToMove & pos.pieces(Pt);
 
     if (!bb)
         return moveList;
 
     [[maybe_unused]] const Bitboard checkSquares = pos.check_squares(Pt);
 
-    while (bb) {
+    while (bb)
+    {
         Square from = pop_lsb(&bb);
+        b = attacks_bb<Pt>(from, pos.pieces()) & target;
 
-        Bitboard b = attacks_bb<Pt>(from, pos.pieces()) & target;
         if constexpr (Checks)
             b &= checkSquares;
 
@@ -241,13 +242,16 @@ namespace {
     {
         Square ksq = pos.square<KING>(Us);
         Bitboard b = attacks_bb<KING>(ksq) & target;
+
         while (b)
             *moveList++ = make_move(ksq, pop_lsb(&b));
 
         if ((Type != CAPTURES) && pos.can_castle(Us & ANY_CASTLING))
+        {
             for (CastlingRights cr : { Us & KING_SIDE, Us & QUEEN_SIDE } )
                 if (!pos.castling_impeded(cr) && pos.can_castle(cr))
                     *moveList++ = make<CASTLING>(ksq, pos.castling_rook_square(cr));
+        }
     }
 
     return moveList;
@@ -329,6 +333,7 @@ ExtMove* generate<EVASIONS>(const Position& pos, ExtMove* moveList) {
 
   // Generate evasions for king, capture and non capture moves
   Bitboard b = attacks_bb<KING>(ksq) & ~pos.pieces(us) & ~sliderAttacks;
+
   while (b)
       *moveList++ = make_move(ksq, pop_lsb(&b));
 
@@ -353,12 +358,15 @@ ExtMove* generate<LEGAL>(const Position& pos, ExtMove* moveList) {
 
   moveList = pos.checkers() ? generate<EVASIONS    >(pos, moveList)
                             : generate<NON_EVASIONS>(pos, moveList);
+
   while (cur != moveList)
+  {
       if (   (pinned || from_sq(*cur) == ksq || type_of(*cur) == EN_PASSANT)
           && !pos.legal(*cur))
           *cur = (--moveList)->move;
       else
           ++cur;
+  }
 
   return moveList;
 }

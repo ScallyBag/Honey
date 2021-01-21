@@ -38,7 +38,17 @@ constexpr int CounterMovePruneThreshold = 0;
 /// its own array of Stack objects, indexed by the current ply.
 
 struct Stack {
-  Move* pv;
+
+  Stack() {
+    continuationHistory = nullptr;
+    currentMove = excludedMove = MOVE_NONE;
+    killers[0] = killers[1] = MOVE_NONE;
+    staticEval = VALUE_ZERO;
+    ply = statScore = moveCount = 0;
+    inCheck = ttPv = ttHit = false;
+  }
+
+  std::vector<Move> pv;
   PieceToHistory* continuationHistory;
   int ply;
   Move currentMove;
@@ -63,8 +73,9 @@ struct RootMove {
   bool extract_ponder_from_tt(Position& pos);
   bool operator==(const Move& m) const { return pv[0] == m; }
   bool operator<(const RootMove& m) const { // Sort in descending order
-    return m.score != score ? m.score < score
-                            : m.previousScore < previousScore;
+    return m.tbRank != tbRank ? m.tbRank < tbRank
+           : m.score != score ? m.score < score
+                              : m.previousScore < previousScore;
   }
 
   Value score = -VALUE_INFINITE;
@@ -84,7 +95,7 @@ typedef std::vector<RootMove> RootMoves;
 struct LimitsType {
 
   LimitsType() { // Init explicitly due to broken value-initialization of non POD in MSVC
-    time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = npmsec = movetime = TimePoint(0);
+    time[WHITE] = time[BLACK] = inc[WHITE] = inc[BLACK] = movetime = TimePoint(0);
     movestogo = depth = mate = perft = infinite = 0;
     nodes = 0;
   }
@@ -94,7 +105,7 @@ struct LimitsType {
   }
 
   std::vector<Move> searchmoves;
-  TimePoint time[COLOR_NB], inc[COLOR_NB], npmsec, movetime, startTime;
+  TimePoint time[COLOR_NB], inc[COLOR_NB], movetime, startTime;
   int movestogo, depth, mate, perft, infinite;
   int64_t nodes;
 };
