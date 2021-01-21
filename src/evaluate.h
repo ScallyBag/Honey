@@ -47,6 +47,8 @@ namespace Eval {
   #define EvalFileDefaultName     "eval.bin"
   #elif TogaNu
   #define EvalFileDefaultName     "toga.bin"
+  #else
+  #define  EvalFileDefaultName     "eval.bin"
   #endif
 
 //  #define   PreEvalFileDefaultName
