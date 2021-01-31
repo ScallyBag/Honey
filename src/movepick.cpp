@@ -123,8 +123,8 @@ void MovePicker::score() {
                    +     (*staticHistory)[pos.side_to_move()][from_to(m)]
 #endif
                    + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   + 2 * (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   + 2 * (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
+                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
+                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
                    +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
                    + (ply < MAX_LPH ? std::min(4, depth / 3) * (*lowPlyHistory)[ply][from_to(m)] : 0);
 
@@ -134,8 +134,8 @@ void MovePicker::score() {
               m.value =  PieceValue[MG][pos.piece_on(to_sq(m))]
                        - Value(type_of(pos.moved_piece(m)));
           else
-              m.value =  (*mainHistory)[pos.side_to_move()][from_to(m)]
-                       + (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
+              m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
+                       + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
                        - (1 << 28);
       }
 }
