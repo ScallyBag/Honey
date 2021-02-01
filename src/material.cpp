@@ -31,7 +31,7 @@ namespace {
 
   constexpr Score QuadraticOurs[][PIECE_TYPE_NB] = {
     //            OUR PIECES
-    // pair pawn knight bishop rook queen
+    // bishop pair      pawn        knight       bishop        rook        queen
     {S(1419, 1455)                                                                  }, // Bishop pair
     {S( 101,   28), S( 37,  39)                                                     }, // Pawn
     {S(  57,   64), S(249, 187), S(-49, -62)                                        }, // Knight      OUR PIECES
@@ -42,7 +42,7 @@ namespace {
 
   constexpr Score QuadraticTheirs[][PIECE_TYPE_NB] = {
     //           THEIR PIECES
-    // pair pawn knight bishop rook queen
+    // bishop pair     pawn        knight      bishop       rook       queen
     {                                                                               }, // Bishop pair
     {S(  33,  30)                                                                   }, // Pawn
     {S(  46,  18), S(106,  84)                                                      }, // Knight      OUR PIECES
@@ -111,8 +111,8 @@ namespace {
 
 } // namespace
 
-namespace Material {
 
+namespace Material {
 
 /// Material::probe() looks up the current position's material configuration in
 /// the material hash table. It returns a pointer to the Entry if the position
@@ -217,6 +217,7 @@ Entry* probe(const Position& pos) {
     pos.count<BISHOP>(BLACK), pos.count<ROOK>(BLACK), pos.count<QUEEN >(BLACK) } };
 
   e->score = (imbalance<WHITE>(pieceCount) - imbalance<BLACK>(pieceCount)) / 16;
+
   return e;
 }
 

@@ -175,12 +175,16 @@ vector<string> setup_bench(const Position& current, istream& is) {
           list.emplace_back(fen);
       else
       {
+
           list.emplace_back("position fen " + fen);
           list.emplace_back(go);
       }
   }
 
+
   //list.emplace_back("setoption name Use NNUE value true");
+  list.emplace_back("setoption name EvalType value Hybrid");
+
 
   return list;
 }

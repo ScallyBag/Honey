@@ -65,25 +65,33 @@ std::ostream& operator<<(std::ostream& os, const Position& pos) {
       os << " | " << (1 + r) << "\n +---+---+---+---+---+---+---+---+\n";
   }
 
-  os << "   a   b   c   d   e   f   g   h\n"
-     << "\nFen: " << pos.fen() << "\nKey: " << std::hex << std::uppercase
-     << std::setfill('0') << std::setw(16) << pos.key()
+  os << "   a   b   c   d   e   f   g   h\n";
+
+  os << "\nFen: " << pos.fen()
+     << "\nPositionKey: " << std::hex << std::uppercase << std::setfill('0') << std::setw(16) << pos.key()
+     << "\nMaterialKey: " << pos.material_key()
+     << "\nPawnKey:     " << pos.pawn_key()
      << std::setfill(' ') << std::dec << "\nCheckers: ";
 
   for (Bitboard b = pos.checkers(); b; )
       os << UCI::square(pop_lsb(&b)) << " ";
 
-  if (    int(Tablebases::MaxCardinality) >= popcount(pos.pieces())
+  os << "\nLegal moves: " << MoveList<LEGAL>(pos).size();
+
+  if (    Tablebases::MaxCardinality >= pos.count<ALL_PIECES>()
       && !pos.can_castle(ANY_CASTLING))
   {
       StateInfo st;
+
       ASSERT_ALIGNED(&st, Eval::NNUE::kCacheLineSize);
 
       Position p;
       p.set(pos.fen(), pos.is_chess960(), &st, pos.this_thread());
+
       Tablebases::ProbeState s1, s2;
       Tablebases::WDLScore wdl = Tablebases::probe_wdl(p, &s1);
       int dtz = Tablebases::probe_dtz(p, &s2);
+
       os << "\nTablebases WDL: " << std::setw(4) << wdl << " (" << s1 << ")"
          << "\nTablebases DTZ: " << std::setw(4) << dtz << " (" << s2 << ")";
   }
@@ -228,25 +236,65 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
   // replaced by the file letter of the involved rook, as for the Shredder-FEN.
   while ((ss >> token) && !isspace(token))
   {
-      Square rsq;
+      Square rsq = SQ_NONE;
       Color c = islower(token) ? BLACK : WHITE;
-      Piece rook = make_piece(c, ROOK);
 
-      token = char(toupper(token));
+      if (token == 'K') // White O-O
+      {
+          for (Square s = SQ_H1; s >= SQ_A1; --s)
+             if (piece_on(s) == W_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token == 'k') // Black O-O
+      {
+          for (Square s = SQ_H8; s >= SQ_A8; --s)
+             if (piece_on(s) == B_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token == 'Q') // White O-O-O
+      {
+          for (Square s = SQ_A1; s <= SQ_H1; ++s)
+             if (piece_on(s) == W_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token == 'q') // Black O-O-O
+      {
+          for (Square s = SQ_A8; s <= SQ_H8; ++s)
+             if (piece_on(s) == B_ROOK)
+             {
+                 rsq = s;
+                 break;
+             }
+      }
+      else if (token >= 'A' && token <= 'H') // White Shredder-FEN
+      {
+          Square s = make_square(File(token - 'A'), RANK_1);
 
-      if (token == 'K')
-          for (rsq = relative_square(c, SQ_H1); piece_on(rsq) != rook; --rsq) {}
+          if (piece_on(s) == W_ROOK)
+              rsq = s;
+      }
+      else if (token >= 'a' && token <= 'h') // Black Shredder-FEN
+      {
+          Square s = make_square(File(token - 'a'), RANK_8);
 
-      else if (token == 'Q')
-          for (rsq = relative_square(c, SQ_A1); piece_on(rsq) != rook; ++rsq) {}
-
-      else if (token >= 'A' && token <= 'H')
-          rsq = make_square(File(token - 'A'), relative_rank(c, RANK_1));
-
+          if (piece_on(s) == B_ROOK)
+              rsq = s;
+      }
       else
           continue;
 
-      set_castling_right(c, rsq);
+      // Only set castling right with a valid rook square
+      if (rsq != SQ_NONE)
+          set_castling_right(c, rsq);
   }
 
   // 4. En passant square.
@@ -275,7 +323,7 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 
   // Convert from fullmove starting from 1 to gamePly starting from 0,
   // handle also common incorrect FEN with fullmove = 0.
-  gamePly = std::max(2 * (gamePly - 1), 0) + (sideToMove == BLACK);
+  gamePly = std::max(2 * (std::max(gamePly, st->rule50 / 2 + 1) - 1), 0) + (sideToMove == BLACK);
 
   chess960 = isChess960;
   thisThread = th;
@@ -293,6 +341,8 @@ Position& Position::set(const string& fenStr, bool isChess960, StateInfo* si, Th
 /// rights given the corresponding color and the rook starting square.
 
 void Position::set_castling_right(Color c, Square rfrom) {
+
+  assert(type_of(piece_on(rfrom)) == ROOK);
 
   Square kfrom = square<KING>(c);
   CastlingRights cr = c & (kfrom < rfrom ? KING_SIDE: QUEEN_SIDE);
@@ -533,11 +583,9 @@ bool Position::legal(Move m) const {
           if (attackers_to(s) & pieces(~us))
               return false;
 
-      // In case of Chess960, verify that when moving the castling rook we do
-      // not discover some hidden checker.
+      // In case of Chess960, verify if the Rook blocks some checks
       // For instance an enemy queen in SQ_A1 when castling rook is in SQ_B1.
-      return   !chess960
-            || !(attacks_bb<ROOK>(to, pieces() ^ to_sq(m)) & pieces(~us, ROOK, QUEEN));
+      return !chess960 || !(blockers_for_king(us) & to_sq(m));
   }
 
   // If the moving piece is a king, check whether the destination square is
@@ -1073,7 +1121,7 @@ bool Position::see_ge(Move m, Value threshold) const {
 
   assert(is_ok(m));
 
-  // Only deal with normal moves, assume others pass a simple see
+  // Only deal with normal moves, assume others pass a simple SEE
   if (type_of(m) != NORMAL)
       return VALUE_ZERO >= threshold;
 
