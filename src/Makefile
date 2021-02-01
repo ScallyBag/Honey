@@ -41,7 +41,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-09
+RELVERSION = 12-R2-10
 CORES = 64
 
 ### TEST versions, enter yes and labels below to build named test exe's

@@ -70,7 +70,7 @@ namespace {
 /// Version number. If Version is left empty, then compile date in the format
 /// DD-MM-YY and show in engine_info.
 #if (defined Add_Features && ReleaseVer)
-const string Version = " v12-R2.09";
+const string Version = " v12-R2.10";
 #else
 const string Version = "";
 #endif
