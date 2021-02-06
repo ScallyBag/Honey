@@ -880,14 +880,7 @@ endif
 
 
 help:
-	@echo ""
-	@echo "To compile Honey, type: "
-	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
-	@echo "<target> would be 'build' or 'profile-build'"
-	@echo ""
-	@echo "To compile stockfish, uncomment this line in the makefile: "
-	@echo "'### HONEY=yes' by remvoing the 3 #(pound signs)"
-	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
+
 	@echo ""
 	@echo "Supported targets:"
 	@echo ""
