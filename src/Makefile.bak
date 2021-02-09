@@ -884,14 +884,7 @@ endif
 
 
 help:
-	@echo ""
-	@echo "To compile Honey, type: "
-	@echo "'make <target> ARCH=arch [COMP=compiler] [COMPCXX=cxx]'"
-	@echo "<target> would be 'build' or 'profile-build'"
-	@echo ""
-	@echo "To compile stockfish, uncomment this line in the makefile: "
-	@echo "'### HONEY=yes' by remvoing the 3 #(pound signs)"
-	@echo "then type: 'make <target> ARCH=<arch> [COMP=compiler] [COMPCXX=cxx]'"
+
 	@echo ""
 	@echo "Supported targets:"
 	@echo ""
@@ -1197,26 +1190,26 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 02/01/2021:
+### Based on commits through 02/09/2021:
 ### ======================================================
 ### Black-Diamond-12-R2-10-Eval.bench:Nodes searched  : 28962590
-### Black-Diamond-12-R2-10-Eval.bench:Nodes/second    : 2126631
-### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 999478766
-### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 76835k
+### Black-Diamond-12-R2-10-Eval.bench:Nodes/second    : 2161387
+### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 950529979
+### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 77835k
 ### Bluefish-12-R2-10-Eval.bench:Nodes searched  : 15349950
-### Bluefish-12-R2-10-Eval.bench:Nodes/second    : 2175138
-### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1203359890
-### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 115685k
+### Bluefish-12-R2-10-Eval.bench:Nodes/second    : 2247101
+### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1117458816
+### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 116571k
 ### Harmon-12-R2-10-Eval.bench:Nodes searched  : 14806621
-### Harmon-12-R2-10-Eval.bench:Nodes/second    : 2434098
-### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 943588577
-### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 118125k
+### Harmon-12-R2-10-Eval.bench:Nodes/second    : 2391250
+### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1174427794
+### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 125406k
 ### Honey-12-R2-10-Eval.bench:Nodes searched  : 15944363
-### Honey-12-R2-10-Eval.bench:Nodes/second    : 2234355
-### Honey-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1045921339
-### Honey-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 119780k
+### Honey-12-R2-10-Eval.bench:Nodes/second    : 2215417
+### Honey-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1092169782
+### Honey-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 115280k
 ### Oki-Maguro-12-R2-10-Eval.bench:Nodes searched  : 15218449
-### Oki-Maguro-12-R2-10-Eval.bench:Nodes/second    : 2287800
-### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 823640631
-### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 113199k
+### Oki-Maguro-12-R2-10-Eval.bench:Nodes/second    : 2320946
+### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 850742141
+### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 117004k
 ### ======================================================
