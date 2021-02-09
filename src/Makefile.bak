@@ -41,7 +41,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-09
+RELVERSION = 12-R2-10
 CORES = 64
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -1197,50 +1197,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-### Based on commits through 01/09/2021:
+### Based on commits through 02/01/2021:
 ### ======================================================
-### Black-Diamond-12-R2-09-Eval.bench:Nodes searched  : 26921803
-### Black-Diamond-12-R2-09-Eval.bench:Nodes/second    : 2106062
-### Black-Diamond-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1050045974
-### Black-Diamond-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 85508k
-### Black-Diamond-12-R2-09-NiNu.bench:Nodes searched  : 34273090
-### Black-Diamond-12-R2-09-NiNu.bench:Nodes/second    : 2180360
-### Black-Diamond-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 1072025581
-### Black-Diamond-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 83354k
-### Bluefish-12-R2-09-Eval.bench:Nodes searched  : 16679394
-### Bluefish-12-R2-09-Eval.bench:Nodes/second    : 2314974
-### Bluefish-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1012338102
-### Bluefish-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 115510k
-### Bluefish-12-R2-09-NiNu.bench:Nodes searched  : 14998877
-### Bluefish-12-R2-09-NiNu.bench:Nodes/second    : 2169034
-### Bluefish-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 773733797
-### Bluefish-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 106780k
-### Harmon-12-R2-09-Eval.bench:Nodes searched  : 14420613
-### Harmon-12-R2-09-Eval.bench:Nodes/second    : 2351314
-### Harmon-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 1036199440
-### Harmon-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 121306k
-### Harmon-12-R2-09-NiNu.bench:Nodes searched  : 12410387
-### Harmon-12-R2-09-NiNu.bench:Nodes/second    : 2201984
-### Harmon-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 877364097
-### Harmon-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 112771k
-### Honey-12-R2-09-Eval.bench:Nodes searched  : 14579410
-### Honey-12-R2-09-Eval.bench:Nodes/second    : 2282312
-### Honey-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 963770295
-### Honey-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 113625k
-### Honey-12-R2-09-NiNu.bench:Nodes searched  : 16460199
-### Honey-12-R2-09-NiNu.bench:Nodes/second    : 2302447
-### Honey-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 917090841
-### Honey-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 110253k
-### Oki-Maguro-12-R2-09-Eval.bench:Nodes searched  : 13234381
-### Oki-Maguro-12-R2-09-Eval.bench:Nodes/second    : 2305641
-### Oki-Maguro-12-R2-09-Eval-64_Cores.bench:Nodes searched  : 852124601
-### Oki-Maguro-12-R2-09-Eval-64_Cores.bench:Nodes/second    : 114287k
-### Oki-Maguro-12-R2-09-NiNu.bench:Nodes searched  : 12985716
-### Oki-Maguro-12-R2-09-NiNu.bench:Nodes/second    : 2205829
-### Oki-Maguro-12-R2-09-NiNu-64_Cores.bench:Nodes searched  : 642478971
-### Oki-Maguro-12-R2-09-NiNu-64_Cores.bench:Nodes/second    : 105014k
+### Black-Diamond-12-R2-10-Eval.bench:Nodes searched  : 28962590
+### Black-Diamond-12-R2-10-Eval.bench:Nodes/second    : 2126631
+### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 999478766
+### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 76835k
+### Bluefish-12-R2-10-Eval.bench:Nodes searched  : 15349950
+### Bluefish-12-R2-10-Eval.bench:Nodes/second    : 2175138
+### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1203359890
+### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 115685k
+### Harmon-12-R2-10-Eval.bench:Nodes searched  : 14806621
+### Harmon-12-R2-10-Eval.bench:Nodes/second    : 2434098
+### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 943588577
+### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 118125k
+### Honey-12-R2-10-Eval.bench:Nodes searched  : 15944363
+### Honey-12-R2-10-Eval.bench:Nodes/second    : 2234355
+### Honey-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1045921339
+### Honey-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 119780k
+### Oki-Maguro-12-R2-10-Eval.bench:Nodes searched  : 15218449
+### Oki-Maguro-12-R2-10-Eval.bench:Nodes/second    : 2287800
+### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 823640631
+### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 113199k
 ### ======================================================
