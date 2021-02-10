@@ -481,6 +481,10 @@ ifeq ($(optimize),yes)
 	endif
 endif
 
+	ifeq ($(comp),clang)
+		CXXFLAGS += -fexperimental-new-pass-manager
+	endif
+
 ### 3.4 Bits
 ifeq ($(bits),64)
 	CXXFLAGS += -DIS_64BIT
@@ -588,11 +592,11 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),clang)
-		CXXFLAGS += -flto=thin
+		CXXFLAGS += -flto
 		ifneq ($(findstring MINGW,$(KERNEL)),)
-			CXXFLAGS += -fuse-ld=lld
+#			CXXFLAGS += -fuse-ld=lld
 		else ifneq ($(findstring MSYS,$(KERNEL)),)
-			CXXFLAGS += -fuse-ld=lld
+#			CXXFLAGS += -fuse-ld=lld
 		endif
 		LDFLAGS += $(CXXFLAGS)
 
