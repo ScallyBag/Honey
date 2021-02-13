@@ -730,7 +730,11 @@ void Thread::search() {
           selDepth = 0;
 
           // Reset aspiration window starting size
+#if defined (Sullivan) ||(Blau)
+          if (rootDepth >= 5)
+#else
           if (rootDepth >= 4)
+#endif
           {
               Value prev = rootMoves[pvIdx].previousScore;
 
@@ -1190,7 +1194,11 @@ namespace {
 
     // Step 7. Futility pruning: child node (~50 Elo)
     if (   !PvNode
+#if defined (Sullivan) ||(Blau)
+        &&  depth < 7
+#else
         &&  depth < 9
+#endif
         &&  !(pos.this_thread()->profound_test)
         &&  eval - futility_margin(depth, improving) >= beta
         &&  eval < VALUE_KNOWN_WIN) // Do not return unproven wins
@@ -1198,6 +1206,9 @@ namespace {
 
     // Step 8.. Null move search with verification search (~40 Elo)
     if (   !PvNode
+#if defined (Sullivan) ||(Blau)
+        && depth > 5
+#endif
         && (ss-1)->currentMove != MOVE_NULL
         && (ss-1)->statScore < 22977
         &&  eval >= beta
@@ -1215,7 +1226,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (1015 + 85 * depth) / 256 + std::min(int(eval - beta) / 191, 3);
+        Depth R = (1015 + 85 * depth) / 256 + std::min(int(eval - beta) / 256, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1342,7 +1353,11 @@ namespace {
 
     // Step 10. If the position is not in TT, decrease depth by 2
     if (   PvNode
-        && depth >= 6
+#if defined (Sullivan) ||(Blau)
+        && depth >=7
+#else
+        && depth >=6
+#endif
         && !ttMove)
         depth -= 2;
 
