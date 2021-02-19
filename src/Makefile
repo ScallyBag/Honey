@@ -1,15 +1,20 @@
-### Honey, a UCI chess playing engine derived from Glaurung 2.1
-### Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+# Honey, a UCI chess playing engine derived from Glaurung 2.1 and Stockfish
+# Copyright (C) 2004-2021 The Honey developers (see AUTHORS file)
+#
+# Honey is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Honey is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-### Honey is free software: you can redistribute it and/or modify
-### it under the terms of the GNU General Public License as published by
-### the Free Software Foundation, either version 3 of the License, or
-### (at your option) any later version.
-###
-### Honey is distributed in the hope that it will be useful,
-### but WITHOUT ANY WARRANTY; without even the implied warranty of
-### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-### GNU General Public License for more details.
+
 ### ==========================================================================
 ### Section 1. General Configuration
 ### ==========================================================================
@@ -41,7 +46,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = 12-R2-10
+RELVERSION = v13
 CORES = 64
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -117,7 +122,7 @@ ifeq ($(HONEY),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
 			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
-			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
+			EXE2 = $(NAME)-$(RELVERSION)-$(NNET).exe
 		else
 			EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -169,7 +174,7 @@ ifneq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
+			EXE  = $(NAME)-$(RELVERSION)-$(NNET)
 			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 		EXE = $(NAME)-$(RELVERSION)
@@ -203,8 +208,8 @@ endif
 #endif
 
 ### Installation dir definitions
-PREFIX = /opt/local
-#PREFIX = /usr/local
+#PREFIX = /opt/local
+PREFIX = /usr/local
 BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
@@ -217,8 +222,8 @@ PGOBENCH = ./$(EXE) bench 16 1 13 true
 PGOBENCH2 = ./$(EXE) bench 16 2 13 true
 endif
 ifeq  ($(STOCKFISH),yes)
-PGOBENCH = ./$(EXE) bench 16 1 15 true
-PGOBENCH2 = ./$(EXE) bench 16 2 15 true
+PGOBENCH = ./$(EXE) bench 16 1 13 true
+PGOBENCH2 = ./$(EXE) bench 16 2 13 true
 endif
 
 ifeq  ($(HONEY),yes)
@@ -511,7 +516,7 @@ DEPENDFLAGS += -std=c++17
 LDFLAGS += $(EXTRALDFLAGS)
 
 ifeq ($(COMP),)
-	COMP=gcc
+	COMP=clang
 endif
 
 ifeq ($(COMP),gcc)
@@ -576,7 +581,9 @@ ifeq ($(COMP),clang)
 
 	ifneq ($(KERNEL),Darwin)
 	ifneq ($(KERNEL),OpenBSD)
+	ifneq ($(KERNEL),FreeBSD)
 		LDFLAGS += -latomic
+	endif
 	endif
 	endif
 
@@ -712,7 +719,15 @@ ifeq ($(optimize),yes)
 			CXXFLAGS += -mdynamic-no-pic
 		endif
 	endif
+
+	ifeq ($(comp),clang)
+		CXXFLAGS += -fexperimental-new-pass-manager
+	endif
 endif
+
+	ifeq ($(comp),clang)
+		CXXFLAGS += -fexperimental-new-pass-manager
+	endif
 
 ### 3.4 Bits
 ifeq ($(bits),64)
@@ -821,7 +836,7 @@ endif
 ifeq ($(optimize),yes)
 ifeq ($(debug), no)
 	ifeq ($(comp),clang)
-		CXXFLAGS += -flto=thin
+		CXXFLAGS += -flto
 		ifneq ($(findstring MINGW,$(KERNEL)),)
 			CXXFLAGS += -fuse-ld=lld
 		else ifneq ($(findstring MSYS,$(KERNEL)),)
@@ -841,7 +856,7 @@ ifeq ($(debug), no)
 			LDFLAGS += -save-temps
 		endif
 	else
-		CXXFLAGS += -flto=thin
+		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif
 
@@ -970,8 +985,8 @@ profile-build: objclean profileclean
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	@$(PGOBENCH)  >/dev/null
-	@$(PGOBENCH2) >/dev/null
+	$(PGOBENCH)  >/dev/null
+	$(PGOBENCH2) >/dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -980,7 +995,7 @@ profile-build: objclean profileclean
 	@echo "Step 4/4. Deleting profile data ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) profileclean
 ifeq ($(COMP),mingw)
-	strip $(EXE)
+#	strip $(EXE)
 else
 #	strip $(EXE)
 endif
@@ -1182,41 +1197,26 @@ icc-profile-use:
 #
 #
 #
-#
-#
-#
-#
-#
-#
-#
-#
-### Based on commits through 02/09/2021:
+### Based on commits through 02/17/2021:
 ### ======================================================
-### Black-Diamond-12-R2-10-Eval.bench:Nodes searched  : 28962590
-### Black-Diamond-12-R2-10-Eval.bench:Nodes/second    : 2161387
-### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 950529979
-### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 77835k
-### Bluefish-12-R2-10-Eval.bench:Nodes searched  : 15349950
-### Based on commits through 02/09/2021:
-### ======================================================
-### Black-Diamond-12-R2-10-Eval.bench:Nodes searched  : 28962590
-### Black-Diamond-12-R2-10-Eval.bench:Nodes/second    : 2058025
-### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1046117118
-### Black-Diamond-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 80297k
-### Bluefish-12-R2-10-Eval.bench:Nodes searched  : 15349950
-### Bluefish-12-R2-10-Eval.bench:Nodes/second    : 2258674
-### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1168374789
-### Bluefish-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 119039k
-### Harmon-12-R2-10-Eval.bench:Nodes searched  : 14806621
-### Harmon-12-R2-10-Eval.bench:Nodes/second    : 2385087
-### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 935783577
-### Harmon-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 118124k
-### Honey-12-R2-10-Eval.bench:Nodes searched  : 15944363
-### Honey-12-R2-10-Eval.bench:Nodes/second    : 2223450
-### Honey-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 1036277055
-### Honey-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 111848k
-### Oki-Maguro-12-R2-10-Eval.bench:Nodes searched  : 15218449
-### Oki-Maguro-12-R2-10-Eval.bench:Nodes/second    : 2290900
-### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes searched  : 849738895
-### Oki-Maguro-12-R2-10-Eval-64_Cores.bench:Nodes/second    : 112757k
+### Black-Diamond-v13-Eval.bench:Nodes searched  : 27941048
+### Black-Diamond-v13-Eval.bench:Nodes/second    : 2082045
+### Black-Diamond-v13-Eval-64_Cores.bench:Nodes searched  : 926703650
+### Black-Diamond-v13-Eval-64_Cores.bench:Nodes/second    : 82674k
+### Bluefish-v13-Eval.bench:Nodes searched  : 15506830
+### Bluefish-v13-Eval.bench:Nodes/second    : 2309282
+### Bluefish-v13-Eval-64_Cores.bench:Nodes searched  : 1009192738
+### Bluefish-v13-Eval-64_Cores.bench:Nodes/second    : 113699k
+### Harmon-v13-Eval.bench:Nodes searched  : 13116286
+### Harmon-v13-Eval.bench:Nodes/second    : 2410638
+### Harmon-v13-Eval-64_Cores.bench:Nodes searched  : 926664293
+### Harmon-v13-Eval-64_Cores.bench:Nodes/second    : 120049k
+### Honey-v13-Eval.exe.bench:Nodes searched  : 13189970
+### Honey-v13-Eval.exe.bench:Nodes/second    : 2324223
+### Honey-v13-Eval.exe-64_Cores.bench:Nodes searched  : 846730090
+### Honey-v13-Eval.exe-64_Cores.bench:Nodes/second    : 114392k
+### Oki-Maguro-v13-Eval.bench:Nodes searched  : 13133358
+### Oki-Maguro-v13-Eval.bench:Nodes/second    : 2245402
+### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes searched  : 945987654
+### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes/second    : 115958k
 ### ======================================================

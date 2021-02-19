@@ -42,7 +42,7 @@ if false; then
   BUILD="profile-build"
 
   function mke() {
-  CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
+  CXXFLAGS='-flto -mbmi -march=native -fuse-ld=gold -fexperimental-new-pass-manager' make -j30 $BUILD  $COMP "$@"
   }
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
 
@@ -58,11 +58,11 @@ fi
 BUILD="profile-build"
 NAME_ARCH=AMD
 function mke() {
-CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
+CXXFLAGS='-flto -mbmi -march=native ' make -j30 $BUILD  $COMP "$@"
 #CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
-#  for ENG in "NOIR=yes"
+#  for ENG in "STOCKFISH=yes"
   do
   for ARCH in "x86-64-avx2"
     do
