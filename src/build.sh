@@ -27,16 +27,16 @@ function mke() {
 CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
 }
 make clean
-if false; then
-  for ENG in "WEAK=yes"
-    do
-    for ARCH in "x86-64"
-      do
-      mke $ENG ARCH=$ARCH && wait
-      rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
-    done
-  done
-fi
+#if false; then
+#  for ENG in "WEAK=yes"
+#    do
+#    for ARCH in "x86-64"
+#      do
+#      mke $ENG ARCH=$ARCH && wait
+#      rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
+#    done
+#  done
+#fi
 #read
 if false; then
   BUILD="profile-build"
@@ -47,7 +47,7 @@ if false; then
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
 
     do
-    for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2"
+
       do
       mke $ENG ARCH=$ARCH && wait
       rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
@@ -62,18 +62,19 @@ CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 #CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
-#  for ENG in "STOCKFISH=yes"
   do
-  for ARCH in "x86-64" "x86-64-modern" "x86-64-avx2" "x86-64-bmi2" "x86-64-sse41"
+    #for ARCH in "x86-64-avx2"
+    for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" "x86-64-avx2" 
     do
+      echo $ARCH
+      echo $ENG
       for NET in  "EvalNu"
-#      for NET in  "NiNu" "EvalNu"  "Toga"
-        do
+      do
         mke "$NET=yes" $ENG ARCH=$ARCH && wait
         rename  v13-Eval.exe v13-Eval-$ARCH.exe *.exe
-        done
+      done
     done
-done
+  done
 
 #read # hack to stop script
 ### The script code belows computes the bench nodes for each version, and updates the Makefile

@@ -1197,26 +1197,26 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 02/19/2021:
+### Based on commits through 02/20/2021:
 ### ======================================================
 ### Black-Diamond-v13-Eval.bench:Nodes searched  : 27941048
-### Black-Diamond-v13-Eval.bench:Nodes/second    : 2122051
-### Black-Diamond-v13-Eval-64_Cores.bench:Nodes searched  : 1042568357
-### Black-Diamond-v13-Eval-64_Cores.bench:Nodes/second    : 81158k
-### Bluefish-v13-Eval.bench:Nodes searched  : 15506830
-### Bluefish-v13-Eval.bench:Nodes/second    : 2353799
-### Bluefish-v13-Eval-64_Cores.bench:Nodes searched  : 969817396
-### Bluefish-v13-Eval-64_Cores.bench:Nodes/second    : 115702k
-### Harmon-v13-Eval.bench:Nodes searched  : 13116286
-### Harmon-v13-Eval.bench:Nodes/second    : 2436612
-### Harmon-v13-Eval-64_Cores.bench:Nodes searched  : 1006351713
-### Harmon-v13-Eval-64_Cores.bench:Nodes/second    : 123071k
-### Honey-v13-Eval.exe.bench:Nodes searched  : 13189970
-### Honey-v13-Eval.exe.bench:Nodes/second    : 2358299
-### Honey-v13-Eval.exe-64_Cores.bench:Nodes searched  : 1005214521
-### Honey-v13-Eval.exe-64_Cores.bench:Nodes/second    : 116749k
-### Oki-Maguro-v13-Eval.bench:Nodes searched  : 13133358
-### Oki-Maguro-v13-Eval.bench:Nodes/second    : 2293235
-### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes searched  : 921791084
-### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes/second    : 116993k
+### Black-Diamond-v13-Eval.bench:Nodes/second    : 2124309
+### Black-Diamond-v13-Eval-64_Cores.bench:Nodes searched  : 989580502
+### Black-Diamond-v13-Eval-64_Cores.bench:Nodes/second    : 82789k
+### Bluefish-v13-Eval.bench:Nodes searched  : 16123972
+### Bluefish-v13-Eval.bench:Nodes/second    : 2354208
+### Bluefish-v13-Eval-64_Cores.bench:Nodes searched  : 1147218933
+### Bluefish-v13-Eval-64_Cores.bench:Nodes/second    : 116908k
+### Harmon-v13-Eval.bench:Nodes searched  : 13351322
+### Harmon-v13-Eval.bench:Nodes/second    : 2375257
+### Harmon-v13-Eval-64_Cores.bench:Nodes searched  : 986200523
+### Harmon-v13-Eval-64_Cores.bench:Nodes/second    : 119005k
+### Honey-v13-Eval.exe.bench:Nodes searched  : 16086419
+### Honey-v13-Eval.exe.bench:Nodes/second    : 2342909
+### Honey-v13-Eval.exe-64_Cores.bench:Nodes searched  : 1019522345
+### Honey-v13-Eval.exe-64_Cores.bench:Nodes/second    : 113621k
+### Oki-Maguro-v13-Eval.bench:Nodes searched  : 12694048
+### Oki-Maguro-v13-Eval.bench:Nodes/second    : 2223125
+### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes searched  : 846929589
+### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes/second    : 112518k
 ### ======================================================
