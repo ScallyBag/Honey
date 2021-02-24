@@ -47,12 +47,10 @@ if false; then
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
 
     do
-
-      do
       mke $ENG ARCH=$ARCH && wait
       rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
     done
-  done
+
 fi
 
 BUILD="profile-build"
@@ -61,10 +59,11 @@ function mke() {
 CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 #CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
-  for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
+  #for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
+  for ENG in  "BLAU=yes"
   do
-    #for ARCH in "x86-64-avx2"
-    for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" "x86-64-avx2" 
+    for ARCH in "x86-64-avx2"
+    #for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" "x86-64-avx2"
     do
       echo $ARCH
       echo $ENG
