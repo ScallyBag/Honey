@@ -853,7 +853,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (1062 + 68 * depth) / 256 + std::min(int(eval - beta) / 190, 3);
+        Depth R = (1062 + 68 * depth) / 256 + std::min(int(eval - beta) * 3 / 512, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1277,7 +1277,7 @@ moves_loop: // When in check, search starts from here
                   r -= (thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)] - 3833) / 16384;
               else
-                  r -= ss->statScore / 14790;
+                  r -= ss->statScore / 16384;
           }
 
           // In general we want to cap the LMR depth search at newDepth. But for nodes
