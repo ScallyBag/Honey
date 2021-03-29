@@ -1091,8 +1091,8 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int material = pos.non_pawn_material() + 2 * PawnValueMg * pos.count<PAWN>();
-         int scale =  641
+         int material = pos.NN_material();
+         int scale =  640
                     + material / 32
                     - 4 * pos.rule50_count();
 
@@ -1128,7 +1128,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (100 - pos.rule50_count()) / 100;
+  v = v * (128 - pos.rule50_count()) / 128;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
