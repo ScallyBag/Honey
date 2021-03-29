@@ -1091,7 +1091,7 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int mat = pos.NN_material();
+         int material = pos.NN_material();
          int scale =  646
                     + material / 32
                     - 4 * pos.rule50_count();
