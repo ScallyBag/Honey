@@ -717,6 +717,11 @@ namespace {
                 int penalty = -stat_bonus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
+                if (ttMove == ss->killers[0] && ss->killers[1])
+                {
+                    ss->killers[0] = ss->killers[1];
+                    ss->killers[1] = ttMove;
+                }
             }
         }
 
@@ -1084,8 +1089,15 @@ moves_loop: // When in check, search starts from here
           {
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
+                  && !ss->inCheck
                   && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
                   && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
+                  continue;
+                  
+              if (   lmrDepth < 3
+                  && ss->inCheck
+                  && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
+                  && thisThread->mainHistory[us][from_to(move)] < CounterMovePruneThreshold)
                   continue;
 
               // Futility pruning: parent node (~5 Elo)
@@ -1155,7 +1167,9 @@ moves_loop: // When in check, search starts from here
       }
 
       // Check extension (~2 Elo)
-      else if (    givesCheck
+      else if (!cutNode || formerPv)
+      {
+      if (    givesCheck
                && (pos.is_discovered_check_on_king(~us, move) || pos.see_ge(move)))
           extension = 1;
 
@@ -1163,6 +1177,7 @@ moves_loop: // When in check, search starts from here
       else if (   PieceValue[EG][pos.captured_piece()] > PawnValueEg
                && pos.non_pawn_material() <= 2 * RookValueMg)
           extension = 1;
+      }
 
       // Add extension to new depth
       newDepth += extension;
@@ -1181,6 +1196,7 @@ moves_loop: // When in check, search starts from here
       pos.do_move(move, st, givesCheck);
 
       (ss+1)->distanceFromPv = ss->distanceFromPv + moveCount - 1;
+      (ss+1)->distanceFromPv = ss->distanceFromPv + moveCount - 2 * ss->ttPv;
 
       // Step 16. Late moves reduction / extension (LMR, ~200 Elo)
       // We use various heuristics for the sons of a node after the first son has
@@ -1283,7 +1299,7 @@ moves_loop: // When in check, search starts from here
           // In general we want to cap the LMR depth search at newDepth. But for nodes
           // close to the principal variation the cap is at (newDepth + 1), which will
           // allow these nodes to be searched deeper than the pv (up to 4 plies deeper).
-          Depth d = std::clamp(newDepth - r, 1, newDepth + ((ss+1)->distanceFromPv <= 4));
+          Depth d = std::clamp(newDepth - r, 1, newDepth + ((ss+1)->distanceFromPv <= 1));
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
