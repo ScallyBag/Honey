@@ -1087,9 +1087,14 @@ Value Eval::evaluate(const Position& pos) {
   else
   {
       // Scale and shift NNUE for compatibility with search and classical evaluation
-      auto  adjusted_NNUE = [&](){
-         int mat = pos.non_pawn_material() + 2 * PawnValueMg * pos.count<PAWN>();
-         Value nnueValue = NNUE::evaluate(pos) * (641 + mat / 32 - 4 * pos.rule50_count()) / 1024 + Tempo;
+      auto  adjusted_NNUE = [&]()
+      {
+         int material = pos.non_pawn_material() + 4 * PawnValueMg * pos.count<PAWN>();
+         int scale =  580
+                    + material / 32
+                    - 4 * pos.rule50_count();
+
+         Value  nnueValue = NNUE::evaluate(pos) * scale / 1024 + Tempo;
 
          if (pos.is_chess960())
             nnueValue += fix_FRC(pos);
