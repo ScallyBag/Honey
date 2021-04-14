@@ -59,8 +59,8 @@ function mke() {
 CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 #CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
-  #for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
-  for ENG in  "BLAU=yes"
+  for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
+  #for ENG in  "BLAU=yes"
   do
     for ARCH in "x86-64-avx2"
     #for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" "x86-64-avx2"
@@ -70,7 +70,7 @@ CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
       for NET in  "EvalNu"
       do
         mke "$NET=yes" $ENG ARCH=$ARCH && wait
-        rename  v13-Eval.exe v13-Eval-$ARCH.exe *.exe
+        rename  v13.1-Eval.exe v13.1-Eval-$ARCH.exe *.exe
       done
     done
   done

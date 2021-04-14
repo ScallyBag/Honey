@@ -54,6 +54,7 @@ namespace Search {
 
   int defensive_v = 0;
   int mpv;
+  int NodesToSearch = 0;
   int proValue;
   int profound_v;
 }
@@ -385,9 +386,10 @@ skipLevels:
                  uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallow adj was only required to get CCRL rating correct
              uci_elo += 200; //  to offset Elo loss with adaptive
              uci_elo = std::min(uci_elo, 3200);
-             int NodesToSearch  =  pow(1.00382, (uci_elo - 900)) * 48;
+             NodesToSearch  =  pow(1.00382, (uci_elo - 900)) * 48;
              //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
              Limits.nodes = NodesToSearch;
+
              Limits.nodes = (Limits.nodes * Time.optimum()/1000);
              Limits.nodes = std::clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
              int sleepTime = Time.optimum() * double(1 - Limits.nodes/benchKnps);
@@ -404,6 +406,10 @@ skipLevels:
                  }
              uci_elo =  ccrlELo;
          }
+      if ( !limitStrength && Options["Search_Nodes"])
+          Limits.nodes = int(Options["Search_Nodes"]) ;
+      if ( !limitStrength && !Limits.nodes && Options["Search_Depth"])
+          Limits.depth = int(Options["Search_Depth"]) ;
 
       if (mpv > 1)
           profound = false;
@@ -1075,6 +1081,11 @@ namespace {
                 int penalty = -stat_bonus(depth);
                 thisThread->mainHistory[us][from_to(ttMove)] << penalty;
                 update_continuation_histories(ss, pos.moved_piece(ttMove), to_sq(ttMove), penalty);
+                if (ttMove == ss->killers[0] && ss->killers[1])
+                {
+                    ss->killers[0] = ss->killers[1];
+                    ss->killers[1] = ttMove;
+                }
             }
         }
 
@@ -1478,18 +1489,25 @@ moves_loop: // When in check, search starts from here
           {
               // Countermoves based pruning (~20 Elo)
               if (   lmrDepth < 4 + ((ss-1)->statScore > 0 || (ss-1)->moveCount == 1)
+                  && !ss->inCheck
                   && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
                   && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
                   continue;
 
+              if (   lmrDepth < 3
+                  && ss->inCheck
+                  && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
+                  && thisThread->mainHistory[us][from_to(move)] < CounterMovePruneThreshold)
+                  continue;
+
               // Futility pruning: parent node (~5 Elo)
-              if (   lmrDepth < ((pos.this_thread()->shashinQuiescentCapablancaMiddleHighScore)? 7:3) //lmrDepth patch
+              if (   lmrDepth < 7
                   && !ss->inCheck
                   && ss->staticEval + 174 + 157 * lmrDepth <= alpha
                   &&  (*contHist[0])[movedPiece][to_sq(move)]
                     + (*contHist[1])[movedPiece][to_sq(move)]
                     + (*contHist[3])[movedPiece][to_sq(move)]
-                    + (*contHist[5])[movedPiece][to_sq(move)] / 3 < 28255)
+                    + (*contHist[5])[movedPiece][to_sq(move)] / 4 < 28255)
                   continue;
 
               // Prune moves with negative SEE (~20 Elo)
@@ -1702,7 +1720,7 @@ moves_loop: // When in check, search starts from here
                   r -= (thisThread->mainHistory[us][from_to(move)]
                      + (*contHist[0])[movedPiece][to_sq(move)] - 3833) / 16384;
               else
-                  r -= ss->statScore / 14790;
+                  r -= ss->statScore / 16384;
           }
 
           // In general we want to cap the LMR depth search at newDepth. But if
@@ -2311,11 +2329,13 @@ moves_loop: // When in check, search starts from here
 
 void MainThread::check_time() {
 
+
   if (--callsCnt > 0)
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
-  callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
+
+  callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 100)) : 1024;
 
   static TimePoint tick = now();
 
@@ -2922,7 +2942,7 @@ namespace {
            assert(eval - beta >= 0);
 
            // Null move dynamic reduction based on depth and value
-           Depth R = (1015 + 85 * depth) / 256 + std::min(int(eval - beta) / 191, 3);
+           Depth R = (1015 + 85 * depth) / 256 + std::min(int(eval - beta) *3 / 512, 3);
 
            if (   depth < 11
                || ttValue >= beta

@@ -53,7 +53,7 @@ namespace Eval {
 
 //  #define   PreEvalFileDefaultName
 
-  #define SHA256NET   "nn-62ef826d1a6d.nnue" // eval.bin
+  #define SHA256NET   "nn-e005783b985b.nnue" // eval.bin
 
   namespace NNUE {
 

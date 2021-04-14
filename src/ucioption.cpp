@@ -104,6 +104,7 @@ void init(OptionsMap& o) {
     o["Dynamic_Contempt"]         << Option(true);
 
 
+
     o["Analysis_Contempt"]        << Option("Off var White var Black var Both var Off", "Off");
 
     o["Skill Level"]              << Option(40, 0, 40);
@@ -137,7 +138,8 @@ void init(OptionsMap& o) {
 #else
     o["Bench_KNPS"]               << Option (2500, 500, 6000);//used for UCI Play By Elo
 #endif
-
+    o["Search_Nodes"]             << Option(0, 0, 100000);
+    o["Search_Depth"]             << Option(0, 0, 25);
     o["Tactical"]                 << Option(0, 0, 8);
     o["UCI_ShowWDL"]              << Option(false);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels

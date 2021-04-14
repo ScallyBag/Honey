@@ -46,7 +46,7 @@ DATE2=$(shell date +"%m%d")
 
 ### Release versions , enter yes and release version below foor releases
 RELEASEVER = yes
-RELVERSION = v13
+RELVERSION = v13.1
 CORES = 64
 
 ### TEST versions, enter yes and labels below to build named test exe's
@@ -115,14 +115,14 @@ ifeq ($(HONEY),yes)
 							EXE2 = $(NAME)-$(TESTv1)-$(TESTv2)
 		        else
 			        EXE = $(NAME)-$(TESTv1)-$(TESTv2)
-                        endif
+						endif
 		endif
 	endif
 	ifeq ($(RELEASEVER),yes)
         CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
 			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
-			EXE2 = $(NAME)-$(RELVERSION)-$(NNET).exe
+			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 			EXE = $(NAME)-$(RELVERSION)
 		endif
@@ -174,7 +174,7 @@ ifneq ($(HONEY),yes)
 	ifeq ($(RELEASEVER),yes)
 		CXXFLAGS += -DReleaseVer
 		ifeq ($(COMP),mingw)
-			EXE  = $(NAME)-$(RELVERSION)-$(NNET)
+			EXE  = $(NAME)-$(RELVERSION)-$(NNET).exe
 			EXE2 = $(NAME)-$(RELVERSION)-$(NNET)
 		else
 		EXE = $(NAME)-$(RELVERSION)
@@ -1197,26 +1197,26 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 02/20/2021:
+### Based on commits through 04/13/2021:
 ### ======================================================
-### Black-Diamond-v13-Eval.bench:Nodes searched  : 27941048
-### Black-Diamond-v13-Eval.bench:Nodes/second    : 2124309
-### Black-Diamond-v13-Eval-64_Cores.bench:Nodes searched  : 989580502
-### Black-Diamond-v13-Eval-64_Cores.bench:Nodes/second    : 82789k
-### Bluefish-v13-Eval.bench:Nodes searched  : 16123972
-### Bluefish-v13-Eval.bench:Nodes/second    : 2354208
-### Bluefish-v13-Eval-64_Cores.bench:Nodes searched  : 1147218933
-### Bluefish-v13-Eval-64_Cores.bench:Nodes/second    : 116908k
-### Harmon-v13-Eval.bench:Nodes searched  : 13351322
-### Harmon-v13-Eval.bench:Nodes/second    : 2375257
-### Harmon-v13-Eval-64_Cores.bench:Nodes searched  : 986200523
-### Harmon-v13-Eval-64_Cores.bench:Nodes/second    : 119005k
-### Honey-v13-Eval.exe.bench:Nodes searched  : 16086419
-### Honey-v13-Eval.exe.bench:Nodes/second    : 2342909
-### Honey-v13-Eval.exe-64_Cores.bench:Nodes searched  : 1019522345
-### Honey-v13-Eval.exe-64_Cores.bench:Nodes/second    : 113621k
-### Oki-Maguro-v13-Eval.bench:Nodes searched  : 12694048
-### Oki-Maguro-v13-Eval.bench:Nodes/second    : 2223125
-### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes searched  : 846929589
-### Oki-Maguro-v13-Eval-64_Cores.bench:Nodes/second    : 112518k
+### Black-Diamond-v13.1-Eval.bench:Nodes searched  : 31141495
+### Black-Diamond-v13.1-Eval.bench:Nodes/second    : 2198171
+### Black-Diamond-v13.1-Eval-64_Cores.bench:Nodes searched  : 1066553568
+### Black-Diamond-v13.1-Eval-64_Cores.bench:Nodes/second    : 80824k
+### Bluefish-v13.1-Eval.bench:Nodes searched  : 20051191
+### Bluefish-v13.1-Eval.bench:Nodes/second    : 2332618
+### Bluefish-v13.1-Eval-64_Cores.bench:Nodes searched  : 1338756279
+### Bluefish-v13.1-Eval-64_Cores.bench:Nodes/second    : 113127k
+### Harmon-v13.1-Eval.bench:Nodes searched  : 13906343
+### Harmon-v13.1-Eval.bench:Nodes/second    : 2307340
+### Harmon-v13.1-Eval-64_Cores.bench:Nodes searched  : 1121531655
+### Harmon-v13.1-Eval-64_Cores.bench:Nodes/second    : 116124k
+### Honey-v13.1-Eval.bench:Nodes searched  : 19051643
+### Honey-v13.1-Eval.bench:Nodes/second    : 2348285
+### Honey-v13.1-Eval-64_Cores.bench:Nodes searched  : 1308933397
+### Honey-v13.1-Eval-64_Cores.bench:Nodes/second    : 108968k
+### Oki-Maguro-v13.1-Eval.bench:Nodes searched  : 14154746
+### Oki-Maguro-v13.1-Eval.bench:Nodes/second    : 2231553
+### Oki-Maguro-v13.1-Eval-64_Cores.bench:Nodes searched  : 1141326601
+### Oki-Maguro-v13.1-Eval-64_Cores.bench:Nodes/second    : 110049k
 ### ======================================================
