@@ -186,19 +186,19 @@ enum Value : int {
 
 //Code idea below by Ed Schröder
 #ifdef Harmon
-#define PVM 130/100
-#define PVE 130/100
-#define NVM 130/100
-#define NVE 130/100
-#define BVM 130/100
-#define BVE 130/100
-#define RVM 130/100
-#define RVE 130/100
-#define QVM 130/100
-#define QVE 130/100
+#define PVM 122/100
+#define PVE 122/100
+#define NVM 122/100
+#define NVE 122/100
+#define BVM 122/100
+#define BVE 122/100
+#define RVM 122/100
+#define RVE 122/100
+#define QVM 122/100
+#define QVE 122/100
 
 
-#elif (defined Blau)
+#elif (defined Blau) || (defined Noir)
   #define PVM 78/100
   #define PVE 78/100
   #define NVM 78/100
@@ -211,16 +211,16 @@ enum Value : int {
   #define QVE 78/100
 
 #elif (defined Sullivan)
-  #define PVM 95/100
-  #define PVE 95/100
-  #define NVM 95/100
-  #define NVE 95/100
-  #define BVM 95/100
-  #define BVE 95/100
-  #define RVM 95/100
-  #define RVE 95/100
-  #define QVM 95/100
-  #define QVE 95/100
+  #define PVM 89/100
+  #define PVE 89/100
+  #define NVM 89/100
+  #define NVE 89/100
+  #define BVM 89/100
+  #define BVE 89/100
+  #define RVM 89/100
+  #define RVE 89/100
+  #define QVM 89/100
+  #define QVE 89/100
 
 #else
   #define PVM 100/100

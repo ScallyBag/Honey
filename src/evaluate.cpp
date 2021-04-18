@@ -52,6 +52,7 @@
   const unsigned int         gEmbeddedNNUESize = 1;
 #endif
 
+bool pureNN = Options["PureNN"];
 
 using namespace std;
 using namespace Eval::NNUE;
@@ -73,8 +74,10 @@ namespace Eval {
 
     useNNUE = Options["UseNN"];
     if (!useNNUE)
+      {
+        pureNN = false;
         return;
-
+      }
     string eval_file = string(Options["EvalFile"]);
 
     #if defined(DEFAULT_NNUE_DIRECTORY)
@@ -983,8 +986,12 @@ namespace {
     // Initialize score by reading the incrementally updated scores included in
     // the position object (material + piece square tables) and the material
     // imbalance. Score is computed internally from the white point of view.
+#if defined (Noir) || (Stockfish) || (Sullivan)
+    Score score = Score(0);
+    score = pos.psq_score() + me->imbalance() + pos.this_thread()->contempt;
+#else
     Score score = pos.psq_score() + me->imbalance() + pos.this_thread()->contempt;
-
+#endif
     // Probe the pawn hash table
     pe = Pawns::probe(pos);
     score += pe->pawn_score(WHITE) - pe->pawn_score(BLACK);
@@ -993,33 +1000,34 @@ namespace {
     auto lazy_skip = [&](Value lazyThreshold) {
         return abs(mg_value(score) + eg_value(score)) / 2 > lazyThreshold + pos.non_pawn_material() / 64;
     };
+    if (!pureNN)
+      {
+      if (lazy_skip(LazyThreshold1))
+          goto make_v;
 
-    if (lazy_skip(LazyThreshold1))
-        goto make_v;
+      // Main evaluation begins here
+      initialize<WHITE>();
+      initialize<BLACK>();
 
-    // Main evaluation begins here
-    initialize<WHITE>();
-    initialize<BLACK>();
+      // Pieces evaluated first (also populates attackedBy, attackedBy2).
+      // Note that the order of evaluation of the terms is left unspecified.
+      score +=  pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
+              + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
+              + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
+              + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
 
-    // Pieces evaluated first (also populates attackedBy, attackedBy2).
-    // Note that the order of evaluation of the terms is left unspecified.
-    score +=  pieces<WHITE, KNIGHT>() - pieces<BLACK, KNIGHT>()
-            + pieces<WHITE, BISHOP>() - pieces<BLACK, BISHOP>()
-            + pieces<WHITE, ROOK  >() - pieces<BLACK, ROOK  >()
-            + pieces<WHITE, QUEEN >() - pieces<BLACK, QUEEN >();
+      score += mobility[WHITE] - mobility[BLACK];
 
-    score += mobility[WHITE] - mobility[BLACK];
+      // More complex interactions that require fully populated attack bitboards
+      score +=  king<   WHITE>() - king<   BLACK>()
+              + passed< WHITE>() - passed< BLACK>();
 
-    // More complex interactions that require fully populated attack bitboards
-    score +=  king<   WHITE>() - king<   BLACK>()
-            + passed< WHITE>() - passed< BLACK>();
+      if (lazy_skip(LazyThreshold2))
+          goto make_v;
 
-    if (lazy_skip(LazyThreshold2))
-        goto make_v;
-
-    score +=  threats<WHITE>() - threats<BLACK>()
-            + space<  WHITE>() - space<  BLACK>();
-
+      score +=  threats<WHITE>() - threats<BLACK>()
+              + space<  WHITE>() - space<  BLACK>();
+     }
 make_v:
     // Derive single value from mg and eg parts of score
     Value v = winnable(score);

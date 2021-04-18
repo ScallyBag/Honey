@@ -45,7 +45,6 @@ if false; then
   CXXFLAGS='-flto -mbmi -march=native -fuse-ld=gold -fexperimental-new-pass-manager' make -j30 $BUILD  $COMP "$@"
   }
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
-
     do
       mke $ENG ARCH=$ARCH && wait
       rename 12-R1.exe 12-$OS-$ARCH.exe *.exe
@@ -59,19 +58,18 @@ function mke() {
 CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 #CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
-  for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
-  #for ENG in  "BLAU=yes"
+  #for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
+  #for ENG in "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
+  for ENG in  "BLAU=yes" "HONEY=yes"
   do
     for ARCH in "x86-64-avx2"
     #for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" "x86-64-avx2"
     do
       echo $ARCH
       echo $ENG
-      for NET in  "EvalNu"
-      do
-        mke "$NET=yes" $ENG ARCH=$ARCH && wait
-        rename  v13.1-Eval.exe v13.1-Eval-$ARCH.exe *.exe
-      done
+      mke $ENG ARCH=$ARCH && wait
+      #rename  v13.1-.exe v13.1-$ARCH.exe *.exe
+      rename  v13.1-.exe v13.1.exe *.exe
     done
   done
 

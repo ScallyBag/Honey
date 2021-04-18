@@ -41,19 +41,9 @@ namespace Eval {
   // for the build process (profile-build and fishtest) to work. Do not change the
   // name of the macro, as it is used in the Makefile.
 
-  #ifdef NiNu
-  #define EvalFileDefaultName     "ninu.bin"
-  #elif EvalNu
+  //  #define   PreEvalFileDefaultName
   #define EvalFileDefaultName     "eval.bin"
-  #elif TogaNu
-  #define EvalFileDefaultName     "toga.bin"
-  #else
-  #define  EvalFileDefaultName     "eval.bin"
-  #endif
-
-//  #define   PreEvalFileDefaultName
-
-  #define SHA256NET   "nn-e005783b985b.nnue" // eval.bin
+  #define SHA256NET   "nn-811243cea2cf.nnue" // eval.bin
 
   namespace NNUE {
 

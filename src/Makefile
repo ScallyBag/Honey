@@ -79,19 +79,19 @@ ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
 
-ifeq ($(NiNu),yes)
-  CXXFLAGS += -DNiNu
-  NNET = NiNu
-  NETBIN = ninu.bin
-  else ifeq ($(EvalNu),yes)
-  CXXFLAGS += -DEvalNu
-  NNET = Eval
-  NETBIN = eval.bin
-	else ifeq ($(Toga),yes)
-	CXXFLAGS += -DTogaNu
-	NNET = Toga
-	NETBIN = toga.bin
-endif
+#ifeq ($(NiNu),yes)
+#  CXXFLAGS += -DNiNu
+#  NNET = NiNu
+#  NETBIN = ninu.bin
+#  else ifeq ($(EvalNu),yes)
+#  CXXFLAGS += -DEvalNu
+#  NNET = Eval
+#  NETBIN = eval.bin
+#	else ifeq ($(Toga),yes)
+#	CXXFLAGS += -DTogaNu
+#	NNET = Toga
+#	NETBIN = toga.bin
+#endif
 
 ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
@@ -1197,26 +1197,14 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 04/13/2021:
+### Based on commits through 04/17/2021:
 ### ======================================================
-### Black-Diamond-v13.1-Eval.bench:Nodes searched  : 31141495
-### Black-Diamond-v13.1-Eval.bench:Nodes/second    : 2198171
-### Black-Diamond-v13.1-Eval-64_Cores.bench:Nodes searched  : 1066553568
-### Black-Diamond-v13.1-Eval-64_Cores.bench:Nodes/second    : 80824k
-### Bluefish-v13.1-Eval.bench:Nodes searched  : 20051191
-### Bluefish-v13.1-Eval.bench:Nodes/second    : 2332618
-### Bluefish-v13.1-Eval-64_Cores.bench:Nodes searched  : 1338756279
-### Bluefish-v13.1-Eval-64_Cores.bench:Nodes/second    : 113127k
-### Harmon-v13.1-Eval.bench:Nodes searched  : 13906343
-### Harmon-v13.1-Eval.bench:Nodes/second    : 2307340
-### Harmon-v13.1-Eval-64_Cores.bench:Nodes searched  : 1121531655
-### Harmon-v13.1-Eval-64_Cores.bench:Nodes/second    : 116124k
-### Honey-v13.1-Eval.bench:Nodes searched  : 19051643
-### Honey-v13.1-Eval.bench:Nodes/second    : 2348285
-### Honey-v13.1-Eval-64_Cores.bench:Nodes searched  : 1308933397
-### Honey-v13.1-Eval-64_Cores.bench:Nodes/second    : 108968k
-### Oki-Maguro-v13.1-Eval.bench:Nodes searched  : 14154746
-### Oki-Maguro-v13.1-Eval.bench:Nodes/second    : 2231553
-### Oki-Maguro-v13.1-Eval-64_Cores.bench:Nodes searched  : 1141326601
-### Oki-Maguro-v13.1-Eval-64_Cores.bench:Nodes/second    : 110049k
+### Bluefish-v13.1-.bench:Nodes searched  : 19226686
+### Bluefish-v13.1-.bench:Nodes/second    : 2234621
+### Bluefish-v13.1--64_Cores.bench:Nodes searched  : 1666260945
+### Bluefish-v13.1--64_Cores.bench:Nodes/second    : 113135k
+### Honey-v13.1-.bench:Nodes searched  : 20246426
+### Honey-v13.1-.bench:Nodes/second    : 2355057
+### Honey-v13.1--64_Cores.bench:Nodes searched  : 1420516294
+### Honey-v13.1--64_Cores.bench:Nodes/second    : 113723k
 ### ======================================================

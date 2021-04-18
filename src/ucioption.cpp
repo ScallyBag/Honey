@@ -172,6 +172,7 @@ void init(OptionsMap& o) {
     o["SyzygyProbeDepth"]         << Option(1, 1, 100);
     o["Syzygy50MoveRule"]         << Option(false);
     o["SyzygyProbeLimit"]         << Option(7, 0, 7);
+    o["PureNN"]                    << Option(true);
     o["UseNN"]                    << Option(true, on_use_NNUE);
     o["EvalFile"]                 << Option(EvalFileDefaultName, on_eval_file);
 

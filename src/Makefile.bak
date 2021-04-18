@@ -79,19 +79,19 @@ ifeq ($(RASPBERRY),Pi)
 	CXXFLAGS += -DPi
 endif
 
-ifeq ($(NiNu),yes)
-  CXXFLAGS += -DNiNu
-  NNET = NiNu
-  NETBIN = ninu.bin
-  else ifeq ($(EvalNu),yes)
-  CXXFLAGS += -DEvalNu
-  NNET = Eval
-  NETBIN = eval.bin
-	else ifeq ($(Toga),yes)
-	CXXFLAGS += -DTogaNu
-	NNET = Toga
-	NETBIN = toga.bin
-endif
+#ifeq ($(NiNu),yes)
+#  CXXFLAGS += -DNiNu
+#  NNET = NiNu
+#  NETBIN = ninu.bin
+#  else ifeq ($(EvalNu),yes)
+#  CXXFLAGS += -DEvalNu
+#  NNET = Eval
+#  NETBIN = eval.bin
+#	else ifeq ($(Toga),yes)
+#	CXXFLAGS += -DTogaNu
+#	NNET = Toga
+#	NETBIN = toga.bin
+#endif
 
 ifeq ($(HONEY),yes)
     NAME=$(PRE)Honey$(SUF)
@@ -1197,10 +1197,10 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 04/13/2021:
+### Based on commits through 04/17/2021:
 ### ======================================================
-### Bluefish-v13.1-Eval.bench:Nodes searched  : 20051191
-### Bluefish-v13.1-Eval.bench:Nodes/second    : 2335063
-### Bluefish-v13.1-Eval-64_Cores.bench:Nodes searched  : 1366353595
-### Bluefish-v13.1-Eval-64_Cores.bench:Nodes/second    : 112364k
+### Honey-v13.1-.bench:Nodes searched  : 20246426
+### Honey-v13.1-.bench:Nodes/second    : 2290060
+### Honey-v13.1--64_Cores.bench:Nodes searched  : 1465654724
+### Honey-v13.1--64_Cores.bench:Nodes/second    : 109418k
 ### ======================================================
