@@ -141,6 +141,7 @@ void init(OptionsMap& o) {
     o["Search_Nodes"]             << Option(0, 0, 100000);
     o["Search_Depth"]             << Option(0, 0, 25);
     o["Tactical"]                 << Option(0, 0, 8);
+    o["Variety"]                  << Option(false);
     o["UCI_ShowWDL"]              << Option(false);
     o["NPS_Level"]                << Option(0, 0, 60);// Do not use with other reduce strength levels
                                                       //can be used with adaptive play of variety,
@@ -180,7 +181,7 @@ void init(OptionsMap& o) {
     o["Capablanca"]               << Option(false);
     o["Petrosian"]                << Option(false);
 
-#if defined (Blau)
+/*#if defined (Blau)
     o["NNUE_Scale"]            << Option(125, 250, 600, on_use_NNUE);
     o["NNUE_Threshold1"]       << Option(550, 8000, 40000, on_use_NNUE);
     o["NNUE_Threshold2"]       << Option(150, 2000, 40000, on_use_NNUE);
@@ -195,7 +196,7 @@ void init(OptionsMap& o) {
     o["NNUE_Threshold2"]       << Option(150, 176, 40000, on_use_NNUE);
     o["NNUE_Tempo"]            << Option(false, on_use_NNUE);
 #endif
-#endif
+#endif*/
 
 }
 

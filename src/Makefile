@@ -1197,14 +1197,26 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 04/17/2021:
+### Based on commits through 04/19/2021:
 ### ======================================================
-### Bluefish-v13.1-.bench:Nodes searched  : 19226686
-### Bluefish-v13.1-.bench:Nodes/second    : 2234621
-### Bluefish-v13.1--64_Cores.bench:Nodes searched  : 1666260945
-### Bluefish-v13.1--64_Cores.bench:Nodes/second    : 113135k
-### Honey-v13.1-.bench:Nodes searched  : 20246426
-### Honey-v13.1-.bench:Nodes/second    : 2355057
-### Honey-v13.1--64_Cores.bench:Nodes searched  : 1420516294
-### Honey-v13.1--64_Cores.bench:Nodes/second    : 113723k
+### Black-Diamond-v13.1-.bench:Nodes searched  : 31367066
+### Black-Diamond-v13.1-.bench:Nodes/second    : 2053759
+### Black-Diamond-v13.1--64_Cores.bench:Nodes searched  : 998098642
+### Black-Diamond-v13.1--64_Cores.bench:Nodes/second    : 80537k
+### Bluefish-v13.1-.bench:Nodes searched  : 19159648
+### Bluefish-v13.1-.bench:Nodes/second    : 2271715
+### Bluefish-v13.1--64_Cores.bench:Nodes searched  : 1491505417
+### Bluefish-v13.1--64_Cores.bench:Nodes/second    : 114309k
+### Harmon-v13.1-.bench:Nodes searched  : 14781810
+### Harmon-v13.1-.bench:Nodes/second    : 2311102
+### Harmon-v13.1--64_Cores.bench:Nodes searched  : 1279774778
+### Harmon-v13.1--64_Cores.bench:Nodes/second    : 122197k
+### Honey-v13.1-.bench:Nodes searched  : 18912489
+### Honey-v13.1-.bench:Nodes/second    : 2226308
+### Honey-v13.1--64_Cores.bench:Nodes searched  : 1225626815
+### Honey-v13.1--64_Cores.bench:Nodes/second    : 109813k
+### Oki-Maguro-v13.1-.bench:Nodes searched  : 15527751
+### Oki-Maguro-v13.1-.bench:Nodes/second    : 2218884
+### Oki-Maguro-v13.1--64_Cores.bench:Nodes searched  : 977512766
+### Oki-Maguro-v13.1--64_Cores.bench:Nodes/second    : 110866k
 ### ======================================================

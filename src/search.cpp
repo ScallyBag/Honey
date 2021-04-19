@@ -57,6 +57,8 @@ namespace Search {
   int NodesToSearch = 0;
   int proValue;
   int profound_v;
+  double skill_level = (Options["Skill Level"]);
+
 }
 
 namespace Tablebases {
@@ -269,7 +271,6 @@ void MainThread::search() {
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
-
   Eval::NNUE::verify();
 
   //from Shashin
@@ -645,10 +646,15 @@ void Thread::search() {
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
+  bool variety = (Options["Variety"]);
+  double floatLevel;
   PRNG rng(now());
-  double floatLevel = Options["UCI_LimitStrength"] ?
-                      std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) :
-                        double(Options["Skill Level"]);
+  if (variety)
+      floatLevel = Options["UCI_LimitStrength"] ?
+                          std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) : skill_level;
+  else
+      floatLevel = Options["UCI_LimitStrength"] ?
+                          std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) : double(Options["Skill Level"]);
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
@@ -656,7 +662,7 @@ void Thread::search() {
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)4);
+      multiPV = std::max(multiPV, (size_t)5);
 
   multiPV = std::min(multiPV, rootMoves.size());
 #ifndef Noir
@@ -759,7 +765,7 @@ void Thread::search() {
               contempt = (us == WHITE ?  make_score(dct, dct / 2)
                                       : -make_score(dct, dct / 2));
           }
-#ifndef Noir  //Noir starts at line 2490
+#ifndef Noir  //Noir starts at line 2345
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
@@ -2526,7 +2532,7 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
             m.tbRank = 0;
     }
 }
-#else     // Noir starts , Start with a small aspiration window and, in the case of a fail
+#else     // Noir starts from #ifnedef at 735 line  , Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
           while (true)
@@ -2601,6 +2607,16 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
       if (!mainThread)
           continue;
 
+      if (Options["FastPlay"])
+        {   if ( Time.elapsed() > Time.optimum() / 256
+          && ( abs(bestValue) > 12300 ||  abs(bestValue) >= VALUE_MATE_IN_MAX_PLY ))
+          Threads.stop = true;
+        }
+
+      // If skill level is enabled and time is up, pick a sub-optimal best move
+      if (skill.enabled() && skill.time_to_pick(rootDepth))
+          skill.pick_best(multiPV);
+
       // Do we have time for the next iteration? Can we stop searching now?
       if (    Limits.use_time_management()
           && !Threads.stop
@@ -2652,6 +2668,11 @@ void Tablebases::rank_root_moves(Position& pos, Search::RootMoves& rootMoves) {
       return;
 
   mainThread->previousTimeReduction = timeReduction;
+
+  // If skill level is enabled, swap best PV line with the sub-optimal one
+  if (skill.enabled())
+      std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
+                skill.best ? skill.best : skill.pick_best(multiPV)));
 }
 
 
@@ -3939,6 +3960,42 @@ namespace {
     if (depth > 11 && ss->ply < MAX_LPH)
         thisThread->lowPlyHistory[ss->ply][from_to(move)] << stat_bonus(depth - 7);
   }
+
+
+    // When playing with strength handicap, choose best move among a set of RootMoves
+    // using a statistical rule dependent on 'level'. Idea by Heinz van Saanen.
+
+    Move Skill::pick_best(size_t multiPV) {
+
+      const RootMoves& rootMoves = Threads.main()->rootMoves;
+      static PRNG rng(now()); // PRNG sequence should be non-deterministic
+
+      // RootMoves are already sorted by score in descending order
+      Value topScore = rootMoves[0].score;
+      int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
+      int weakness = 120 - level;
+      int maxScore = -VALUE_INFINITE;
+
+      // Choose best move. For each move score we add two terms, both dependent on
+      // weakness. One is deterministic and bigger for weaker levels, and one is
+      // random. Then we choose the move with the resulting highest score.
+      for (size_t i = 0; i < multiPV; ++i)
+      {
+          // This is our magic formula
+          int push = (  weakness * int(topScore - rootMoves[i].score)
+                      + delta * (rng.rand<unsigned>() % weakness)) / 128;
+
+          if (rootMoves[i].score + push >= maxScore)
+          {
+              maxScore = rootMoves[i].score + push;
+              best = rootMoves[i].pv[0];
+          }
+      }
+
+      return best;
+    }
+
+
 
 } // namespace
 

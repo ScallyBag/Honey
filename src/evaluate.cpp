@@ -986,7 +986,7 @@ namespace {
     // Initialize score by reading the incrementally updated scores included in
     // the position object (material + piece square tables) and the material
     // imbalance. Score is computed internally from the white point of view.
-#if defined (Noir) || (Stockfish) || (Sullivan)
+#if defined (Noir) || (Stockfish) || (Sullivan) || (Beth) || (Blau)
     Score score = Score(0);
     score = pos.psq_score() + me->imbalance() + pos.this_thread()->contempt;
 #else
