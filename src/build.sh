@@ -55,21 +55,21 @@ fi
 BUILD="profile-build"
 NAME_ARCH=AMD
 function mke() {
-CXXFLAGS='-flto -march=native' make -j30 $BUILD  $COMP "$@"
+CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 #CXXFLAGS=' -mbmi' make -j30 $BUILD  $COMP "$@"
 }
   for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
   #for ENG in "BLAU=yes" "HONEY=yes" "STOCKFISH=yes"
-  #for ENG in  "NOIR=yes"
+  #for ENG in  "BLAU=yes"
   do
     for ARCH in "x86-64-avx2"
-    #for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" "x86-64-avx2"
+    #for ARCH in "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2" \
     do
       echo $ARCH
       echo $ENG
       mke $ENG ARCH=$ARCH && wait
-      #rename  v13.1-.exe v13.1-$ARCH.exe *.exe
-      rename  v13.1-.exe v13.1.exe *.exe
+      rename  v13.1-.exe v13.1-$ARCH.exe *.exe
+      #rename  v13.1-.exe v13.1.exe *.exe
     done
   done
 

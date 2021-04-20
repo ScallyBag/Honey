@@ -57,7 +57,6 @@ namespace Search {
   int NodesToSearch = 0;
   int proValue;
   int profound_v;
-  double skill_level = (Options["Skill Level"]);
 
 }
 
@@ -319,12 +318,19 @@ void MainThread::search() {
          if (Options["NPS_Level"])
          {
              benchKnps = 1000 * (Options["Bench_KNPS"]);
-             sync_cout << "Bknps: " << benchKnps  << sync_endl;// for debug
+             //sync_cout << "Bknps: " << benchKnps  << sync_endl;// for debug
              int nps = 64 * pow(1.1486, (Options["NPS_Level"] - 1 ));
              Limits.nodes = nps;
              Limits.nodes *= Time.optimum()/1000 + 1 ;
-             std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-         }
+             int sleepTime_1 = Time.optimum() * double(1 - Limits.nodes/benchKnps);
+             uci_sleep=true;
+             if (uci_sleep)
+                 {
+                   sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime_1 << " milliseconds\n" << sync_endl;// for debug
+                   sync_cout << sync_endl;
+                   std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
+                 }
+          }
          else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
          {
              uci_elo = (Options["UCI_Elo"]);
@@ -353,7 +359,7 @@ void MainThread::search() {
              uci_elo = 2500;
          else if (Options["Engine_Level"] == "SIM")
              uci_elo = 2400;
-		 else if (Options["Engine_Level"] == "IM")
+		     else if (Options["Engine_Level"] == "IM")
              uci_elo = 2300;
          else if (Options["Engine_Level"] == "Cray_Blitz")
              uci_elo = 2200;
@@ -646,15 +652,10 @@ void Thread::search() {
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
-  bool variety = (Options["Variety"]);
   double floatLevel;
   PRNG rng(now());
-  if (variety)
-      floatLevel = Options["UCI_LimitStrength"] ?
-                          std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) : skill_level;
-  else
-      floatLevel = Options["UCI_LimitStrength"] ?
-                          std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) : double(Options["Skill Level"]);
+  floatLevel = ( Options["UCI_LimitStrength"] || Options["Variety"] ) ?
+                 std::clamp(std::pow((Options["UCI_Elo"] -  946.6) / 71.7, 1 / 0.806), 0.0, 40.0) : double(Options["Skill Level"]);
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);

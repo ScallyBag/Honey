@@ -52,14 +52,13 @@
   const unsigned int         gEmbeddedNNUESize = 1;
 #endif
 
-bool pureNN = Options["PureNN"];
-
 using namespace std;
 using namespace Eval::NNUE;
 
 namespace Eval {
 
   bool useNNUE;
+  bool pureNN;
   string eval_file_loaded = "None";
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
@@ -73,6 +72,7 @@ namespace Eval {
   void NNUE::init() {
 
     useNNUE = Options["UseNN"];
+    pureNN = Options["PureNN"];
     if (!useNNUE)
       {
         pureNN = false;
@@ -974,6 +974,7 @@ namespace {
   Value Evaluation<T>::value() {
 
     assert(!pos.checkers());
+    bool pureNN = Options["PureNN"];
 
     // Probe the material hash table
     me = Material::probe(pos);

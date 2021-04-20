@@ -136,7 +136,7 @@ void init(OptionsMap& o) {
 #if (defined Pi )
     o["Bench_KNPS"]               << Option (200, 100, 1000);//used for UCI Play By Elo
 #else
-    o["Bench_KNPS"]               << Option (2500, 500, 6000);//used for UCI Play By Elo
+    o["Bench_KNPS"]               << Option (2000, 500, 6000);//used for UCI Play By Elo
 #endif
     o["Search_Nodes"]             << Option(0, 0, 100000);
     o["Search_Depth"]             << Option(0, 0, 25);
