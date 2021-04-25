@@ -54,9 +54,13 @@ public:
   void idle_loop();
   void start_searching();
   void wait_for_search_finished();
+
 #if defined (Sullivan) || (Noir) || (Blau) || (Harmon)
   int best_move_count(Move move) const;
 #endif
+
+  int id() const { return idx; }
+
 
   Pawns::Table pawnsTable;
   Material::Table materialTable;
