@@ -1197,6 +1197,14 @@ icc-profile-use:
 #
 #
 #
-### Based on commits through 04/19/2021:
+### Based on commits through 05/02/2021:
 ### ======================================================
+### Honey-v13.1-.bench:Nodes searched  : 7829
+### Honey-v13.1-.bench:Nodes/second    : 128344
+### Honey-v13.1--64_Cores.bench:Nodes searched  : 1360647
+### Honey-v13.1--64_Cores.bench:Nodes/second    : 8504043
+### Oki-Maguro-v13.1-.bench:Nodes searched  : 7621
+### Oki-Maguro-v13.1-.bench:Nodes/second    : 127016
+### Oki-Maguro-v13.1--64_Cores.bench:Nodes searched  : 5249815
+### Oki-Maguro-v13.1--64_Cores.bench:Nodes/second    : 26249k
 ### ======================================================

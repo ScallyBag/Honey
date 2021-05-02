@@ -115,7 +115,7 @@ void init(OptionsMap& o) {
     o["Ponder"]                   << Option(false);
     o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
 	  o["FastPlay"]                 << Option(false);
-	  o["Minimal Output"]           << Option(true);
+	  o["Minimal Output"]           << Option(false);
     // Score percentage evalaution output, similair to Lc0 output
     o["Score Output"]             << Option("Centipawn var ScorPct-GUI var Centipawn"
                                            ,"Centipawn");
@@ -138,8 +138,8 @@ void init(OptionsMap& o) {
 #else
     o["Bench_KNPS"]               << Option (2000, 500, 6000);//used for UCI Play By Elo
 #endif
-    o["Search_Nodes"]             << Option(0, 0, 100000);
-    o["Search_Depth"]             << Option(0, 0, 25);
+    o["Search_Nodes"]             << Option(0, 0, 10000000);
+    o["Search_Depth"]             << Option(0, 0, 30);
     o["Tactical"]                 << Option(0, 0, 8);
     o["Variety"]                  << Option(false);
     o["UCI_ShowWDL"]              << Option(false);
