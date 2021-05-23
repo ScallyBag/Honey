@@ -1059,7 +1059,15 @@ make_v:
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
 
-    return (pos.side_to_move() == WHITE ? v : -v);
+//    return (pos.side_to_move() == WHITE ? v : -v);
+
+    // Evaluation grain
+    v = (v / 16) * 16;
+
+    // Side to move point of view
+    v = (pos.side_to_move() == WHITE ? v : -v);
+
+    return v;
 
   }
 

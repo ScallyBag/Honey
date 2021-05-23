@@ -76,7 +76,7 @@ void init(OptionsMap& o) {
     o["Search_Depth"]             << Option(0, 0, 30);
     o["Tactical"]                 << Option(0, 0, 8);
     o["Variety"]                  << Option(false);
- 
+
   o["Slow Mover"]            << Option(100, 10, 1000);
   o["nodestime"]             << Option(0, 0, 10000);
   o["UCI_Chess960"]          << Option(false);
@@ -89,7 +89,7 @@ void init(OptionsMap& o) {
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
   o["Use NNUE"]              << Option(true, on_use_NNUE);
-    o["PureNN"]                    << Option(true);
+  o["PureNN"]                << Option(false);
 
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }
