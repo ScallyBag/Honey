@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -40,6 +40,8 @@ namespace Stockfish {
 namespace Search {
 
   LimitsType Limits;
+
+  bool adaptive;
 }
 
 namespace Tablebases {
@@ -66,7 +68,7 @@ namespace {
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(231 * (d - improving));
+    return Value(214 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -74,7 +76,7 @@ namespace {
 
   Depth reduction(bool i, Depth d, int mn) {
     int r = Reductions[d] * Reductions[mn];
-    return (r + 503) / 1024 + (!i && r > 915);
+    return (r + 534) / 1024 + (!i && r > 904);
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -83,7 +85,7 @@ namespace {
 
   // History and stats update bonus, based on depth
   int stat_bonus(Depth d) {
-    return d > 14 ? 66 : 6 * d * d + 231 * d - 206;
+    return d > 14 ? 73 : 6 * d * d + 229 * d - 215;
   }
 
   // Add a small random component to draw evaluations to avoid 3-fold blindness
@@ -94,13 +96,15 @@ namespace {
   // Skill structure is used to implement strength limit
   struct Skill {
     explicit Skill(int l) : level(l) {}
-    bool enabled() const { return level < 20; }
+    bool enabled() const { return level < 40; }
     bool time_to_pick(Depth depth) const { return depth == 1 + level; }
     Move pick_best(size_t multiPV);
 
     int level;
     Move best = MOVE_NONE;
   };
+
+   bool limitStrength = false;
 
   template <NodeType NT>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
@@ -196,6 +200,12 @@ void MainThread::search() {
   }
   else
   {
+
+      if ( !limitStrength && Options["Search_Nodes"])
+          Limits.nodes = int(Options["Search_Nodes"]) ;
+      if ( !limitStrength && !Limits.nodes && Options["Search_Depth"])
+          Limits.depth = int(Options["Search_Depth"]) ;
+
       Threads.start_searching(); // start non-main threads
       Thread::search();          // main thread start searching
   }
@@ -235,12 +245,55 @@ void MainThread::search() {
   if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
+
+  if  (adaptive)
+  {
+
+      size_t i = 0;
+      if ( bestPreviousScore >= -PawnValueMg && bestPreviousScore <= PawnValueMg * 5 )
+      {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore)
+          ++i;
+          bestPreviousScore = bestThread->rootMoves[i].score;
+          sync_cout  << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+      }
+      else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 10 )
+      {
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score < bestPreviousScore
+                && bestPreviousScore + PawnValueMg/2  > bestThread->rootMoves[i+1].score)
+          {
+              ++i;
+              break;
+          }
+          bestPreviousScore = bestThread->rootMoves[i].score;
+          while (i+1 < rootMoves.size() && bestThread->rootMoves[i+1].score > bestPreviousScore
+                && bestPreviousScore + PawnValueMg/2  < bestThread->rootMoves[i+1].score)
+          {
+              ++i;
+              bestPreviousScore = bestThread->rootMoves[i-1].score;
+
+          }
+          bestPreviousScore = bestThread->rootMoves[i].score;
+          sync_cout  << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+      }
+      else
+      {
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+          if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+              std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+      }
+  }
+  else
+  {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
 
   std::cout << sync_endl;
+}
 }
 
 
@@ -293,10 +346,11 @@ void Thread::search() {
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
+  bool variety = (Options["Variety"]) ;
+  double floatLevel;
   PRNG rng(now());
-  double floatLevel = Options["UCI_LimitStrength"] ?
-                      std::clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 20.0) :
-                        double(Options["Skill Level"]);
+  floatLevel = ( Options["UCI_LimitStrength"] || variety ) ?
+                 std::clamp(std::pow((Options["UCI_Elo"]+(Options["Variety"]*512) - 946.6) / 71.7, 1 / 0.806), 0.0, 40.0) : double(Options["Skill Level"]);
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
@@ -304,7 +358,7 @@ void Thread::search() {
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)4);
+      multiPV = std::max(multiPV, (size_t)5);
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
@@ -377,7 +431,7 @@ void Thread::search() {
           // Start with a small aspiration window and, in the case of a fail
           // high/low, re-search with a bigger window until we don't fail
           // high/low anymore.
-          failedHighCnt = 0;
+          int failedHighCnt = 0;
           while (true)
           {
               Depth adjustedDepth = std::max(1, rootDepth - failedHighCnt - searchAgainCounter);
@@ -514,7 +568,7 @@ void Thread::search() {
   mainThread->previousTimeReduction = timeReduction;
 
   // If skill level is enabled, swap best PV line with the sub-optimal one
-  if (skill.enabled())
+  if (skill.enabled() || variety)
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
@@ -798,10 +852,10 @@ namespace {
     // Step 8. Null move search with verification search (~40 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < 24185
+        && (ss-1)->statScore < 23767
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 22 * depth - 34 * improving + 162 * ss->ttPv + 159
+        &&  ss->staticEval >= beta - 20 * depth - 22 * improving + 168 * ss->ttPv + 159
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
@@ -809,7 +863,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (1062 + 68 * depth) / 256 + std::min(int(eval - beta) / 190, 3);
+        Depth R = (1090 + 81 * depth) / 256 + std::min(int(eval - beta) / 205, 3);
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -922,7 +976,7 @@ moves_loop: // When in check, search starts from here
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
     // Step 11. A small Probcut idea, when we are in check
-    probCutBeta = beta + 400;
+    probCutBeta = beta + 409;
     if (   ss->inCheck
         && !PvNode
         && depth >= 4
@@ -1073,7 +1127,7 @@ moves_loop: // When in check, search starts from here
           {
               extension = 1;
               singularQuietLMR = !ttCapture;
-              if (!PvNode && value < singularBeta - 140)
+              if (!PvNode && value < singularBeta - 93)
                   extension = 2;
           }
 
@@ -1157,10 +1211,6 @@ moves_loop: // When in check, search starts from here
               if (ttCapture)
                   r++;
 
-              // Increase reduction at root if failing high
-              if (rootNode)
-                  r += thisThread->failedHighCnt * thisThread->failedHighCnt * moveCount / 512;
-
               // Increase reduction for cut nodes (~3 Elo)
               if (cutNode)
                   r += 2;
@@ -1169,11 +1219,11 @@ moves_loop: // When in check, search starts from here
                              + (*contHist[0])[movedPiece][to_sq(move)]
                              + (*contHist[1])[movedPiece][to_sq(move)]
                              + (*contHist[3])[movedPiece][to_sq(move)]
-                             - 4791;
+                             - 4923;
 
               // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
               if (!ss->inCheck)
-                  r -= ss->statScore / 14790;
+                  r -= ss->statScore / 14721;
           }
 
           // In general we want to cap the LMR depth search at newDepth. But if
@@ -1740,7 +1790,7 @@ moves_loop: // When in check, search starts from here
     // RootMoves are already sorted by score in descending order
     Value topScore = rootMoves[0].score;
     int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
-    int weakness = 120 - 2 * level;
+    int weakness = 120 - level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
