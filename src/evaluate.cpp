@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -53,7 +53,7 @@
   const unsigned int         gEmbeddedNNUESize = 1;
 #endif
 
-
+bool pureNN;
 using namespace std;
 
 namespace Stockfish {
@@ -61,6 +61,7 @@ namespace Stockfish {
 namespace Eval {
 
   bool useNNUE;
+
   string eval_file_loaded = "None";
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
@@ -74,9 +75,12 @@ namespace Eval {
   void NNUE::init() {
 
     useNNUE = Options["Use NNUE"];
+    pureNN  = Options["PureNN"];
     if (!useNNUE)
+      {
+        pureNN = false;
         return;
-
+      }
     string eval_file = string(Options["EvalFile"]);
 
     #if defined(DEFAULT_NNUE_DIRECTORY)
@@ -1014,9 +1018,10 @@ namespace {
     auto lazy_skip = [&](Value lazyThreshold) {
         return abs(mg_value(score) + eg_value(score)) / 2 > lazyThreshold + pos.non_pawn_material() / 64;
     };
-
-    if (lazy_skip(LazyThreshold1))
-        goto make_v;
+    if (!pureNN)
+      {
+      if (lazy_skip(LazyThreshold1))
+          goto make_v;
 
     // Main evaluation begins here
     initialize<WHITE>();
@@ -1038,9 +1043,9 @@ namespace {
     if (lazy_skip(LazyThreshold2))
         goto make_v;
 
-    score +=  threats<WHITE>() - threats<BLACK>()
-            + space<  WHITE>() - space<  BLACK>();
-
+      score +=  threats<WHITE>() - threats<BLACK>()
+              + space<  WHITE>() - space<  BLACK>();
+     }
 make_v:
     // Derive single value from mg and eg parts of score
     Value v = winnable(score);
@@ -1054,13 +1059,8 @@ make_v:
         Trace::add(MOBILITY, mobility[WHITE], mobility[BLACK]);
     }
 
-    // Evaluation grain
-    v = (v / 16) * 16;
+    return (pos.side_to_move() == WHITE ? v : -v);
 
-    // Side to move point of view
-    v = (pos.side_to_move() == WHITE ? v : -v);
-
-    return v;
   }
 
 
@@ -1109,7 +1109,7 @@ Value Eval::evaluate(const Position& pos) {
 
   Value v;
 
-  if (!Eval::useNNUE)
+  if (!Eval::useNNUE || !pureNN)
       v = Evaluation<NO_TRACE>(pos).value();
   else
   {
