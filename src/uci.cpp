@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -158,12 +158,13 @@ namespace {
   void bench(Position& pos, istream& args, StateListPtr& states) {
 
     string token;
-    uint64_t num, nodes = 0, cnt = 1;
+    uint64_t num, lap_nodes = 0, nodes = 0, cnt = 1;
 
     vector<string> list = setup_bench(pos, args);
     num = count_if(list.begin(), list.end(), [](string s) { return s.find("go ") == 0 || s.find("eval") == 0; });
 
     TimePoint elapsed = now();
+    TimePoint lap_time_elapsed = elapsed;
 
     for (const auto& cmd : list)
     {
@@ -172,12 +173,24 @@ namespace {
 
         if (token == "go" || token == "eval")
         {
-            cerr << "\nPosition: " << cnt++ << '/' << num << " (" << pos.fen() << ")" << endl;
+
+            cerr << "\nPosition: " << cnt++ << '/' << num  << "\nFEN: " << pos.fen() << endl;
             if (token == "go")
             {
+               lap_time_elapsed = now();
                go(pos, is, states);
                Threads.main()->wait_for_search_finished();
                nodes += Threads.nodes_searched();
+               lap_nodes = Threads.nodes_searched();
+               lap_time_elapsed = now() - lap_time_elapsed + 1;
+               if (lap_nodes * 1000 / lap_time_elapsed < 10000000)
+                   cerr << "Nodes/Second: " << (lap_nodes * 1000) / lap_time_elapsed << endl;
+               else
+                   cerr << "Nodes/Second: " << lap_nodes / lap_time_elapsed << "k" << endl;
+               if (Options["UseNN"])
+                   cerr << "NN evaluation using " << string(EvalFileDefaultName) << " enabled." << sync_endl;
+                else
+                   cerr << "Classical evaluation enabled." <<  sync_endl;
             }
             else
                trace_eval(pos);

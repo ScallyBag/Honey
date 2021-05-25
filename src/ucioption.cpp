@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -95,11 +95,13 @@ void init(OptionsMap& o) {
   o["UCI_LimitStrength"]     << Option(false);
   o["UCI_Elo"]               << Option(1200, 1200, 2900);
   o["UCI_ShowWDL"]           << Option(false);
-  o["SyzygyPath"]            << Option("<empty>", on_tb_path);
+  o["SyzygyPath"]            << Option("c:\\syzygy", on_tb_path);
+  //o["SyzygyPath"]          << Option("<empty>", on_tb_path);
+  //o["SyzygyPath"]          << Option("<4-men>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  o["Use NNUE"]              << Option(true, on_use_NNUE);
+  o["UseNN"]              << Option(true, on_use_NNUE);
 
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }

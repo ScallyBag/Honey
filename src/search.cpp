@@ -658,7 +658,12 @@ namespace {
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
-
+    if (rootNode)
+    {
+        if  (pos.count<ALL_PIECES>() > 29  && variety)
+             variety_flag = true;
+        else variety_flag = false;
+    }
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
     if (   pos.rule50_count() >= 3
@@ -705,9 +710,7 @@ namespace {
     maxValue           = VALUE_INFINITE;
 
     // Check for the available remaining time
-    if  (pos.count<ALL_PIECES>() > 29  && variety)
-         variety_flag = true;
-    else variety_flag = false;
+
     if (thisThread == Threads.main())
         static_cast<MainThread*>(thisThread)->check_time();
 

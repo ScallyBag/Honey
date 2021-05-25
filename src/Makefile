@@ -1,12 +1,12 @@
-# Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-# Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+# Honey, a UCI chess playing engine derived from Glaurung 2.1 and Stockfish
+# Copyright (C) 2004-2021 The Honey developers (see AUTHORS file)
 #
-# Stockfish is free software: you can redistribute it and/or modify
+# Honey is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
 #
-# Stockfish is distributed in the hope that it will be useful,
+# Honey is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
@@ -21,9 +21,9 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = stockfish.exe
+EXE = honey-13.2.exe
 else
-EXE = stockfish
+EXE = honey-v13.2
 endif
 
 ### Installation dir definitions
@@ -32,7 +32,8 @@ BINDIR = $(PREFIX)/bin
 
 ### Built-in benchmark for pgo-builds
 ifeq ($(SDE_PATH),)
-	PGOBENCH = ./$(EXE) bench
+	PGOBENCH = ./$(EXE) bench 16 1 13 true
+        PGOBENCH2  = ./$(EXE) bench 13 2 13 true
 else
 	PGOBENCH = $(SDE_PATH) -- ./$(EXE) bench
 endif
@@ -739,7 +740,8 @@ profile-build: net config-sanity objclean profileclean
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
-	$(PGOBENCH) > /dev/null
+	$(PGOBENCH)  >/dev/null
+	$(PGOBENCH2) >/dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
@@ -876,13 +878,13 @@ clang-profile-use:
 
 gcc-profile-make:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-generate' \
+	EXTRACXXFLAGS='-fprofile-generate -fprofile-correction' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
 gcc-profile-use:
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) \
-	EXTRACXXFLAGS='-fprofile-use -fno-peel-loops -fno-tracer' \
+	EXTRACXXFLAGS='-fprofile-use -fprofile-correction -fno-peel-loops -fno-tracer' \
 	EXTRALDFLAGS='-lgcov' \
 	all
 
