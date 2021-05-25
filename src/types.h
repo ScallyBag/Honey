@@ -1,13 +1,13 @@
 /*
-  Stockfish, a UCI chess playing engine derived from Glaurung 2.1
+  Honey, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
 
-  Stockfish is free software: you can redistribute it and/or modify
+  Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
   (at your option) any later version.
 
-  Stockfish is distributed in the hope that it will be useful,
+  Honey is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
@@ -186,13 +186,31 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
-  PawnValueMg   = 126,   PawnValueEg   = 208,
+  #define PVM 78/100
+  #define PVE 78/100
+  #define NVM 78/100
+  #define NVE 78/100
+  #define BVM 78/100
+  #define BVE 78/100
+  #define RVM 78/100
+  #define RVE 78/100
+  #define QVM 78/100
+  #define QVE 78/100
+
+  /*PawnValueMg   = 126,   PawnValueEg   = 208,
   KnightValueMg = 781,   KnightValueEg = 854,
   BishopValueMg = 825,   BishopValueEg = 915,
   RookValueMg   = 1276,  RookValueEg   = 1380,
-  QueenValueMg  = 2538,  QueenValueEg  = 2682,
+  QueenValueMg  = 2538,  QueenValueEg  = 2682,*/
+  PawnValueMg   = 126*PVM,   PawnValueEg   = 208*PVE,
+  KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
+  BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
+  RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
+  QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
 
-  MidgameLimit  = 15258, EndgameLimit  = 3915
+
+  //MidgameLimit  = 15258, EndgameLimit  = 3915
+  MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
 };
 
 enum PieceType {

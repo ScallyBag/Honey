@@ -67,29 +67,39 @@ void init(OptionsMap& o) {
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
-  o["Adaptive_Play"]            << Option(false); //Adaptive Play change - now simple on/off check box
-
-  o["MultiPV"]               << Option(1, 1, 500);
+  o["MultiPV"]               << Option(1, 1, 256);
   o["Skill Level"]           << Option(40, 0, 40);
   o["Move Overhead"]         << Option(10, 0, 5000);
-    o["Search_Nodes"]             << Option(0, 0, 10000000);
-    o["Search_Depth"]             << Option(0, 0, 30);
-    o["Tactical"]                 << Option(0, 0, 8);
-    o["Variety"]                  << Option(false);
+  o["Bench_KNPS"]               << Option (2000, 100, 6000);//used for UCI Play By Elo
+  o["Search_Nodes"]          << Option(0, 0, 10000000);
+  o["Search_Depth"]          << Option(0, 0, 30);
+  o["Tactical"]              << Option(3, 0, 8);
+  o["Tactical_Depth"]        << Option(5, 0, 16);
+  o["Variety"]               << Option(false);
+  o["FIDE_Ratings"]          << Option(true);
+  // A separate weaker play level from the predefined levels below. The difference
+  // between both of the methods and the "skill level" is that the engine is only weakened
+  // by the reduction in nodes searched, thus reducing the move horizon visibility naturally
+  o["Engine_Level"]             << Option("None var World_Champion var Super_GM "
+                                            "var GM var Deep_Thought var SIM var Cray_Blitz "
+                                            "var IM var Master var Expert var Class_A "
+                                            "var Class_B var Class_C var Class_D var Boris "
+                                            "var Novice var None", "None");
+
 
   o["Slow Mover"]            << Option(100, 10, 1000);
+  o["Slow Play"]                << Option(false);
   o["nodestime"]             << Option(0, 0, 10000);
   o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
+  o["UCI_Elo"]               << Option(1200, 1200, 2900);
   o["UCI_ShowWDL"]           << Option(false);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
   o["Use NNUE"]              << Option(true, on_use_NNUE);
-  o["PureNN"]                << Option(false);
 
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }
