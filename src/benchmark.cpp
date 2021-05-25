@@ -149,7 +149,7 @@ const vector<string> Defaults = {
   "7r/p3k3/2p5/1pPp4/3P4/PP4P1/3P1PB1/2K5 w - - 0 1; Vitaly Chekhover, Parna Ty Bull 1947, draw",
   "2br4/r2pp3/8/1p1p1kN1/pP1P4/2P3R1/PP3PP1/2K5 w - - 0 1; F. Simkovitch, L'Italia Scacchistica 1923, draw",
   "8/1p6/1p6/kPp2P1K/2P5/N1Pp4/q2P4/1N6 w - - 0 1; Noam Elkies, 1991, draw",
-  "4K1k1/8/1p5p/1Pp3b1/8/1P3P2/P1B2P2/8 w - - 0 1 bm f4; 1st Prize, Ladislav Salai Jr, Šachová skladba 2011-12, win"
+  "4K1k1/8/1p5p/1Pp3b1/8/1P3P2/P1B2P2/8 w - - 0 1 bm f4; 1st Prize, Ladislav Salai Jr, Šachová skladba 2011-12, win",
   "3r4/3r4/2p1k3/p1pbPp1p/Pp1p1PpP/1P1P2R1/2P4R/2K1Q3 w - - 0 1 bm Rxg4:  False Fortress"
 #endif
 };
