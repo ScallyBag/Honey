@@ -64,6 +64,11 @@ namespace {
     else if (token == "fen")
         while (is >> token && token != "moves")
             fen += token + " ";
+#ifdef Add_Features
+    else if (token == "f")
+        while (is >> token && token != "moves")
+            fen += token + " ";
+#endif
     else
         return;
 
@@ -114,8 +119,143 @@ namespace {
         Options[name] = value;
     else
         sync_cout << "No such option: " << name << sync_endl;
-  }
+}
 
+// set() is called by typing "s" from the terminal when the user wants to use abbreviated
+// non-UCI comamnds and avoid the uci option protocol "setoption name (option name) value (xxx) ",
+// e.g., instead of typing "setoption name threads value 8" to set cores to 8 at the terminal,
+// the user simply types "s threads 8" - restricted to option names that do not contain
+// any white spaces - see ucioption.cpp.  The argument can take white spaces e.g.,
+// "s syzygypath /endgame tablebases/syzygy" will work
+void set(istringstream& is) {
+    string token, name, value;
+
+    // Read option name (no white spaces in option name)
+    is >> token;
+    name = token;
+
+    // Read option value (can contain white spaces)
+    while (is >> token)
+        value += string(" ", value.empty() ? 0 : 1) + token;
+
+    // provide user confirmation
+    if (Options.count(name)) {
+        Options[name] = value;
+        sync_cout << "Confirmation: "<< name << " set to " << value <<  sync_endl;
+    }
+    else if (name == "50")
+    {
+      Options["Syzygy50MoveRule"] = {value};
+      sync_cout << "Confirmation: "<< "Syzygy50MoveRule" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "960")
+    {
+      Options["UCI_Chess960"] = {value};
+      sync_cout << "Confirmation: "<< "UCI_Chess960" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "dpa")
+    {
+      Options["Deep Pro Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "h")  {
+      TT.resize(stoi(value));
+      sync_cout << "Confirmation: "<< "Hash" << " set to " << value << " Mb" <<  sync_endl;
+    }
+    else if (name == "mo")
+    {
+    Options["Min Output"] = {value};
+    sync_cout << "Confirmation: "<< "Min Output" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "mv")
+    {
+      Options["MultiPV"] = {value};
+      sync_cout << "Confirmation: "<< "MultiPV" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "nn")
+    {
+      Options["UseNN"] = {value};
+      sync_cout << "Confirmation: "<< "UseNN" << " set to " << value <<  sync_endl;
+      if (Options["UseNN"])
+          sync_cout << "info string: NN evaluation using " << string(EvalFileDefaultName)  << " enabled." << sync_endl;
+      else
+          sync_cout << "info string: Classical evaluation enabled." <<  sync_endl;
+    }
+    else if (name == "proa")
+    {
+      Options["Pro Analysis"] = {value};
+      sync_cout << "Confirmation: "<< "Pro Analysis" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "prov")
+    {
+      Options["Pro Value"] = {value};
+      sync_cout << "Confirmation: "<< "Pro Value" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "so")
+    {
+    Options["Score Output"] = {value};
+    sync_cout << "Confirmation: "<< "Score Output" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "t")  {
+      Threads.set(stoi(value));
+      sync_cout << "Confirmation: "<< "Threads" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "ta")
+    {
+    Options["Tactical"] = {value};
+    sync_cout << "Confirmation: "<< "Tactical" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "tal")
+    {
+    Options["Tal"] = {value};
+    sync_cout << "Confirmation: "<< "Tal" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "z")
+    {
+      Tablebases::init(value);
+      sync_cout << "Confirmation: "<< "SyzygyPath" << " set to " << value <<  sync_endl;
+    }
+    else if (name == "" || name == "option" )
+    {
+      sync_cout << ""  << sync_endl;
+      sync_cout <<  " Shortcut Commands:"  << sync_endl;
+      sync_cout << "  Note: setoption name 'option name'  value 'value'"  << sync_endl;
+      sync_cout << "  is replaced  by:"  <<  sync_endl;
+      sync_cout << "    set (or 's'), 'option name' or 'option shortcut' 'value'"  << sync_endl;
+      sync_cout <<  "  Note: 'set' or 's', without an 'option' entered, displays the shortcuts"  << sync_endl;
+      sync_cout << "\n Shortcuts:"  << sync_endl;
+      sync_cout << "    '50'  -> shortcut for 'Syzygy50MoveRule'"  <<  sync_endl;
+      sync_cout << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
+      sync_cout << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
+      sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
+      sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
+      sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
+      sync_cout << "    'm'   -> shortcut for 'Mate'"  << sync_endl;
+      sync_cout << "    'mo'  -> shortcut for 'Min Output'" << sync_endl;
+      sync_cout << "    'mv'  -> shortcut for 'MultiPV'"  << sync_endl;
+      sync_cout << "    'mt'  -> shortcut for 'Movetime'-> " <<  sync_endl;
+      sync_cout <<  "  Note: 'mt' is in seconds, while" << sync_endl;
+      sync_cout << "  movetime is in milliseconds"  << sync_endl;
+      sync_cout << "    'p f' -> shortcut for 'position fen'" << sync_endl;
+      sync_cout << "    'nn'  ->  shortcut for 'UseNN'"  << sync_endl;
+      sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
+      sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
+      sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" <<  sync_endl;
+      sync_cout << "  Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
+      sync_cout << "  last option on the command line!"  << sync_endl;
+      sync_cout << "    'so'  -> shortcut for 'Score Output'" << sync_endl;
+      sync_cout << "    't'   -> shortcut for 'Threads'"  << sync_endl;
+      sync_cout << "    'ta'  -> shortcut for 'Tactical'"  << sync_endl;
+      sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
+      sync_cout << "    'z'   -> shortcut for 'SyzygyPath'"  << sync_endl;
+      sync_cout << "    '?'   -> shortcut for 'stop'"  <<  sync_endl;
+
+
+    }
+    else
+      sync_cout << "No such option: " << name << sync_endl;
+
+}
 
   // go() is called when engine receives the "go" UCI command. The function sets
   // the thinking time and other parameters from the input string, then starts
@@ -130,7 +270,8 @@ namespace {
     limits.startTime = now(); // As early as possible!
 
     while (is >> token)
-        if (token == "searchmoves") // Needs to be the last command on the line
+       if (token == "searchmoves" || token == "sm")  // Needs to be the last command on the line
+
             while (is >> token)
                 limits.searchmoves.push_back(UCI::to_move(pos, token));
 
@@ -146,6 +287,13 @@ namespace {
         else if (token == "perft")     is >> limits.perft;
         else if (token == "infinite")  limits.infinite = 1;
         else if (token == "ponder")    ponderMode = true;
+        else if (token == "d")         is >> limits.depth;
+        else if (token == "i")         limits.infinite = 1;
+        else if (token == "m")         is >> limits.mate;
+        else if (token == "mt")   {
+          is >> limits.movetime;
+          limits.movetime *= 1000;
+        }
 
     Threads.start_thinking(pos, states, limits, ponderMode);
   }
@@ -196,6 +344,7 @@ namespace {
                trace_eval(pos);
         }
         else if (token == "setoption")  setoption(is);
+        else if (token == "s")          set(is);
         else if (token == "position")   position(pos, is, states);
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take some while
     }
@@ -203,11 +352,14 @@ namespace {
     elapsed = now() - elapsed + 1; // Ensure positivity to avoid a 'divide by zero'
 
     dbg_print(); // Just before exiting
-
-    cerr << "\n==========================="
+    //cerr << FontColor::reset  << endl;
+    cerr << "\n================================="
          << "\nTotal time (ms) : " << elapsed
-         << "\nNodes searched  : " << nodes
-         << "\nNodes/second    : " << 1000 * nodes / elapsed << endl;
+         << "\nNodes searched  : " << nodes << endl;
+    if (nodes * 1000 / elapsed < 10000000)
+         cerr << "\nNodes/second    : " << (nodes * 1000) / elapsed << endl;
+         else
+         cerr << "\nNodes/second    : " << nodes / elapsed << "k" << endl;
   }
 
   // The win rate model returns the probability (per mille) of winning given an eval
@@ -215,7 +367,7 @@ namespace {
   int win_rate_model(Value v, int ply) {
 
      // The model captures only up to 240 plies, so limit input (and rescale)
-     double m = std::min(240, ply) / 64.0;
+     double m = std::min(192, ply) / 32;
 
      // Coefficients of a 3rd order polynomial fit based on fishtest data
      // for two parameters needed to transform eval to the argument of a
@@ -226,7 +378,7 @@ namespace {
      double b = (((bs[0] * m + bs[1]) * m + bs[2]) * m) + bs[3];
 
      // Transform eval to centipawns with limited range
-     double x = std::clamp(double(100 * v) / PawnValueEg, -1000.0, 1000.0);
+     double x = std::clamp(double(100 * v) / PawnValueEg, -2000.0, 2000.0);
 
      // Return win rate in per mille (rounded to nearest)
      return int(0.5 + 1000 / (1 + std::exp((a - x) / b)));
@@ -255,14 +407,23 @@ void UCI::loop(int argc, char* argv[]) {
   do {
       if (argc == 1 && !getline(cin, cmd)) // Block here waiting for input or EOF
           cmd = "quit";
+      else if (token == "q")
+          cmd = "quit";
 
       istringstream is(cmd);
 
       token.clear(); // Avoid a stale if getline() returns empty or blank line
       is >> skipws >> token;
 
+      // The GUI sends 'ponderhit' to tell us the user has played the expected move.
+      // So 'ponderhit' will be sent if we were told to ponder on the same move the
+      // user has played. We should continue searching but switch from pondering to
+      // normal search. In case Threads.stopOnPonderhit is set we are waiting for
       if (    token == "quit"
-          ||  token == "stop")
+              ||  token == "stop"
+              ||  token == "q"
+              ||  token == "?"
+          )
           Threads.stop = true;
 
       // The GUI sends 'ponderhit' to tell us the user has played the expected move.
@@ -279,7 +440,26 @@ void UCI::loop(int argc, char* argv[]) {
 
       else if (token == "setoption")  setoption(is);
       else if (token == "go")         go(pos, is, states);
-      else if (token == "position")   position(pos, is, states);
+      else if (token == "b")          bench(pos, is, states);
+      else if (token == "so")         setoption(is);
+      else if (token == "set")        set(is);
+      else if (token == "s")          set(is);
+
+      else if (token == "g")          go(pos, is, states);
+      else if (token == "q")          cmd = "quit";
+      else if (token == "position")
+      {
+          position(pos, is, states);
+          if (Options["Clean_Search"])
+              Search::clear();
+      }
+
+      else if (token == "p")
+      {
+          position(pos, is, states);
+          if (Options["Clean_Search"])
+              Search::clear();
+      }
       else if (token == "ucinewgame") Search::clear();
       else if (token == "isready")    sync_cout << "readyok" << sync_endl;
 

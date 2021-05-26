@@ -43,6 +43,7 @@ namespace Search {
   int benchKnps;
   int NodesToSearch;
   int tactical;
+  bool minOutput;
   bool variety = bool(Options["Variety"]);
   bool variety_flag = false;
 
@@ -187,6 +188,8 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
+
+  minOutput           = Options["Minimal Output"];
   bool fide                = Options["FIDE_Ratings"];
   //tactical                 = Options["Tactical"];
   int uci_elo              = (Options["UCI_Elo"]);
@@ -1117,7 +1120,7 @@ moves_loop: // When in check, search starts from here
 
       ss->moveCount = ++moveCount;
 
-      if (rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
+      if (!minOutput && rootNode && thisThread == Threads.main() && Time.elapsed() > 3000)
           sync_cout << "info depth " << depth
                     << " currmove " << UCI::move(move, pos.is_chess960())
                     << " currmovenumber " << moveCount + thisThread->pvIdx << sync_endl;
@@ -1730,28 +1733,20 @@ moves_loop: // When in check, search starts from here
 
   Value value_from_tt(Value v, int ply, int r50c) {
 
-    if (v == VALUE_NONE)
-        return VALUE_NONE;
+    if (v == VALUE_NONE) return VALUE_NONE;
 
-    if (v >= VALUE_TB_WIN_IN_MAX_PLY)  // TB win or better
-    {
-        if (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 99 - r50c)
-            return VALUE_MATE_IN_MAX_PLY - 1; // do not return a potentially false mate score
-
-        return v - ply;
+    if (v >= VALUE_TB_WIN_IN_MAX_PLY)  {    // TB win or better
+            return  v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 99 - r50c ? VALUE_MATE_IN_MAX_PLY - 1
+                 :  v - ply;
     }
 
-    if (v <= VALUE_TB_LOSS_IN_MAX_PLY) // TB loss or worse
-    {
-        if (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 99 - r50c)
-            return VALUE_MATED_IN_MAX_PLY + 1; // do not return a potentially false mate score
-
-        return v + ply;
+    if (v <= VALUE_TB_LOSS_IN_MAX_PLY)  {   // TB loss or worse
+            return  v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 99 - r50c ? VALUE_MATED_IN_MAX_PLY + 1
+                 :  v + ply;
     }
 
     return v;
   }
-
 
   // update_pv() adds current move and appends child pv[]
 
@@ -1906,15 +1901,44 @@ void MainThread::check_time() {
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
   callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
 
-  static TimePoint lastInfoTime = now();
+if (minOutput)  {
+  static TimePoint tick = now();
 
   TimePoint elapsed = Time.elapsed();
-  TimePoint tick = Limits.startTime + elapsed;
-
-  if (tick - lastInfoTime >= 1000)
+  TimePoint tock = Limits.startTime + elapsed;
+  Thread* bestThread = this;
+  if (elapsed > 500)
   {
-      lastInfoTime = tick;
-      dbg_print();
+    if (elapsed <= 120050)
+    {
+      if (tock - tick >= 10000)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/1000 << " seconds"  << sync_endl;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+        //dbg_print();
+      }
+    }
+    else if (elapsed <= 600100)
+    {
+      if (tock - tick >= 60000)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
+        //dbg_print();
+      }
+    }
+    else
+    {
+      if (tock - tick >= 300000)
+      {
+        tick = tock;
+        sync_cout  << "\n" << "info " << elapsed/60000 << " minutes" << sync_endl ;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE)  << sync_endl;
+        //dbg_print();
+      }
+    }
   }
 
   // We should not stop pondering until told so by the GUI
@@ -1925,8 +1949,8 @@ void MainThread::check_time() {
       || (Limits.movetime && elapsed >= Limits.movetime)
       || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
       Threads.stop = true;
+  }
 }
-
 
 /// UCI::pv() formats PV information according to the UCI protocol. UCI requires
 /// that all (if any) unsearched PV lines are sent using a previous search score.
