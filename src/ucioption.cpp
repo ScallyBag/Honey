@@ -77,7 +77,7 @@ void init(OptionsMap& o) {
   o["Search_Depth"]          << Option(0, 0, 30);
   o["Tactical"]              << Option(3, 0, 8);
   o["Tactical_Depth"]        << Option(5, 0, 16);
-  o["Variety"]               << Option(false);
+  o["Variety"]               << Option(0, 0, 16);
   o["FIDE_Ratings"]          << Option(true);
   // A separate weaker play level from the predefined levels below. The difference
   // between both of the methods and the "skill level" is that the engine is only weakened

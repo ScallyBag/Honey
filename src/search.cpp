@@ -44,7 +44,7 @@ namespace Search {
   int NodesToSearch;
   int tactical;
   bool minOutput;
-  bool variety = bool(Options["Variety"]);
+  int variety = Options["Variety"];
   bool variety_flag = false;
 
 
@@ -191,7 +191,6 @@ void MainThread::search() {
 
   minOutput           = Options["Minimal Output"];
   bool fide                = Options["FIDE_Ratings"];
-  //tactical                 = Options["Tactical"];
   int uci_elo              = (Options["UCI_Elo"]);
   bool uci_sleep           = Options["Slow Play"];
   bool limitStrength       = false;
@@ -407,9 +406,9 @@ void Thread::search() {
   std::copy(&lowPlyHistory[2][0], &lowPlyHistory.back().back() + 1, &lowPlyHistory[0][0]);
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
-  size_t multiPV = size_t(Options["MultiPV"]);
-  tactical	        = Options["Tactical"];
-  int tactical_depth	  = Options["Tactical_Depth"];
+  size_t multiPV        = size_t(Options["MultiPV"]);
+  tactical	            = Options["Tactical"];
+
   if (tactical) multiPV = size_t(pow(2, tactical));
 
   // Pick integer skill levels, but non-deterministically round up or down
@@ -424,7 +423,7 @@ void Thread::search() {
 
   PRNG rng(now());
   double floatLevel = (Options["UCI_LimitStrength"] || variety) ?
-               std::clamp(std::pow(((uci_level + double(variety * 512) - 1195.0  ) / 55), 1.075) + 1 , 0.0, 40.0) : 40;
+               std::clamp(std::pow(((uci_level + double(variety * 256) - 1195.0  ) / 55), 1.075) , 0.0, 40.0) : 40;
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
@@ -474,7 +473,7 @@ void Thread::search() {
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
-      if (tactical && tactical_depth && rootDepth > tactical_depth )
+      if (tactical && Options["Tactical_Depth"] && rootDepth > Options["Search_Depth"] )
            multiPV = 1;
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
@@ -661,9 +660,9 @@ namespace {
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
-    if (rootNode)
+    if (rootNode && variety)
     {
-        if  (pos.count<ALL_PIECES>() > 29  && variety)
+        if  (pos.count<ALL_PIECES>() > 32 - variety)
              variety_flag = true;
         else variety_flag = false;
     }
@@ -1864,8 +1863,8 @@ moves_loop: // When in check, search starts from here
 
     // RootMoves are already sorted by score in descending order
     Value topScore = rootMoves[0].score;
-    int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
-    int weakness = 128 - level;
+    int delta = std::min(topScore - rootMoves[multiPV - 1].score, 101*PawnValueMg/78);
+    int weakness = 122 + (2 * variety) - level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
