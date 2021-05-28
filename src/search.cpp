@@ -189,7 +189,7 @@ void MainThread::search() {
       return;
   }
 
-  minOutput           = Options["Minimal Output"];
+  minOutput                = Options["Minimal Output"];
   bool fide                = Options["FIDE_Ratings"];
   int uci_elo              = (Options["UCI_Elo"]);
   bool uci_sleep           = Options["Slow Play"];
@@ -407,8 +407,8 @@ void Thread::search() {
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
   size_t multiPV        = size_t(Options["MultiPV"]);
-  tactical	            = Options["Tactical"];
-
+  tactical	        = Options["Tactical"];
+  int tactical_depth	= Options["Tactical_Depth"];
   if (tactical) multiPV = size_t(pow(2, tactical));
 
   // Pick integer skill levels, but non-deterministically round up or down
@@ -473,7 +473,7 @@ void Thread::search() {
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
-      if (tactical && Options["Tactical_Depth"] && rootDepth > Options["Search_Depth"] )
+      if (tactical && tactical_depth && rootDepth > tactical_depth )
            multiPV = 1;
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
@@ -660,9 +660,9 @@ namespace {
     constexpr bool PvNode = NT == PV;
     const bool rootNode = PvNode && ss->ply == 0;
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
-    if (rootNode && variety)
+    if (rootNode)
     {
-        if  (pos.count<ALL_PIECES>() > 32 - variety)
+        if  (pos.count<ALL_PIECES>() > 29  && variety)
              variety_flag = true;
         else variety_flag = false;
     }
