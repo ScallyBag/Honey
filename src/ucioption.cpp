@@ -67,17 +67,17 @@ void init(OptionsMap& o) {
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
-  o["Minimal Output"]           << Option(true);
+  o["Minimal Output"]        << Option(true);
 
   o["MultiPV"]               << Option(1, 1, 256);
   o["Skill Level"]           << Option(40, 0, 40);
   o["Move Overhead"]         << Option(10, 0, 5000);
-  o["Bench_KNPS"]               << Option (2000, 100, 6000);//used for UCI Play By Elo
+  o["Bench_KNPS"]            << Option (2000, 100, 6000);//used for UCI Play By Elo
   o["Search_Nodes"]          << Option(0, 0, 10000000);
   o["Search_Depth"]          << Option(0, 0, 30);
   o["Tactical"]              << Option(3, 0, 8);
   o["Tactical_Depth"]        << Option(5, 0, 16);
-  o["Variety"]               << Option(0, 0, 16);
+  o["Variety"]               << Option(false);
   o["FIDE_Ratings"]          << Option(true);
   // A separate weaker play level from the predefined levels below. The difference
   // between both of the methods and the "skill level" is that the engine is only weakened
@@ -90,7 +90,7 @@ void init(OptionsMap& o) {
 
 
   o["Slow Mover"]            << Option(100, 10, 1000);
-  o["Slow Play"]                << Option(false);
+  o["Slow Play"]             << Option(false);
   o["nodestime"]             << Option(0, 0, 10000);
   o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
@@ -103,7 +103,7 @@ void init(OptionsMap& o) {
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-  o["UseNN"]              << Option(true, on_use_NNUE);
+  o["UseNN"]                 << Option(true, on_use_NNUE);
 
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }

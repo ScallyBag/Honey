@@ -42,11 +42,13 @@ namespace Search {
   LimitsType Limits;
   int benchKnps;
   int NodesToSearch;
-  int tactical;
-  bool minOutput;
-  int variety = Options["Variety"];
-  bool variety_flag = false;
 
+  double variety_factor = 0;
+
+  bool minOutput;
+  bool tactical;
+  bool variety;
+  bool variety_flag = true;
 
 }
 
@@ -407,9 +409,15 @@ void Thread::search() {
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
   size_t multiPV        = size_t(Options["MultiPV"]);
-  tactical	        = Options["Tactical"];
+  tactical              = Options["Tactical"];
   int tactical_depth	= Options["Tactical_Depth"];
-  if (tactical) multiPV = size_t(pow(2, tactical));
+
+  variety = Options["Variety"];
+  if (tactical && !variety) multiPV = size_t(pow(2, tactical));
+  else if (variety && variety_flag)    {
+    multiPV = 3;
+    variety_factor = 1;
+  }
 
   // Pick integer skill levels, but non-deterministically round up or down
   // such that the average integer skill corresponds to the input floating point one.
@@ -417,13 +425,10 @@ void Thread::search() {
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
   int uci_level = int(Options["UCI_Elo"]);
-  variety = (Options["Variety"]);
-
-  if (!variety_flag ) variety = false;
 
   PRNG rng(now());
-  double floatLevel = (Options["UCI_LimitStrength"] || variety) ?
-               std::clamp(std::pow(((uci_level + double(variety * 256) - 1195.0  ) / 55), 1.075) , 0.0, 40.0) : 40;
+  double floatLevel = ((Options["UCI_LimitStrength"]) || (variety && variety_flag)) ?
+               std::clamp(std::pow(((uci_level + double(variety_factor * 768) - 1195.0  ) / 55), 1.075) , 0.0, 40.0) : 40;
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
@@ -475,6 +480,7 @@ void Thread::search() {
       // MultiPV loop. We perform a full root search for each PV line
       if (tactical && tactical_depth && rootDepth > tactical_depth )
            multiPV = 1;
+      else if  (variety && !variety_flag) multiPV = 1;
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -662,7 +668,7 @@ namespace {
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
     if (rootNode)
     {
-        if  (pos.count<ALL_PIECES>() > 29  && variety)
+        if  (pos.count<ALL_PIECES>() > 24  && variety)
              variety_flag = true;
         else variety_flag = false;
     }
@@ -1863,7 +1869,7 @@ moves_loop: // When in check, search starts from here
     // RootMoves are already sorted by score in descending order
     Value topScore = rootMoves[0].score;
     int delta = std::min(topScore - rootMoves[multiPV - 1].score, 101*PawnValueMg/78);
-    int weakness = 122 + (2 * variety) - level;
+    int weakness = 138 - level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
