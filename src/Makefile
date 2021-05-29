@@ -70,7 +70,7 @@ endif
 # bits = 64/32        --- -DIS_64BIT       --- 64-/32-bit operating system
 # prefetch = yes/no   --- -DUSE_PREFETCH   --- Use prefetch asm-instruction
 # popcnt = yes/no     --- -DUSE_POPCNT     --- Use popcnt asm-instruction
-# pext = yes/no       --- -DUSE_PEXT       --- Use pext x86_64 asm-instruction
+# pext = yes/no       --- -DUSE_PEXT       --- Use pext x86-64 asm-instruction
 # sse = yes/no        --- -msse            --- Use Intel Streaming SIMD Extensions
 # mmx = yes/no        --- -mmmx            --- Use Intel MMX instructions
 # sse2 = yes/no       --- -msse2           --- Use Intel Streaming SIMD Extensions 2
@@ -135,7 +135,7 @@ ifeq ($(findstring x86-32,$(ARCH)),x86-32)
 	sse = yes
 	mmx = yes
 else
-	arch = x86_64
+	arch = x86-64
 	sse = yes
 	sse2 = yes
 endif
@@ -347,10 +347,10 @@ ifeq ($(COMP),mingw)
 
 	ifeq ($(KERNEL),Linux)
 		ifeq ($(bits),64)
-			ifeq ($(shell which x86_64-w64-mingw32-c++-posix),)
-				CXX=x86_64-w64-mingw32-c++
+			ifeq ($(shell which x86-64-w64-mingw32-c++-posix),)
+				CXX=x86-64-w64-mingw32-c++
 			else
-				CXX=x86_64-w64-mingw32-c++-posix
+				CXX=x86-64-w64-mingw32-c++-posix
 			endif
 		else
 			ifeq ($(shell which i686-w64-mingw32-c++-posix),)
@@ -731,10 +731,10 @@ endif
         config-sanity icc-profile-use icc-profile-make gcc-profile-use gcc-profile-make \
         clang-profile-use clang-profile-make
 
-build: net config-sanity
+build: net
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) all
 
-profile-build: net config-sanity objclean profileclean
+profile-build: net  objclean profileclean
 	@echo ""
 	@echo "Step 1/4. Building instrumented executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) $(profile_make)
@@ -840,7 +840,7 @@ config-sanity: net
 	@test "$(sanitize)" = "undefined" || test "$(sanitize)" = "thread" || test "$(sanitize)" = "address" || test "$(sanitize)" = "no"
 	@test "$(optimize)" = "yes" || test "$(optimize)" = "no"
 	@test "$(SUPPORTED_ARCH)" = "true"
-	@test "$(arch)" = "any" || test "$(arch)" = "x86_64" || test "$(arch)" = "i386" || \
+	@test "$(arch)" = "any" || test "$(arch)" = "x86-64" || test "$(arch)" = "i386" || \
 	 test "$(arch)" = "ppc64" || test "$(arch)" = "ppc" || test "$(arch)" = "e2k" || \
 	 test "$(arch)" = "armv7" || test "$(arch)" = "armv8" || test "$(arch)" = "arm64"
 	@test "$(bits)" = "32" || test "$(bits)" = "64"
