@@ -147,7 +147,7 @@ namespace Eval {
     {
         UCI::OptionsMap defaults;
         UCI::init(defaults);
-
+/*
         string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
         string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
         string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";
@@ -161,7 +161,7 @@ namespace Eval {
         sync_cout << "info string ERROR: " << msg5 << sync_endl;
 
         exit(EXIT_FAILURE);
-    }
+  */  }
 
     if (useNNUE)
         sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;

@@ -41,12 +41,14 @@ namespace Search {
 
   LimitsType Limits;
   int benchKnps;
+  int tactical;
+  int tactical_depth;
+
   int NodesToSearch;
 
   double variety_factor = 0;
 
   bool minOutput;
-  bool tactical;
   bool variety;
   bool variety_flag = true;
 
@@ -410,12 +412,12 @@ void Thread::search() {
 
   size_t multiPV        = size_t(Options["MultiPV"]);
   tactical              = Options["Tactical"];
-  int tactical_depth	= Options["Tactical_Depth"];
+  tactical_depth	= Options["Tactical_Depth"];
 
   variety = Options["Variety"];
   if (tactical && !variety) multiPV = size_t(pow(2, tactical));
   else if (variety && variety_flag)    {
-    multiPV = 3;
+    multiPV = size_t(3);
     variety_factor = 1;
   }
 
@@ -436,7 +438,7 @@ void Thread::search() {
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
   if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)5);
+      multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
