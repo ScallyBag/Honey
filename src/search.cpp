@@ -34,15 +34,17 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
+#include "polybook.h" // Cerebellum
 
 namespace Stockfish {
 
 namespace Search {
 
   LimitsType Limits;
+
   int benchKnps;
   int tactical;
-  int tactical_depth;
+  int tactical_depth =0;
 
   int NodesToSearch;
 
@@ -214,7 +216,24 @@ void MainThread::search() {
       }
   else
   {
-      //begin
+      Move bookMove = MOVE_NONE;
+
+      if (bool(Options["Use_Book_1"]) && !Limits.infinite && !Limits.mate)
+          bookMove = polybook1.probe(rootPos);
+      if (bool(Options["Use_Book_2"]) && !bookMove && !Limits.infinite && !Limits.mate)
+          bookMove = polybook2.probe(rootPos);
+      if (bool(Options["Use_Book_3"]) && !bookMove && !Limits.infinite && !Limits.mate)
+          bookMove = polybook3.probe(rootPos);
+      if (bool(Options["Use_Book_4"]) && !bookMove && !Limits.infinite && !Limits.mate)
+          bookMove = polybook4.probe(rootPos);
+
+      if (bookMove && std::count(rootMoves.begin(), rootMoves.end(), bookMove))
+      {
+          for (Thread* th : Threads)
+              std::swap(th->rootMoves[0], *std::find(th->rootMoves.begin(), th->rootMoves.end(), bookMove));
+      }
+      else
+      {
       if (Options["NPS_Level"])
           {
           benchKnps = 1000 * (Options["Bench_KNPS"]);
@@ -235,7 +254,6 @@ void MainThread::search() {
           {
               uci_elo = (Options["UCI_Elo"]);
               limitStrength = true;
-         //     adaptive=true;
               goto skipLevels;
           }
           if (Options["Engine_Level"] == "None")
@@ -246,7 +264,6 @@ void MainThread::search() {
           else
           {
               limitStrength = true;
-         //     adaptive = true;
           }
 
           if (Options["Engine_Level"] == "World_Champion")
@@ -323,6 +340,7 @@ skipLevels:
           Threads.start_searching(); // start non-main threads
           Thread::search();          // main thread start searching
       }
+  }
 
   // When we reach the maximum depth, we can arrive here without a raise of
   // Threads.stop. However, if we are pondering or in an infinite search,
@@ -359,14 +377,14 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
+ 
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-
+ 
   std::cout << sync_endl;
 }
-
 
 /// Thread::search() is the main iterative deepening loop. It calls search()
 /// repeatedly with increasing depth until the allocated thinking time has been
@@ -411,11 +429,15 @@ void Thread::search() {
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
   size_t multiPV        = size_t(Options["MultiPV"]);
-  tactical              = Options["Tactical"];
-  tactical_depth	= Options["Tactical_Depth"];
+  if (multiPV == 1)    {
+              tactical = Options["Tactical"];
+      	      tactical_depth = Options["Tactical_Depth"];
+    }
+  else  tactical = 0;
 
   variety = Options["Variety"];
-  if (tactical && !variety) multiPV = size_t(pow(2, tactical));
+
+  if (tactical && !variety ) multiPV = size_t(pow(2, tactical));
   else if (variety && variety_flag)    {
     multiPV = size_t(3);
     variety_factor = 1;
@@ -480,7 +502,7 @@ void Thread::search() {
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
-      if (tactical && tactical_depth && rootDepth > tactical_depth )
+      if (tactical  && rootDepth > tactical_depth )
            multiPV = 1;
       else if  (variety && !variety_flag) multiPV = 1;
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)

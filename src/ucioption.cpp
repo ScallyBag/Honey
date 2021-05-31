@@ -23,6 +23,8 @@
 
 #include "evaluate.h"
 #include "misc.h"
+#include "polybook.h"
+
 #include "search.h"
 #include "thread.h"
 #include "tt.h"
@@ -37,6 +39,7 @@ UCI::OptionsMap Options; // Global object
 
 namespace UCI {
 
+
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
 void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
@@ -45,6 +48,21 @@ void on_threads(const Option& o) { Threads.set(size_t(o)); }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
+
+void on_book_file1(const Option& o) { polybook1.init(o); }
+void on_book_file2(const Option& o) { polybook2.init(o); }
+void on_book_file3(const Option& o) { polybook3.init(o); }
+void on_book_file4(const Option& o) { polybook4.init(o); }
+
+void on_best_book_move1(const Option& o) { polybook1.set_best_book_move(o); }
+void on_best_book_move2(const Option& o) { polybook2.set_best_book_move(o); }
+void on_best_book_move3(const Option& o) { polybook3.set_best_book_move(o); }
+void on_best_book_move4(const Option& o) { polybook4.set_best_book_move(o); }
+
+void on_book_depth1(const Option& o) { polybook1.set_book_depth(o); }
+void on_book_depth2(const Option& o) { polybook2.set_book_depth(o); }
+void on_book_depth3(const Option& o) { polybook3.set_book_depth(o); }
+void on_book_depth4(const Option& o) { polybook4.set_book_depth(o); }
 
 /// Our case insensitive less() function as required by UCI protocol
 bool CaseInsensitiveLess::operator() (const string& s1, const string& s2) const {
@@ -61,13 +79,31 @@ void init(OptionsMap& o) {
   constexpr int MaxHashMB = Is64Bit ? 33554432 : 2048;
 
   o["Debug Log File"]        << Option("", on_logger);
+
+  o["Use_Book_1"] 	        << Option(false);
+  o["Book_File_1"] 	        << Option("", on_book_file1);
+  o["Best_Move_1"] 	        << Option(false, on_best_book_move1);
+  o["Book_Depth_1"] 	        << Option(127, 1, 127, on_book_depth1);
+  o["Use_Book_2"] 	        << Option(false);
+  o["Book_File_2"] 	        << Option("", on_book_file2);
+  o["Best_Move_2"] 	        << Option(false, on_best_book_move2);
+  o["Book_Depth_2"] 	        << Option(127, 1, 127, on_book_depth2);
+  o["Use_Book_3"] 	        << Option(false);
+  o["Book_File_3"]              << Option("", on_book_file3);
+  o["Best_Move_3"]              << Option(false, on_best_book_move3);
+  o["Book_Depth_3"]             << Option(127, 1, 127, on_book_depth3);
+  o["Use_Book_4"]               << Option(false);
+  o["Book_File_4"]              << Option("", on_book_file4);
+  o["Best_Move_4"]              << Option(false, on_best_book_move4);
+  o["Book_Depth_4"]             << Option(127, 1, 127, on_book_depth4);
+
   o["Contempt"]              << Option(24, -100, 100);
   o["Analysis Contempt"]     << Option("Both var Off var White var Black var Both", "Both");
   o["Threads"]               << Option(1, 1, 512, on_threads);
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
-  o["Minimal Output"]        << Option(true);
+  o["Minimal Output"]        << Option(false);
 
   o["MultiPV"]               << Option(1, 1, 256);
   o["Skill Level"]           << Option(40, 0, 40);

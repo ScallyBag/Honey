@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2020 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,8 @@ Copyright (C) 2016-2020 Thomas Zipproth
 #include "bitboard.h"
 #include "position.h"
 #include "string.h"
+
+using namespace Stockfish;
 
 typedef struct {
     uint64_t key;
@@ -90,10 +92,10 @@ private:
 
     bool enabled, do_search;
 };
+extern PolyBook polybook;
 extern PolyBook polybook1;
 extern PolyBook polybook2;
 extern PolyBook polybook3;
 extern PolyBook polybook4;
-
 
 #endif // #ifndef POLYBOOK_H_INCLUDED
