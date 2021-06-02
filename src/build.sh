@@ -56,7 +56,7 @@ CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
   done
 #done
 
-read # hack to stop script
+#read # hack to stop script
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
 ### with the bench nodes and the date this was run.
 echo ""

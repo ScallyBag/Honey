@@ -153,19 +153,14 @@ void set(istringstream& is) {
       Options["UCI_Chess960"] = {value};
       sync_cout << "Confirmation: "<< "UCI_Chess960" << " set to " << value <<  sync_endl;
     }
-    else if (name == "dpa")
-    {
-      Options["Deep Pro Analysis"] = {value};
-      sync_cout << "Confirmation: "<< "Deep Pro Analysis" << " set to " << value <<  sync_endl;
-    }
     else if (name == "h")  {
       TT.resize(stoi(value));
       sync_cout << "Confirmation: "<< "Hash" << " set to " << value << " Mb" <<  sync_endl;
     }
     else if (name == "mo")
     {
-    Options["Min Output"] = {value};
-    sync_cout << "Confirmation: "<< "Min Output" << " set to " << value <<  sync_endl;
+    Options["Minimal_Output"] = {value};
+    sync_cout << "Confirmation: "<< "Minimal_Output" << " set to " << value <<  sync_endl;
     }
     else if (name == "mv")
     {
@@ -180,16 +175,6 @@ void set(istringstream& is) {
           sync_cout << "info string: NN evaluation using " << string(EvalFileDefaultName)  << " enabled." << sync_endl;
       else
           sync_cout << "info string: Classical evaluation enabled." <<  sync_endl;
-    }
-    else if (name == "proa")
-    {
-      Options["Pro Analysis"] = {value};
-      sync_cout << "Confirmation: "<< "Pro Analysis" << " set to " << value <<  sync_endl;
-    }
-    else if (name == "prov")
-    {
-      Options["Pro Value"] = {value};
-      sync_cout << "Confirmation: "<< "Pro Value" << " set to " << value <<  sync_endl;
     }
     else if (name == "so")
     {
@@ -227,7 +212,6 @@ void set(istringstream& is) {
       sync_cout << "    '50'  -> shortcut for 'Syzygy50MoveRule'"  <<  sync_endl;
       sync_cout << "    '960' -> shortcut for 'UCI_Chess960'"  <<  sync_endl;
       sync_cout << "    'd'   -> shortcut for 'depth'"  <<  sync_endl;
-      sync_cout << "    'dpa' -> shortcut for 'Deep_Pro_Analysis'"  << sync_endl;
       sync_cout << "    'g'   -> shortcut for 'go'"  << sync_endl;
       sync_cout << "    'i'   -> shortcut for 'infinite'"  << sync_endl;
       sync_cout << "    'm'   -> shortcut for 'Mate'"  << sync_endl;
@@ -236,17 +220,16 @@ void set(istringstream& is) {
       sync_cout << "    'mt'  -> shortcut for 'Movetime'-> " <<  sync_endl;
       sync_cout <<  "  Note: 'mt' is in seconds, while" << sync_endl;
       sync_cout << "  movetime is in milliseconds"  << sync_endl;
-      sync_cout << "    'p f' -> shortcut for 'position fen'" << sync_endl;
       sync_cout << "    'nn'  ->  shortcut for 'UseNN'"  << sync_endl;
-      sync_cout << "    'proa'-> shortcut for 'Pro Analysis'"  << sync_endl;
-      sync_cout << "    'prov'-> shortcut for 'Pro Value'"  << sync_endl;
+      sync_cout << "    'p f' -> shortcut for 'position fen'" << sync_endl;
+      sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
       sync_cout << "    'sm'  -> shortcut for 'SearchMoves'" <<  sync_endl;
       sync_cout << "  Note: 'sm' or 'SearchMoves' MUST be the" << sync_endl;
       sync_cout << "  last option on the command line!"  << sync_endl;
       sync_cout << "    'so'  -> shortcut for 'Score Output'" << sync_endl;
       sync_cout << "    't'   -> shortcut for 'Threads'"  << sync_endl;
       sync_cout << "    'ta'  -> shortcut for 'Tactical'"  << sync_endl;
-      sync_cout << "    'q'   -> shortcut for 'quit'"  << sync_endl;
+
       sync_cout << "    'z'   -> shortcut for 'SyzygyPath'"  << sync_endl;
       sync_cout << "    '?'   -> shortcut for 'stop'"  <<  sync_endl;
 
@@ -481,7 +464,7 @@ void UCI::loop(int argc, char* argv[]) {
       else if (!token.empty() && token[0] != '#')
           sync_cout << "Unknown command: " << cmd << sync_endl;
 
-  } while (token != "quit" && argc == 1); // Command line args are one-shot
+  } while (token != "quit" && token != "q" && argc == 1); // Command line args are one-shot
 }
 
 

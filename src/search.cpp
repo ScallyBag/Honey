@@ -34,22 +34,25 @@
 #include "tt.h"
 #include "uci.h"
 #include "syzygy/tbprobe.h"
-#include "polybook.h" // Cerebellum
+#include "polybook.h"
 
 namespace Stockfish {
 
 namespace Search {
 
   LimitsType Limits;
+  bool adaptive;
+  bool adaptive_flag = true;
 
   int benchKnps;
   int tactical;
   int tactical_depth =0;
+  int uci_elo_boost = 0;
 
   int NodesToSearch;
 
   double variety_factor = 0;
-
+  bool limitStrengthFlag = false;
   bool minOutput;
   bool variety;
   bool variety_flag = true;
@@ -195,9 +198,9 @@ void MainThread::search() {
       return;
   }
 
+
   minOutput                = Options["Minimal Output"];
-  bool fide                = Options["FIDE_Ratings"];
-  int uci_elo              = (Options["UCI_Elo"]);
+  int uci_elo              = int(Options["UCI_Elo"]);
   bool uci_sleep           = Options["Slow Play"];
   bool limitStrength       = false;
 
@@ -250,9 +253,9 @@ void MainThread::search() {
               std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
             }
           }
-      else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
+      else if (Options["UCI_LimitStrength"] && !limitStrengthFlag && Options["Engine_Level"] == "None")
           {
-              uci_elo = (Options["UCI_Elo"]);
+              uci_elo = int(Options["UCI_Elo"]);
               limitStrength = true;
               goto skipLevels;
           }
@@ -269,7 +272,7 @@ void MainThread::search() {
           if (Options["Engine_Level"] == "World_Champion")
               uci_elo = 2900;
           else if (Options["Engine_Level"] == "Super_GM")
-                uci_elo = 2800;
+              uci_elo = 2800;
           else if (Options["Engine_Level"] == "GM")
               uci_elo = 2650;
           else if (Options["Engine_Level"] == "Deep_Thought")
@@ -291,31 +294,23 @@ void MainThread::search() {
           else if (Options["Engine_Level"] == "Class_C")
               uci_elo = 1500;
           else if (Options["Engine_Level"] == "Class_D")
-              uci_elo = 1350;
-          else if (Options["Engine_Level"] == "Boris")
-              uci_elo = 1200;
-          else if (Options["Engine_Level"] == "Novice")
-              uci_elo = 1000;
+              uci_elo = 1400;
+          else if (Options["Engine_Level"] == "Class_E")
+              uci_elo = 1300;
+;
 
 skipLevels:
-          if (limitStrength)
+          if (limitStrength && !Options["Search_Nodes"] )
               {  //note varietry strength is capped around ~2150-2200 due to its robustness
                   benchKnps = 1000 * (Options["Bench_KNPS"]);
                   int random = (rand() % 20 - 10);
-                  uci_elo = uci_elo + random;
-                  //sync_cout << "Elo " << uci_elo << sync_endl;// for debug
+                  uci_elo = uci_elo + random + 35 +uci_elo_boost;
 
-                  int ccrlELo = uci_elo;
-                  if (fide)
-                    uci_elo = (((uci_elo * 10) / 7) - 1200);  //shallow adj was only required to get CCRL rating correct
-                  uci_elo += 200; //  to offset Elo loss with adaptive
-                  uci_elo = std::min(uci_elo, 3200);
-                  NodesToSearch  =  pow(1.00382, (uci_elo - 900)) * 48;
+                  NodesToSearch  =  int(pow(1.00485, uci_elo - 1200)) * 32;// - std::clamp(uci_elo - 1600, 0 ,uci_elo -1600) * 48 ) );
                   //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
-                  Limits.nodes = NodesToSearch;
-
-                  Limits.nodes = (Limits.nodes * Time.optimum()/1000);
-                  Limits.nodes = std::clamp(Limits.nodes, (int64_t) 48,Limits.nodes);
+                  Limits.nodes = int(NodesToSearch);
+                  Limits.nodes *= Time.optimum()/1000 + 1 ;
+                  Limits.nodes = int (std::clamp(Limits.nodes, int64_t (64),Limits.nodes));
                   int sleepTime = Time.optimum() * double(1 - Limits.nodes/benchKnps);
                   //int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps);
                   //sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
@@ -328,13 +323,11 @@ skipLevels:
                     sync_cout << sync_endl;
                     std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
                   }
-                  uci_elo =  ccrlELo;
+                  //uci_elo =  ccrlELo;
               }
-//end
-
-          if ( !limitStrength && Options["Search_Nodes"])
+          if(Options["Search_Nodes"])
               Limits.nodes = int(Options["Search_Nodes"]) ;
-          if ( !limitStrength && !Limits.nodes && Options["Search_Depth"])
+          if ( Options["Search_Depth"])
               Limits.depth = int(Options["Search_Depth"]) ;
 
           Threads.start_searching(); // start non-main threads
@@ -367,7 +360,7 @@ skipLevels:
 
   if (   int(Options["MultiPV"]) == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]) || limitStrength)
+      && !(Skill(Options["Skill Level"]).enabled() || (Options["UCI_LimitStrength"]) || limitStrength)
       && rootMoves[0].pv[0] != MOVE_NONE)
       bestThread = Threads.get_best_thread();
 
@@ -377,12 +370,35 @@ skipLevels:
   if (bestThread != this || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
- 
+  adaptive = Options["Adaptive_Play"];
+
+  if (adaptive && int(bestThread->rootMoves[0].score) > int(PawnValueMg) )
+     limitStrengthFlag = false;
+  if  (adaptive && adaptive_flag && !limitStrengthFlag)    {
+
+      size_t i = 1;
+
+      if (int(bestThread->rootMoves[0].score) < int(-PawnValueMg))
+         limitStrengthFlag = true;
+
+      if (rootMoves.size() > 35 && bestPreviousScore > PawnValueMg * 5/2   && bestPreviousScore < PawnValueMg * 3/2)
+        {
+            while (i < rootMoves.size() && bestThread->rootMoves[i].score > bestPreviousScore)
+            {
+              bestPreviousScore = bestThread->rootMoves[i].score;
+              i++;
+            }
+        }
+            sync_cout  << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+            sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i-1].pv[i-1], rootPos.is_chess960());
+  }
+  else
+  {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
   if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
       std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
- 
+  }
   std::cout << sync_endl;
 }
 
@@ -429,6 +445,7 @@ void Thread::search() {
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
 
   size_t multiPV        = size_t(Options["MultiPV"]);
+  if (adaptive) multiPV=2;
   if (multiPV == 1)    {
               tactical = Options["Tactical"];
       	      tactical_depth = Options["Tactical_Depth"];
@@ -436,6 +453,7 @@ void Thread::search() {
   else  tactical = 0;
 
   variety = Options["Variety"];
+
 
   if (tactical && !variety ) multiPV = size_t(pow(2, tactical));
   else if (variety && variety_flag)    {
@@ -451,7 +469,7 @@ void Thread::search() {
   int uci_level = int(Options["UCI_Elo"]);
 
   PRNG rng(now());
-  double floatLevel = ((Options["UCI_LimitStrength"]) || (variety && variety_flag)) ?
+  double floatLevel = ((Options["UCI_LimitStrength"]) && ((variety || adaptive))) && !limitStrengthFlag ?
                std::clamp(std::pow(((uci_level + double(variety_factor * 768) - 1195.0  ) / 55), 1.075) , 0.0, 40.0) : 40;
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
@@ -559,7 +577,7 @@ void Thread::search() {
 
               // When failing high/low give some update (without cluttering
               // the UI) before a re-search.
-              if (   mainThread
+              if (   !minOutput && mainThread
                   && multiPV == 1
                   && (bestValue <= alpha || bestValue >= beta)
                   && Time.elapsed() > 3000)
@@ -647,7 +665,7 @@ void Thread::search() {
               totalTime = std::min(500.0, totalTime);
 
           // Stop the search if we have exceeded the totalTime
-          if (Time.elapsed() > totalTime)
+          if (Time.elapsed() > totalTime || rootMoves.size() == 1)
           {
               // If we are allowed to ponder do not stop the search now but
               // keep pondering until the GUI sends "ponderhit" or "stop".
@@ -674,7 +692,7 @@ void Thread::search() {
   mainThread->previousTimeReduction = timeReduction;
 
   // If skill level is enabled, swap best PV line with the sub-optimal one
-  if (skill.enabled() || Options["Variety"])
+  if (skill.enabled() || Options["Variety"] || Options["Adaptive_Play"])
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
                 skill.best ? skill.best : skill.pick_best(multiPV)));
 }
@@ -692,9 +710,14 @@ namespace {
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
     if (rootNode)
     {
-        if  (pos.count<ALL_PIECES>() > 24  && variety)
+        if  (pos.count<ALL_PIECES>() > 24  && variety)    {
+             adaptive_flag =true;
              variety_flag = true;
-        else variety_flag = false;
+           }
+        else    {
+             variety_flag = false;
+             adaptive_flag =false;
+           }
     }
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
@@ -1929,12 +1952,13 @@ void MainThread::check_time() {
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
   callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
 
-if (minOutput)  {
+
   static TimePoint tick = now();
 
   TimePoint elapsed = Time.elapsed();
   TimePoint tock = Limits.startTime + elapsed;
   Thread* bestThread = this;
+if (minOutput)  {
   if (elapsed > 500)
   {
     if (elapsed <= 120050)
@@ -1968,6 +1992,17 @@ if (minOutput)  {
       }
     }
   }
+}
+
+else    {
+
+  if (tock - tick >= 1000)
+  {
+      tick = tock;
+      dbg_print();
+  }
+}
+
 
   // We should not stop pondering until told so by the GUI
   if (ponder)
@@ -1978,7 +2013,8 @@ if (minOutput)  {
       || (Limits.nodes && Threads.nodes_searched() >= (uint64_t)Limits.nodes))
       Threads.stop = true;
   }
-}
+
+
 
 /// UCI::pv() formats PV information according to the UCI protocol. UCI requires
 /// that all (if any) unsearched PV lines are sent using a previous search score.
