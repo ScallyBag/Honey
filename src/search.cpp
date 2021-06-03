@@ -43,15 +43,16 @@ namespace Search {
   LimitsType Limits;
   bool adaptive;
   bool adaptive_flag = true;
+  bool tactical_flag = true;
 
   int benchKnps;
   int tactical;
-  int tactical_depth =0;
-  int uci_elo_boost = 0;
+  int tactical_depth = 0;
+  int uci_elo_boost  = 0;
 
   int NodesToSearch;
 
-  double variety_factor = 0;
+  double variety_factor  = 0;
   bool limitStrengthFlag = false;
   bool minOutput;
   bool variety;
@@ -371,33 +372,54 @@ skipLevels:
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
   adaptive = Options["Adaptive_Play"];
-
-  if (adaptive && int(bestThread->rootMoves[0].score) > int(PawnValueMg) )
-     limitStrengthFlag = false;
-  if  (adaptive && adaptive_flag && !limitStrengthFlag)    {
-
+  if  (adaptive && adaptive_flag )    {
       size_t i = 1;
-
-      if (int(bestThread->rootMoves[0].score) < int(-PawnValueMg))
-         limitStrengthFlag = true;
-
-      if (rootMoves.size() > 35 && bestPreviousScore > PawnValueMg * 5/2   && bestPreviousScore < PawnValueMg * 3/2)
-        {
-            while (i < rootMoves.size() && bestThread->rootMoves[i].score > bestPreviousScore)
-            {
-              bestPreviousScore = bestThread->rootMoves[i].score;
-              i++;
-            }
+      if (  bestPreviousScore > -PawnValueMg && bestPreviousScore <= PawnValueMg * 4 )
+      {
+          while (i < rootMoves.size() && bestThread->rootMoves[i].score > bestPreviousScore)
+          bestPreviousScore = bestThread->rootMoves[i].score;
+          sync_cout  << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+          ++i;
+      }
+      else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 8)
+      {
+      bestPreviousScore = bestThread->rootMoves[i].score;
+      while (i < rootMoves.size() && bestThread->rootMoves[i].score < bestPreviousScore
+                && bestPreviousScore + PawnValueMg/2  > bestThread->rootMoves[i].score)
+  		  {
+                ++i;
+                break;
         }
-            sync_cout  << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
-            sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i-1].pv[i-1], rootPos.is_chess960());
+        bestPreviousScore = bestThread->rootMoves[i].score;
+        while (i < rootMoves.size() && bestThread->rootMoves[i].score > bestPreviousScore
+                && bestPreviousScore + PawnValueMg/2  < bestThread->rootMoves[i].score)
+        {
+                bestPreviousScore = bestThread->rootMoves[i].score;
+                ++i;
+        }
+        bestPreviousScore = bestThread->rootMoves[i].score;
+        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE,
+                             VALUE_INFINITE) << sync_endl;
+        sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
+        }
+      else
+      {
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0],
+                       rootPos.is_chess960());
+          if (bestThread->rootMoves[0].pv.size() > 1 ||
+              bestThread>rootMoves[0].extract_ponder_from_tt(rootPos))
+              std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+      }
   }
   else
   {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
-  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-      std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+  if (bestThread->rootMoves[0].pv.size() > 1 ||
+          bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+          std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1],
+          rootPos.is_chess960());
   }
   std::cout << sync_endl;
 }
@@ -454,8 +476,9 @@ void Thread::search() {
       	      tactical_depth = Options["Tactical_Depth"];
     }
   else  tactical = 0;
-
-  variety = Options["Variety"];
+  if(!adaptive)
+      variety = Options["Variety"];
+  else variety = true;
 
 
   if (tactical && !variety ) multiPV = size_t(pow(2, tactical));
