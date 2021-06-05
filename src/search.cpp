@@ -48,12 +48,11 @@ namespace Search {
   int benchKnps;
   int tactical;
   int tactical_depth = 0;
-  int uci_elo_boost  = 0;
+
 
   int NodesToSearch;
 
   double variety_factor  = 0;
-  bool limitStrengthFlag = false;
   bool minOutput;
   bool variety;
   bool variety_flag = true;
@@ -254,7 +253,7 @@ void MainThread::search() {
               std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
             }
           }
-      else if (Options["UCI_LimitStrength"] && !limitStrengthFlag && Options["Engine_Level"] == "None")
+      else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
           {
               uci_elo = int(Options["UCI_Elo"]);
               limitStrength = true;
@@ -305,7 +304,7 @@ skipLevels:
               {  //note varietry strength is capped around ~2150-2200 due to its robustness
                   benchKnps = 1000 * (Options["Bench_KNPS"]);
                   int random = (rand() % 20 - 10);
-                  uci_elo = uci_elo + random + 35 +uci_elo_boost;
+                  uci_elo = uci_elo + random + 35;
 
                   NodesToSearch  =  int(pow(1.00485, uci_elo - 1200)) * 32;// - std::clamp(uci_elo - 1600, 0 ,uci_elo -1600) * 48 ) );
                   //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
@@ -403,12 +402,10 @@ skipLevels:
                              VALUE_INFINITE) << sync_endl;
         sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
         }
-      else
+ else
       {
-          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0],
-                       rootPos.is_chess960());
-          if (bestThread->rootMoves[0].pv.size() > 1 ||
-              bestThread>rootMoves[0].extract_ponder_from_tt(rootPos))
+          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
+          if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
               std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
       }
   }
@@ -495,7 +492,7 @@ void Thread::search() {
   int uci_level = int(Options["UCI_Elo"]);
 
   PRNG rng(now());
-  double floatLevel = ((Options["UCI_LimitStrength"]) && ((variety || adaptive))) && !limitStrengthFlag ?
+  double floatLevel = ((Options["UCI_LimitStrength"]) && ((variety || adaptive))) ?
                std::clamp(std::pow(((uci_level + double(variety_factor * 768) - 1195.0  ) / 55), 1.075) , 0.0, 40.0) : 40;
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
