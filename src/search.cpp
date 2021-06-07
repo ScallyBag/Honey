@@ -1019,10 +1019,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        //Depth R = (1090 + 81 * depth) / 256 + std::min(int(eval - beta) / 205, 3);
-        //Depth R = std::min(int(eval - beta) / 205, 3)  + ((81 * depth)/256 + 4);
-        //Depth R = std::min(int(eval - beta) / 205, 3)  + (68 + 5 * depth)/16;
-          Depth R = std::min(int(eval - beta) * 5 / 1024, 3)  + (68 + 5 * depth)/16;
+        Depth R = std::min(int(eval - beta) / 205, 3) + depth / 3 + 4;
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1676,7 +1673,7 @@ moves_loop: // When in check, search starts from here
 
     // Initialize a MovePicker object for the current position, and prepare
     // to search the moves. Because the depth is <= 0 here, only captures,
-    // queen and checking knight promotions, and other checks(only if depth >= DEPTH_QS_CHECKS)
+    // queen promotions, and other checks (only if depth >= DEPTH_QS_CHECKS)
     // will be generated.
     MovePicker mp(pos, ttMove, depth, &thisThread->mainHistory,
                                       &thisThread->captureHistory,
