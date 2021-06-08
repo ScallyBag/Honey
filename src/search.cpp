@@ -1019,7 +1019,10 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = (1090 + 81 * depth) / 256 + std::min(int(eval - beta) / 205, 3);
+        //Depth R = (1090 + 81 * depth) / 256 + std::min(int(eval - beta) / 205, 3);
+        //Depth R = std::min(int(eval - beta) / 205, 3)  + ((81 * depth)/256 + 4);
+        //Depth R = std::min(int(eval - beta) / 205, 3)  + (68 + 5 * depth)/16;
+          Depth R = std::min(int(eval - beta) * 5 / 1024, 3)  + (68 + 5 * depth)/16;
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
