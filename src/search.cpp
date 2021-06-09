@@ -1019,7 +1019,8 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = std::min(int(eval - beta) / 205, 3) + depth / 3 + 4;
+        Depth R = std::min(int(eval - beta) / 205, 3) + (69 + 5 * depth)/16;
+
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1279,11 +1280,11 @@ moves_loop: // When in check, search starts from here
           value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
           ss->excludedMove = MOVE_NONE;
 
-          if (value < singularBeta)
+          if (value < singularBeta )
           {
               extension = 1;
               singularQuietLMR = !ttCapture;
-              if (!PvNode && value < singularBeta - 93)
+              if (!PvNode && value < singularBeta - 93) //  && pos.count<ALL_PIECES>() > 6 )
                   extension = 2;
           }
 
@@ -1340,9 +1341,6 @@ moves_loop: // When in check, search starts from here
           && (!PvNode || ss->ply > 1 || thisThread->id() % 4 != 3))
       {
           Depth r = reduction(improving, depth, moveCount);
-
-          if (PvNode)
-              r--;
 
           // Decrease reduction if the ttHit running average is large (~0 Elo)
           if (thisThread->ttHitAverage > 537 * TtHitAverageResolution * TtHitAverageWindow / 1024)
