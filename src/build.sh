@@ -47,11 +47,11 @@ CXXFLAGS='-flto' make -j30 $BUILD  $COMP "$@"
 }
   #for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
   #do
-  #  for ARCH in "x86-64-avx2"
-  for ARCH in  "x86-64-avx2"  "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2"
+  for ARCH in "x86-64-avx2"
+##  for ARCH in  "x86-64-avx2"  "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2"
   do
     echo $ARCH
-
+    CPPFLAGS="-march=native"
     mke ARCH=$ARCH && wait
     rename  honey-13.2.exe Honey-v13.2-$ARCH.exe *.exe
     #rename  v13.1-.exe v13.1.exe *.exe

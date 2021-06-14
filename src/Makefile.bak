@@ -21,9 +21,9 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = honey-13.2.exe
+EXE = honey-13.3.exe
 else
-EXE = honey-v13.2
+EXE = honey-v13.3
 endif
 
 ### Installation dir definitions
