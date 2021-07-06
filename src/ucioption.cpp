@@ -131,7 +131,7 @@ void init(OptionsMap& o) {
   o["UCI_Elo"]               << Option(1300, 1300, 2900);
   o["UCI_LimitStrength"]     << Option(false);
   o["UCI_ShowWDL"]           << Option(false);
-  o["Tactical"]              << Option(3, 0, 8);
+  o["Tactical"]              << Option(0, 0, 8);
   o["Variety"]               << Option(false);
   //o["SyzygyPath"]          << Option("<4-men>", on_tb_path);
   //o["SyzygyPath"]          << Option("<empty>", on_tb_path);

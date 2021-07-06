@@ -186,31 +186,24 @@ enum Value : int {
   VALUE_MATE_IN_MAX_PLY  =  VALUE_MATE - MAX_PLY,
   VALUE_MATED_IN_MAX_PLY = -VALUE_MATE_IN_MAX_PLY,
 
-  #define PVM 78/100
-  #define PVE 78/100
-  #define NVM 78/100
-  #define NVE 78/100
-  #define BVM 78/100
-  #define BVE 78/100
-  #define RVM 78/100
-  #define RVE 78/100
-  #define QVM 78/100
-  #define QVE 78/100
+  #define PVM 102/100
+  #define PVE 102/100
+  #define NVM 101/100
+  #define NVE 100/100
+  #define BVM 100/100
+  #define BVE 101/100
+  #define RVM 100/100
+  #define RVE 103/100
+  #define QVM 101/100
+  #define QVE 104/100
 
-  /*PawnValueMg   = 126,   PawnValueEg   = 208,
-  KnightValueMg = 781,   KnightValueEg = 854,
-  BishopValueMg = 825,   BishopValueEg = 915,
-  RookValueMg   = 1276,  RookValueEg   = 1380,
-  QueenValueMg  = 2538,  QueenValueEg  = 2682,*/
   PawnValueMg   = 126*PVM,   PawnValueEg   = 208*PVE,
   KnightValueMg = 781*NVM,   KnightValueEg = 854*NVE,
   BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
   RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
   QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
 
-
-  //MidgameLimit  = 15258, EndgameLimit  = 3915
-  MidgameLimit  = 15258*PVM, EndgameLimit  = 3915*PVE
+  MidgameLimit  = 15258, EndgameLimit  = 3915
 };
 
 enum PieceType {
