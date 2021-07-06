@@ -141,7 +141,7 @@ void init(OptionsMap& o) {
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
 
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
-  o["UseNN"]                 << Option(true, on_use_NNUE);
+  o["UseNN"]                 << Option("pure var true var false var pure", "pure", on_use_NNUE);
 }
 
 

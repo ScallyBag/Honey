@@ -61,14 +61,9 @@ namespace {
         fen = StartFEN;
         is >> token; // Consume "moves" token if any
     }
-    else if (token == "fen")
+    else if (token == "fen" || token == "f")
         while (is >> token && token != "moves")
             fen += token + " ";
-#ifdef Add_Features
-    else if (token == "f")
-        while (is >> token && token != "moves")
-            fen += token + " ";
-#endif
     else
         return;
 
@@ -328,7 +323,7 @@ void set(istringstream& is) {
         }
         else if (token == "setoption")  setoption(is);
         else if (token == "s")          set(is);
-        else if (token == "position")   position(pos, is, states);
+        else if (token == "position" || token == "p")   position(pos, is, states);
         else if (token == "ucinewgame") { Search::clear(); elapsed = now(); } // Search::clear() may take some while
     }
 

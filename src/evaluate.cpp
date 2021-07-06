@@ -60,8 +60,22 @@ namespace Stockfish {
 
 namespace Eval {
 
-  bool useNNUE;
-  string eval_file_loaded = "None";
+  namespace NNUE {
+    string eval_file_loaded = "None";
+    UseNNUEMode useNNUE;
+
+    static UseNNUEMode nnue_mode_from_option(const UCI::Option& mode)
+    {
+      if (mode == "false")
+        return UseNNUEMode::False;
+      else if (mode == "true")
+         return UseNNUEMode::True;
+      else if (mode == "pure")
+        return UseNNUEMode::Pure;
+
+      return UseNNUEMode::False;
+    }
+  }
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -73,8 +87,8 @@ namespace Eval {
 
   void NNUE::init() {
 
-    useNNUE = Options["UseNN"];
-    if (!useNNUE)
+    useNNUE = nnue_mode_from_option(Options["UseNN"]);
+    if (useNNUE == UseNNUEMode::False)
         return;
 
     string eval_file = string(Options["EvalFile"]);
@@ -119,7 +133,7 @@ namespace Eval {
 
     string eval_file = string(Options["EvalFile"]);
 
-    if (useNNUE && eval_file_loaded != eval_file)
+    if (useNNUE != UseNNUEMode::False && eval_file_loaded != eval_file)
     {
         UCI::OptionsMap defaults;
         UCI::init(defaults);
@@ -139,7 +153,7 @@ namespace Eval {
         exit(EXIT_FAILURE);
   */  }
 
-    if (useNNUE)
+    if (useNNUE != UseNNUEMode::False)
         sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
     else
         sync_cout << "info string classical evaluation enabled" << sync_endl;
@@ -1081,9 +1095,19 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
+  //pos.this_thread()->on_eval();
+
   Value v;
 
-  if (!Eval::useNNUE)
+  if (NNUE::useNNUE == NNUE::UseNNUEMode::Pure) {
+      v = NNUE::evaluate(pos);
+
+      // Guarantee evaluation does not hit the tablebase range
+      v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+
+      return v;
+  }
+  else if (NNUE::useNNUE == NNUE::UseNNUEMode::False)
       v = Evaluation<NO_TRACE>(pos).value();
   else
   {
@@ -1165,14 +1189,14 @@ std::string Eval::trace(Position& pos) {
      << "|      Total | " << Term(TOTAL)
      << "+------------+-------------+-------------+-------------+\n";
 
-  if (Eval::useNNUE)
+    if (NNUE::useNNUE != NNUE::UseNNUEMode::False)
       ss << '\n' << NNUE::trace(pos) << '\n';
 
   ss << std::showpoint << std::showpos << std::fixed << std::setprecision(2) << std::setw(15);
 
   v = pos.side_to_move() == WHITE ? v : -v;
   ss << "\nClassical evaluation   " << to_cp(v) << " (white side)\n";
-  if (Eval::useNNUE)
+  if (NNUE::useNNUE != NNUE::UseNNUEMode::False)
   {
       v = NNUE::evaluate(pos, false);
       v = pos.side_to_move() == WHITE ? v : -v;
@@ -1182,7 +1206,7 @@ std::string Eval::trace(Position& pos) {
   v = evaluate(pos);
   v = pos.side_to_move() == WHITE ? v : -v;
   ss << "Final evaluation       " << to_cp(v) << " (white side)";
-  if (Eval::useNNUE)
+  if (NNUE::useNNUE == NNUE::UseNNUEMode::True)
      ss << " [with scaled NNUE, hybrid, ...]";
   ss << "\n";
 
