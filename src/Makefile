@@ -749,7 +749,7 @@ profile-build: net  objclean profileclean
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	$(PGOBENCH)  >/dev/null
-	$(PGOBENCH2) >/dev/null
+	##$(PGOBENCH2) >/dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean
