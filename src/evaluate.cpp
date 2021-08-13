@@ -23,6 +23,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
+#include <random>
 #include <iostream>
 #include <streambuf>
 #include <vector>
@@ -76,6 +77,8 @@ namespace Eval {
       return UseNNUEMode::False;
     }
   }
+
+  float NNUE::RandomEval = 0;
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -1095,9 +1098,16 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
-  //pos.this_thread()->on_eval();
+  static thread_local std::mt19937_64 tls_rng = [](){
+    return std::mt19937_64(std::time(0));
+  }();
 
   Value v;
+  int uci_elo = Options["UCI_Elo"];
+  bool uci_limit = Options["UCI_LimitStrength"];
+
+  
+
 
   if (NNUE::useNNUE == NNUE::UseNNUEMode::Pure) {
       v = NNUE::evaluate(pos);
@@ -1114,7 +1124,7 @@ Value Eval::evaluate(const Position& pos) {
       // Scale and shift NNUE for compatibility with search and classical evaluation
       auto  adjusted_NNUE = [&]()
       {
-         int scale =   903
+         int scale =   883
                      + 32 * pos.count<PAWN>()
                      + 32 * pos.non_pawn_material() / 1024;
 
@@ -1130,7 +1140,8 @@ Value Eval::evaluate(const Position& pos) {
       // NNUE eval faster when shuffling or if the material on the board is high.
       int r50 = pos.rule50_count();
       Value psq = Value(abs(eg_value(pos.psq_score())));
-      bool classical = psq * 5 > (750 + pos.non_pawn_material() / 64) * (5 + r50);
+      bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
+      if(uci_limit) classical = false;
 
       v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
                     : adjusted_NNUE();                   // NNUE
@@ -1138,6 +1149,15 @@ Value Eval::evaluate(const Position& pos) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
+  if (uci_limit)
+  {
+      NNUE::RandomEval = ((3000-uci_elo)/3 + 200)/10;
+      std::normal_distribution<float> d(0.0, RookValueEg);
+      float r = d(tls_rng);
+      r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+
+      v = (Stockfish::Value((NNUE::RandomEval) * r)  + (100 - Stockfish::Value(NNUE::RandomEval)) * v)/100 ;
+  }
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
@@ -1189,7 +1209,7 @@ std::string Eval::trace(Position& pos) {
      << "|      Total | " << Term(TOTAL)
      << "+------------+-------------+-------------+-------------+\n";
 
-    if (NNUE::useNNUE != NNUE::UseNNUEMode::False)
+  if (NNUE::useNNUE != NNUE::UseNNUEMode::False)
       ss << '\n' << NNUE::trace(pos) << '\n';
 
   ss << std::showpoint << std::showpos << std::fixed << std::setprecision(2) << std::setw(15);

@@ -45,6 +45,7 @@ void on_clear_hash(const Option&) { Search::clear(); }
 void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
+//void on_eval_perturb(const Option& o) { Eval::NNUE::RandomEvalPerturb = o; }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
@@ -106,7 +107,6 @@ void init(OptionsMap& o) {
   o["Move Overhead"]         << Option(10, 0, 5000);
   o["MultiPV"]               << Option(1, 1, 256);
   o["Ponder"]                << Option(false);
-  o["Skill Level"]           << Option(40, 0, 40);
   o["Threads"]               << Option(1, 1, 512, on_threads);
 
   // A separate weaker play level from the predefined levels below. The difference
@@ -123,12 +123,12 @@ void init(OptionsMap& o) {
   o["Search_Depth"]          << Option(0, 0, 30);
   o["Search_Nodes"]          << Option(0, 0, 10000000);
   o["Slow Mover"]            << Option(100, 10, 1000);
-  o["Slow Play"]             << Option(false);
+  //o["Slow Play"]             << Option(false);
   o["Tactical_Depth"]        << Option(5, 0, 16);
   o["Adaptive_Play"]         << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_Chess960"]          << Option(false);
-  o["UCI_Elo"]               << Option(1300, 1300, 2900);
+  o["UCI_Elo"]               << Option(1000, 1000, 3000);
   o["UCI_LimitStrength"]     << Option(false);
   o["UCI_ShowWDL"]           << Option(false);
   o["Tactical"]              << Option(0, 0, 8);

@@ -42,7 +42,7 @@ endif
 SRCS = benchmark.cpp bitbase.cpp bitboard.cpp endgame.cpp evaluate.cpp main.cpp \
 	material.cpp misc.cpp movegen.cpp movepick.cpp pawns.cpp polybook.cpp position.cpp psqt.cpp \
 	search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp tune.cpp syzygy/tbprobe.cpp \
-	nnue/evaluate_nnue.cpp nnue/features/half_ka_v2.cpp
+	nnue/evaluate_nnue.cpp nnue/features/half_ka_v2_hm.cpp
 
 OBJS = $(notdir $(SRCS:.cpp=.o))
 
@@ -406,8 +406,12 @@ ifeq ($(COMP),clang)
 endif
 
 ifeq ($(KERNEL),Darwin)
-	CXXFLAGS += -arch $(arch) -mmacosx-version-min=10.14
-	LDFLAGS += -arch $(arch) -mmacosx-version-min=10.14
+	CXXFLAGS += -mmacosx-version-min=10.14
+	LDFLAGS += -mmacosx-version-min=10.14
+	ifneq ($(arch),any)
+		CXXFLAGS += -arch $(arch)
+		LDFLAGS += -arch $(arch)
+	endif
 	XCRUN = xcrun
 endif
 
@@ -749,7 +753,7 @@ profile-build: net  objclean profileclean
 	@echo ""
 	@echo "Step 2/4. Running benchmark for pgo-build ..."
 	$(PGOBENCH)  >/dev/null
-	$(PGOBENCH2) >/dev/null
+	##$(PGOBENCH2) >/dev/null
 	@echo ""
 	@echo "Step 3/4. Building optimized executable ..."
 	$(MAKE) ARCH=$(ARCH) COMP=$(COMP) objclean

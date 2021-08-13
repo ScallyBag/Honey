@@ -109,7 +109,7 @@ namespace {
   }
 
   // Skill structure is used to implement strength limit
-  struct Skill {
+/*  struct Skill {
     explicit Skill(int l) : level(l) {}
     bool enabled() const { return level < 40; }
     bool time_to_pick(Depth depth) const { return depth == 1 + level; }
@@ -117,7 +117,7 @@ namespace {
 
     int level;
     Move best = MOVE_NONE;
-  };
+  };*/
 
   template <NodeType nodeType>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
@@ -197,13 +197,9 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
-
-
+  //bool uci_sleep           = Options["Slow Play"];
   minOutput                = Options["Minimal Output"];
-  int uci_elo              = int(Options["UCI_Elo"]);
-  bool uci_sleep           = Options["Slow Play"];
-  bool limitStrength       = false;
-
+  if (Options["UCI_LimitStrength"]) Limits.nodes=100000;
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
@@ -237,7 +233,7 @@ void MainThread::search() {
       }
       else
       {
-      if (Options["NPS_Level"])
+      /*if (Options["NPS_Level"])
           {
           benchKnps = 1000 * (Options["Bench_KNPS"]);
           //sync_cout << "Bknps: " << benchKnps  << sync_endl;// for debug
@@ -252,14 +248,14 @@ void MainThread::search() {
               sync_cout << sync_endl;
               std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
             }
-          }
-      else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
+          }*/
+      /*else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
           {
               uci_elo = int(Options["UCI_Elo"]);
               limitStrength = true;
               goto skipLevels;
-          }
-          if (Options["Engine_Level"] == "None")
+          }*/
+          /*if (Options["Engine_Level"] == "None")
           {
               limitStrength = false;
               goto skipLevels;
@@ -268,8 +264,8 @@ void MainThread::search() {
           {
               limitStrength = true;
           }
-
-          if (Options["Engine_Level"] == "World_Champion")
+*/
+  /*        if (Options["Engine_Level"] == "World_Champion")
               uci_elo = 2900;
           else if (Options["Engine_Level"] == "Super_GM")
               uci_elo = 2800;
@@ -298,8 +294,8 @@ void MainThread::search() {
           else if (Options["Engine_Level"] == "Class_E")
               uci_elo = 1300;
 ;
-
-skipLevels:
+*/
+/*skipLevels:
           if (limitStrength && !Options["Search_Nodes"] )
               {  //note varietry strength is capped around ~2150-2200 due to its robustness
                   benchKnps = 1000 * (Options["Bench_KNPS"]);
@@ -324,7 +320,8 @@ skipLevels:
                     std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
                   }
                   //uci_elo =  ccrlELo;
-              }
+              }*/
+
           if(Options["Search_Nodes"])
               Limits.nodes = int(Options["Search_Nodes"]) ;
           if ( Options["Search_Depth"])
@@ -360,14 +357,13 @@ skipLevels:
 
   if (   int(Options["MultiPV"]) == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || (Options["UCI_LimitStrength"]) || limitStrength)
       && rootMoves[0].pv[0] != MOVE_NONE)
       bestThread = Threads.get_best_thread();
 
   bestPreviousScore = bestThread->rootMoves[0].score;
 
   // Send again PV info if we have a new best thread
-  if (bestThread != this || Skill(Options["Skill Level"]).enabled())
+  if (bestThread != this)// || Skill(Options["Skill Level"]).enabled())
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
   adaptive = Options["Adaptive_Play"];
@@ -483,25 +479,6 @@ void Thread::search() {
     multiPV = size_t(3);
     variety_factor = 1;
   }
-
-  // Pick integer skill levels, but non-deterministically round up or down
-  // such that the average integer skill corresponds to the input floating point one.
-  // UCI_Elo is converted to a suitable fractional skill level, using anchoring
-  // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
-  // for match (TC 60+0.6) results spanning a wide range of k values.
-  int uci_level = int(Options["UCI_Elo"]);
-
-  PRNG rng(now());
-  double floatLevel = ((Options["UCI_LimitStrength"]) && ((variety || adaptive))) ?
-               std::clamp(std::pow(((uci_level + double(variety_factor * 768) - 1195.0  ) / 55), 1.075) , 0.0, 40.0) : 40;
-  int intLevel = int(floatLevel) +
-                 ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
-  Skill skill(intLevel);
-
-  // When playing with strength handicap enable MultiPV search that we will
-  // use behind the scenes to retrieve a set of possible moves.
-  if (skill.enabled())
-      multiPV = std::max(multiPV, (size_t)4);
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
@@ -644,9 +621,9 @@ void Thread::search() {
           continue;
 
       // If skill level is enabled and time is up, pick a sub-optimal best move
-      if (skill.enabled() && skill.time_to_pick(rootDepth))
+      /*if (skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
-
+*/
       // Do we have time for the next iteration? Can we stop searching now?
       if (    Limits.use_time_management()
           && !Threads.stop
@@ -702,10 +679,6 @@ void Thread::search() {
 
   mainThread->previousTimeReduction = timeReduction;
 
-  // If skill level is enabled, swap best PV line with the sub-optimal one
-  if (skill.enabled() || Options["Variety"] || Options["Adaptive_Play"])
-      std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
-                skill.best ? skill.best : skill.pick_best(multiPV)));
 }
 
 
@@ -969,6 +942,7 @@ namespace {
             ss->staticEval = eval = -(ss-1)->staticEval;
 
         // Save static evaluation into transposition table
+        if(!excludedMove)
         tte->save(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_NONE, MOVE_NONE, eval);
     }
 
@@ -987,7 +961,8 @@ namespace {
                ? ss->staticEval > (ss-4)->staticEval || (ss-4)->staticEval == VALUE_NONE
                : ss->staticEval > (ss-2)->staticEval;
 
-    // Step 7. Futility pruning: child node (~50 Elo)
+    // Step 7. Futility pruning: child node (~50 Elo).
+    // The depth condition is important for mate finding.
     if (   !PvNode
         &&  depth < 9
         &&  eval - futility_margin(depth, improving) >= beta
@@ -1117,7 +1092,7 @@ namespace {
         && !ttMove)
         depth -= 2;
 
-moves_loop: // When in check, search starts from here
+moves_loop: // When in check, search starts here
 
     ttCapture = ttMove && pos.capture_or_promotion(ttMove);
 
@@ -1199,7 +1174,7 @@ moves_loop: // When in check, search starts from here
       // Calculate new depth for this move
       newDepth = depth - 1;
 
-      // Step 13. Pruning at shallow depth (~200 Elo)
+      // Step 13. Pruning at shallow depth (~200 Elo). Depth conditions are important for mate finding.
       if (  !rootNode
           && pos.non_pawn_material(us)
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
@@ -1227,22 +1202,18 @@ moves_loop: // When in check, search starts from here
           {
               // Continuation history based pruning (~20 Elo)
               if (   lmrDepth < 5
-                  && (*contHist[0])[movedPiece][to_sq(move)] < CounterMovePruneThreshold
-                  && (*contHist[1])[movedPiece][to_sq(move)] < CounterMovePruneThreshold)
+                  && (*contHist[0])[movedPiece][to_sq(move)] < 23 - 23 * depth * depth
+                  && (*contHist[1])[movedPiece][to_sq(move)] < 23 - 23 * depth * depth)
                   continue;
 
               // Futility pruning: parent node (~5 Elo)
-              if (   lmrDepth < 7
-                  && !ss->inCheck
-                  && ss->staticEval + 174 + 157 * lmrDepth <= alpha
-                  &&  (*contHist[0])[movedPiece][to_sq(move)]
-                    + (*contHist[1])[movedPiece][to_sq(move)]
-                    + (*contHist[3])[movedPiece][to_sq(move)]
-                    + (*contHist[5])[movedPiece][to_sq(move)] / 3 < 28255)
+              if (   !ss->inCheck
+                  && lmrDepth < 7
+                  && ss->staticEval + 174 + 157 * lmrDepth <= alpha)
                   continue;
 
               // Prune moves with negative SEE (~20 Elo)
-              if (!pos.see_ge(move, Value(-(30 - std::min(lmrDepth, 18)) * lmrDepth * lmrDepth)))
+              if (!pos.see_ge(move, Value(-21 * lmrDepth * lmrDepth - 21 * lmrDepth)))
                   continue;
           }
       }
@@ -1367,22 +1338,18 @@ moves_loop: // When in check, search starts from here
           if (cutNode && move != ss->killers[0])
               r += 2;
 
-          if (!captureOrPromotion)
-          {
-              // Increase reduction if ttMove is a capture (~3 Elo)
-              if (ttCapture)
-                  r++;
+          // Increase reduction if ttMove is a capture (~3 Elo)
+          if (ttCapture)
+              r++;
 
-              ss->statScore =  thisThread->mainHistory[us][from_to(move)]
-                             + (*contHist[0])[movedPiece][to_sq(move)]
-                             + (*contHist[1])[movedPiece][to_sq(move)]
-                             + (*contHist[3])[movedPiece][to_sq(move)]
-                             - 4923;
+          ss->statScore =  thisThread->mainHistory[us][from_to(move)]
+                         + (*contHist[0])[movedPiece][to_sq(move)]
+                         + (*contHist[1])[movedPiece][to_sq(move)]
+                         + (*contHist[3])[movedPiece][to_sq(move)]
+                         - 4923;
 
-              // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
-              if (!ss->inCheck)
-                  r -= ss->statScore / 14721;
-          }
+          // Decrease/increase reduction for moves with a good/bad history (~30 Elo)
+          r -= ss->statScore / 14721;
 
           // In general we want to cap the LMR depth search at newDepth. But if
           // reductions are really negative and movecount is low, we allow this move
@@ -1680,6 +1647,10 @@ moves_loop: // When in check, search starts from here
     {
       assert(is_ok(move));
 
+      // Check for legality
+      if (!pos.legal(move))
+          continue;
+
       givesCheck = pos.gives_check(move);
       captureOrPromotion = pos.capture_or_promotion(move);
 
@@ -1717,13 +1688,6 @@ moves_loop: // When in check, search starts from here
 
       // Speculative prefetch as early as possible
       prefetch(TT.first_entry(pos.key_after(move)));
-
-      // Check for legality just before making the move
-      if (!pos.legal(move))
-      {
-          moveCount--;
-          continue;
-      }
 
       ss->currentMove = move;
       ss->continuationHistory = &thisThread->continuationHistory[ss->inCheck]
@@ -1928,39 +1892,6 @@ moves_loop: // When in check, search starts from here
         thisThread->lowPlyHistory[ss->ply][from_to(move)] << stat_bonus(depth - 7);
   }
 
-  // When playing with strength handicap, choose best move among a set of RootMoves
-  // using a statistical rule dependent on 'level'. Idea by Heinz van Saanen.
-
-  Move Skill::pick_best(size_t multiPV) {
-
-    const RootMoves& rootMoves = Threads.main()->rootMoves;
-    static PRNG rng(now()); // PRNG sequence should be non-deterministic
-
-    // RootMoves are already sorted by score in descending order
-    Value topScore = rootMoves[0].score;
-    int delta = std::min(topScore - rootMoves[multiPV - 1].score, 101*PawnValueMg/78);
-    int weakness = 138 - level;
-    int maxScore = -VALUE_INFINITE;
-
-    // Choose best move. For each move score we add two terms, both dependent on
-    // weakness. One is deterministic and bigger for weaker levels, and one is
-    // random. Then we choose the move with the resulting highest score.
-    for (size_t i = 0; i < multiPV; ++i)
-    {
-        // This is our magic formula
-        int push = (  weakness * int(topScore - rootMoves[i].score)
-                    + delta * (rng.rand<unsigned>() % weakness)) / 128;
-
-        if (rootMoves[i].score + push >= maxScore)
-        {
-            maxScore = rootMoves[i].score + push;
-            best = rootMoves[i].pv[0];
-        }
-    }
-
-    return best;
-  }
-
 } // namespace
 
 
@@ -1973,6 +1904,7 @@ void MainThread::check_time() {
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
+
   callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
 
 
