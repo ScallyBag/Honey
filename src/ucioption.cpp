@@ -43,6 +43,7 @@ void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
 void on_eval_perturb(const Option& o) { Eval::NNUE::RandomEvalPerturb = o; }
+void on_eval_elo(const Option& o) { Eval::NNUE::RandomEvalElo = o; }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
@@ -63,7 +64,8 @@ void init(OptionsMap& o) {
 
   o["Debug Log File"]        << Option("", on_logger);
   o["Threads"]               << Option(1, 1, 512, on_threads);
-  o["RandomEvalPerturb"]     << Option(0, 0, 100, on_eval_perturb);
+  o["RandomEvalPerturb"]     << Option(0, 0, 1000, on_eval_perturb);
+  o["RandomEvalElo"]         << Option(1000, 1000, 3000, on_eval_elo);
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
@@ -77,6 +79,8 @@ void init(OptionsMap& o) {
   o["UCI_LimitStrength"]     << Option(false);
   o["UCI_Elo"]               << Option(1350, 1350, 2850);
   o["UCI_ShowWDL"]           << Option(false);
+  o["Search_Depth"]          << Option(0, 0, 60);
+  o["Search_Nodes"]          << Option(0, 0, 10000000);
   o["SyzygyPath"]            << Option("<empty>", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);

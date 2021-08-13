@@ -196,6 +196,10 @@ void MainThread::search() {
   }
   else
   {
+      if(Options["Search_Nodes"])
+          Limits.nodes = int(Options["Search_Nodes"]);
+      if ( Options["Search_Depth"])
+          Limits.depth = int(Options["Search_Depth"]);
       Threads.start_searching(); // start non-main threads
       Thread::search();          // main thread start searching
   }

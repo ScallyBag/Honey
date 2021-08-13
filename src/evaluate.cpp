@@ -65,6 +65,7 @@ namespace Eval {
   string eval_file_loaded = "None";
 
   int NNUE::RandomEvalPerturb = 0;
+  int NNUE::RandomEvalElo = 0;
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -1127,7 +1128,7 @@ Value Eval::evaluate(const Position& pos) {
   float r = d(tls_rng);
   r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
-  v = (NNUE::RandomEvalPerturb * Value(r) + (100 - NNUE::RandomEvalPerturb) * v) / 100;
+  v = (NNUE::RandomEvalPerturb * Value(r) + (1000 - NNUE::RandomEvalPerturb) * v) / 1000;
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
