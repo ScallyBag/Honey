@@ -92,7 +92,7 @@ namespace {
   }
 
   // Skill structure is used to implement strength limit
-  struct Skill {
+/*  struct Skill {
     explicit Skill(int l) : level(l) {}
     bool enabled() const { return level < 20; }
     bool time_to_pick(Depth depth) const { return depth == 1 + level; }
@@ -100,7 +100,7 @@ namespace {
 
     int level;
     Move best = MOVE_NONE;
-  };
+  };*/
 
   template <NodeType nodeType>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
@@ -180,7 +180,7 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
-
+  if (Options["UCI_LimitStrength"]) Limits.nodes=100000;
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
@@ -225,7 +225,7 @@ void MainThread::search() {
 
   if (   int(Options["MultiPV"]) == 1
       && !Limits.depth
-      && !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]))
+      //&& !(Skill(Options["Skill Level"]).enabled() || int(Options["UCI_LimitStrength"]))
       && rootMoves[0].pv[0] != MOVE_NONE)
       bestThread = Threads.get_best_thread();
 
@@ -296,19 +296,19 @@ void Thread::search() {
   // UCI_Elo is converted to a suitable fractional skill level, using anchoring
   // to CCRL Elo (goldfish 1.13 = 2000) and a fit through Ordo derived Elo
   // for match (TC 60+0.6) results spanning a wide range of k values.
-  PRNG rng(now());
+  /*PRNG rng(now());
   double floatLevel = Options["UCI_LimitStrength"] ?
                       std::clamp(std::pow((Options["UCI_Elo"] - 1346.6) / 143.4, 1 / 0.806), 0.0, 20.0) :
                         double(Options["Skill Level"]);
   int intLevel = int(floatLevel) +
                  ((floatLevel - int(floatLevel)) * 1024 > rng.rand<unsigned>() % 1024  ? 1 : 0);
   Skill skill(intLevel);
-
+*/
   // When playing with strength handicap enable MultiPV search that we will
   // use behind the scenes to retrieve a set of possible moves.
-  if (skill.enabled())
+  /*if (skill.enabled())
       multiPV = std::max(multiPV, (size_t)4);
-
+*/
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
 
@@ -446,9 +446,9 @@ void Thread::search() {
           continue;
 
       // If skill level is enabled and time is up, pick a sub-optimal best move
-      if (skill.enabled() && skill.time_to_pick(rootDepth))
+      /*if (skill.enabled() && skill.time_to_pick(rootDepth))
           skill.pick_best(multiPV);
-
+*/
       // Do we have time for the next iteration? Can we stop searching now?
       if (    Limits.use_time_management()
           && !Threads.stop
@@ -505,9 +505,9 @@ void Thread::search() {
   mainThread->previousTimeReduction = timeReduction;
 
   // If skill level is enabled, swap best PV line with the sub-optimal one
-  if (skill.enabled())
+  /*if (skill.enabled())
       std::swap(rootMoves[0], *std::find(rootMoves.begin(), rootMoves.end(),
-                skill.best ? skill.best : skill.pick_best(multiPV)));
+                skill.best ? skill.best : skill.pick_best(multiPV)));*/
 }
 
 
@@ -1722,7 +1722,7 @@ moves_loop: // When in check, search starts here
 
   // When playing with strength handicap, choose best move among a set of RootMoves
   // using a statistical rule dependent on 'level'. Idea by Heinz van Saanen.
-
+/*
   Move Skill::pick_best(size_t multiPV) {
 
     const RootMoves& rootMoves = Threads.main()->rootMoves;
@@ -1731,7 +1731,7 @@ moves_loop: // When in check, search starts here
     // RootMoves are already sorted by score in descending order
     Value topScore = rootMoves[0].score;
     int delta = std::min(topScore - rootMoves[multiPV - 1].score, PawnValueMg);
-    int weakness = 120 - 2 * level;
+    //int weakness = 120 - 2 * level;
     int maxScore = -VALUE_INFINITE;
 
     // Choose best move. For each move score we add two terms, both dependent on
@@ -1751,7 +1751,7 @@ moves_loop: // When in check, search starts here
     }
 
     return best;
-  }
+  }*/
 
 } // namespace
 
@@ -1765,7 +1765,9 @@ void MainThread::check_time() {
       return;
 
   // When using nodes, ensure checking rate is not lower than 0.1% of nodes
+
   callsCnt = Limits.nodes ? std::min(1024, int(Limits.nodes / 1024)) : 1024;
+
 
   static TimePoint lastInfoTime = now();
 

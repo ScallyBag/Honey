@@ -43,7 +43,7 @@ namespace Eval {
 
   namespace NNUE {
 
-    extern int RandomEvalPerturb;
+    extern float RandomEval;
 
     std::string trace(Position& pos);
     Value evaluate(const Position& pos, bool adjusted = false);
