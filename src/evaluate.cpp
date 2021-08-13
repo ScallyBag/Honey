@@ -65,6 +65,8 @@ namespace Eval {
   string eval_file_loaded = "None";
 
   int NNUE::RandomEvalPerturb = 0;
+  int NNUE::UCI_Elo;
+  bool NNUE::UCI_LimitStrength = false;
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -1114,7 +1116,9 @@ Value Eval::evaluate(const Position& pos) {
       int r50 = pos.rule50_count();
       Value psq = Value(abs(eg_value(pos.psq_score())));
       bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
-      classical = false;
+      if (NNUE::UCI_LimitStrength)    {
+          Stockfish::Search::Limits.nodes = 400000;
+      }
 
       v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
                     : adjusted_NNUE();                   // NNUE
@@ -1122,12 +1126,14 @@ Value Eval::evaluate(const Position& pos) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
+  if (NNUE::UCI_LimitStrength)    {
+      NNUE::RandomEvalPerturb = ((3200 - (NNUE::UCI_Elo)) / 28) + NNUE::UCI_Elo / 225 ;
+      std::normal_distribution<float> d(0.0, RandomValue);
+      float r = d(tls_rng);
+      r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
-  std::normal_distribution<float> d(0.0, RookValueEg);
-  float r = d(tls_rng);
-  r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-
-  v = (NNUE::RandomEvalPerturb * Value(r) + (100 - NNUE::RandomEvalPerturb) * v) / 100;
+      v = (NNUE::RandomEvalPerturb * Value(r) + (100 - NNUE::RandomEvalPerturb) * v) / 100;
+  }
 
   // Guarantee evaluation does not hit the tablebase range
   v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
