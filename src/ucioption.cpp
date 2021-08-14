@@ -43,7 +43,8 @@ void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
 void on_eval_perturb(const Option& o) { Eval::NNUE::RandomEvalPerturb = o; }
-void on_eval_elo(const Option& o) { Eval::NNUE::RandomEvalElo = o; }
+void on_eval_elo(const Option& o) { Eval::NNUE::RandEvalElo = o; }
+void on_eval_str(const Option& o) { Eval::NNUE::RandEvalLimitStrength = o; }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
@@ -65,7 +66,8 @@ void init(OptionsMap& o) {
   o["Debug Log File"]        << Option("", on_logger);
   o["Threads"]               << Option(1, 1, 512, on_threads);
   o["RandomEvalPerturb"]     << Option(0, 0, 1000, on_eval_perturb);
-  o["RandomEvalElo"]         << Option(1000, 1000, 3000, on_eval_elo);
+  o["RandEvalElo"]           << Option(1000, 1400, 3000, on_eval_elo);
+  o["RandEvalLimitStrength"] << Option(false,  on_eval_str);
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
@@ -85,6 +87,7 @@ void init(OptionsMap& o) {
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
+  o["Tactical"]              << Option(0, 0, 8);
   o["Use NNUE"]              << Option(true, on_use_NNUE);
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
 }

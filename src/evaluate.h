@@ -44,7 +44,8 @@ namespace Eval {
   namespace NNUE {
 
     extern int RandomEvalPerturb;
-    extern int RandomEvalElo;
+    extern int RandEvalElo;
+    extern bool RandEvalLimitStrength;
 
     std::string trace(Position& pos);
     Value evaluate(const Position& pos, bool adjusted = false);
