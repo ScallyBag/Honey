@@ -65,9 +65,9 @@ void init(OptionsMap& o) {
 
   o["Debug Log File"]        << Option("", on_logger);
   o["Threads"]               << Option(1, 1, 512, on_threads);
-  o["RandomEvalPerturb"]     << Option(0, 0, 1000, on_eval_perturb);
-  o["RandEvalElo"]           << Option(1000, 1000, 3000, on_eval_elo);
-  o["RandEvalLimitStrength"] << Option(false,  on_eval_str);
+  o["RandomEvalPerturb"]     << Option(0, 0, 100, on_eval_perturb);
+  //o["RandEvalElo"]           << Option(1500, 1000, 3000, on_eval_elo);
+  //o["RandEvalLimitStrength"] << Option(false,  on_eval_str);
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Ponder"]                << Option(false);
@@ -79,11 +79,11 @@ void init(OptionsMap& o) {
   o["UCI_Chess960"]          << Option(false);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_Elo"]               << Option(1350, 1350, 2850);
+  o["UCI_Elo"]               << Option(1500, 1000, 3000);
   o["UCI_ShowWDL"]           << Option(false);
   o["Search_Depth"]          << Option(0, 0, 60);
   o["Search_Nodes"]          << Option(0, 0, 10000000);
-  o["SyzygyPath"]            << Option("<empty>", on_tb_path);
+  o["SyzygyPath"]            << Option("C:\\syzygy", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);

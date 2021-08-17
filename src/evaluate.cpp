@@ -1119,8 +1119,7 @@ Value Eval::evaluate(const Position& pos) {
       Value psq = Value(abs(eg_value(pos.psq_score())));
       bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
       if (NNUE::RandEvalLimitStrength)    {
-          classical = false;
-          Stockfish::Search::Limits.nodes = 100000;
+          Stockfish::Search::Limits.nodes = 400000;
       }
 
       v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
@@ -1130,12 +1129,12 @@ Value Eval::evaluate(const Position& pos) {
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
   if (NNUE::RandEvalLimitStrength)    {
-      NNUE::RandomEvalPerturb = ((3000 - NNUE::RandEvalElo)/3 + 200);
-      std::normal_distribution<float> d(0.0, RookValueEg);
+      NNUE::RandomEvalPerturb = ((3200 - (NNUE::RandEvalElo)) / 28) + NNUE::RandEvalElo / 225 ;
+      std::normal_distribution<float> d(0.0, RandomValue);
       float r = d(tls_rng);
       r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
-      v = (NNUE::RandomEvalPerturb * Value(r) + (1000 - NNUE::RandomEvalPerturb) * v) / 1000;
+      v = (NNUE::RandomEvalPerturb * Value(r) + (100 - NNUE::RandomEvalPerturb) * v) / 100;
   }
 
   // Guarantee evaluation does not hit the tablebase range
