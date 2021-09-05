@@ -40,22 +40,16 @@ namespace Stockfish {
 
 namespace Search {
 
-  LimitsType Limits;
-  bool adaptive;
-  bool adaptive_flag = true;
+  bool minOutput;
   bool tactical_flag = true;
+  bool variety_flag = true;
 
-  int benchKnps;
-  int tactical;
+  int tactical = 0;
   int tactical_depth = 0;
 
+  LimitsType Limits;
 
-  int NodesToSearch;
-
-  double variety_factor  = 0;
-  bool minOutput;
-  bool variety;
-  bool variety_flag = true;
+  size_t multiPV;
 
 }
 
@@ -108,17 +102,7 @@ namespace {
     return VALUE_DRAW + Value(2 * (thisThread->nodes & 1) - 1);
   }
 
-  // Skill structure is used to implement strength limit
-/*  struct Skill {
-    explicit Skill(int l) : level(l) {}
-    bool enabled() const { return level < 40; }
-    bool time_to_pick(Depth depth) const { return depth == 1 + level; }
-    Move pick_best(size_t multiPV);
-
-    int level;
-    Move best = MOVE_NONE;
-  };*/
-
+  int openingVariety;
   template <NodeType nodeType>
   Value search(Position& pos, Stack* ss, Value alpha, Value beta, Depth depth, bool cutNode);
 
@@ -197,14 +181,14 @@ void MainThread::search() {
       sync_cout << "\nNodes searched: " << nodes << "\n" << sync_endl;
       return;
   }
-  //bool uci_sleep           = Options["Slow Play"];
+
   minOutput                = Options["Minimal Output"];
-  if (Options["UCI_LimitStrength"]) Limits.nodes=100000;
   Color us = rootPos.side_to_move();
   Time.init(Limits, us, rootPos.game_ply());
   TT.new_search();
 
   Eval::NNUE::verify();
+  openingVariety = Options["Variety"];
 
   if (rootMoves.empty())
       {
@@ -233,95 +217,6 @@ void MainThread::search() {
       }
       else
       {
-      /*if (Options["NPS_Level"])
-          {
-          benchKnps = 1000 * (Options["Bench_KNPS"]);
-          //sync_cout << "Bknps: " << benchKnps  << sync_endl;// for debug
-          int nps = 64 * pow(1.1486, (Options["NPS_Level"] - 1 ));
-          Limits.nodes = nps;
-          Limits.nodes *= Time.optimum()/1000 + 1 ;
-          int sleepTime_1 = Time.optimum() * double(1 - Limits.nodes/benchKnps);
-          uci_sleep=true;
-          if (uci_sleep)
-            {
-              sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime_1 << " milliseconds\n" << sync_endl;// for debug
-              sync_cout << sync_endl;
-              std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-            }
-          }*/
-      /*else if (Options["UCI_LimitStrength"] && Options["Engine_Level"] == "None")
-          {
-              uci_elo = int(Options["UCI_Elo"]);
-              limitStrength = true;
-              goto skipLevels;
-          }*/
-          /*if (Options["Engine_Level"] == "None")
-          {
-              limitStrength = false;
-              goto skipLevels;
-          }
-          else
-          {
-              limitStrength = true;
-          }
-*/
-  /*        if (Options["Engine_Level"] == "World_Champion")
-              uci_elo = 2900;
-          else if (Options["Engine_Level"] == "Super_GM")
-              uci_elo = 2800;
-          else if (Options["Engine_Level"] == "GM")
-              uci_elo = 2650;
-          else if (Options["Engine_Level"] == "Deep_Thought")
-              uci_elo = 2500;
-          else if (Options["Engine_Level"] == "SIM")
-              uci_elo = 2400;
-          else if (Options["Engine_Level"] == "IM")
-              uci_elo = 2300;
-          else if (Options["Engine_Level"] == "Cray_Blitz")
-              uci_elo = 2200;
-          else if (Options["Engine_Level"] == "Master")
-              uci_elo = 2100;
-          else if (Options["Engine_Level"] == "Expert")
-              uci_elo = 1950;
-          else if (Options["Engine_Level"] == "Class_A")
-              uci_elo = 1800;
-          else if (Options["Engine_Level"] == "Class_B")
-              uci_elo = 1650;
-          else if (Options["Engine_Level"] == "Class_C")
-              uci_elo = 1500;
-          else if (Options["Engine_Level"] == "Class_D")
-              uci_elo = 1400;
-          else if (Options["Engine_Level"] == "Class_E")
-              uci_elo = 1300;
-;
-*/
-/*skipLevels:
-          if (limitStrength && !Options["Search_Nodes"] )
-              {  //note varietry strength is capped around ~2150-2200 due to its robustness
-                  benchKnps = 1000 * (Options["Bench_KNPS"]);
-                  int random = (rand() % 20 - 10);
-                  uci_elo = uci_elo + random + 35;
-
-                  NodesToSearch  =  int(pow(1.00485, uci_elo - 1200)) * 32;// - std::clamp(uci_elo - 1600, 0 ,uci_elo -1600) * 48 ) );
-                  //sync_cout << "Nodes To Search: " << NodesToSearch << sync_endl;//for debug
-                  Limits.nodes = int(NodesToSearch);
-                  Limits.nodes *= Time.optimum()/1000 + 1 ;
-                  Limits.nodes = int (std::clamp(Limits.nodes, int64_t (64),Limits.nodes));
-                  int sleepTime = Time.optimum() * double(1 - Limits.nodes/benchKnps);
-                  //int sleepValue = Time.optimum() * double(1 - Limits.nodes/benchKnps);
-                  //sync_cout << "Sleep time: " << sleepValue << sync_endl;//for debug
-                  //sync_cout << "Limit Nodes: " <<  Limits.nodes << sync_endl;//for debug
-
-                  if (uci_sleep)
-
-                  {
-                    sync_cout <<  " info game slowed down to avoid instant move: " << sleepTime << " milliseconds\n" << sync_endl;// for debug
-                    sync_cout << sync_endl;
-                    std::this_thread::sleep_for (std::chrono::milliseconds(Time.optimum()) * double(1 - Limits.nodes/benchKnps));
-                  }
-                  //uci_elo =  ccrlELo;
-              }*/
-
           if(Options["Search_Nodes"])
               Limits.nodes = int(Options["Search_Nodes"]) ;
           if ( Options["Search_Depth"])
@@ -363,57 +258,14 @@ void MainThread::search() {
   bestPreviousScore = bestThread->rootMoves[0].score;
 
   // Send again PV info if we have a new best thread
-  if (bestThread != this)// || Skill(Options["Skill Level"]).enabled())
+  if (bestThread != this)
       sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
 
-  adaptive = Options["Adaptive_Play"];
-  if  (adaptive && adaptive_flag )    {
-      size_t i = 1;
-      if (  bestPreviousScore > -PawnValueMg && bestPreviousScore <= PawnValueMg * 4 )
-      {
-          while (i < rootMoves.size() && bestThread->rootMoves[i].score > bestPreviousScore)
-          bestPreviousScore = bestThread->rootMoves[i].score;
-          sync_cout  << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE, VALUE_INFINITE) << sync_endl;
-          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
-          ++i;
-      }
-      else if ( bestPreviousScore > PawnValueMg * 4  && bestPreviousScore <  PawnValueMg * 8)
-      {
-      bestPreviousScore = bestThread->rootMoves[i].score;
-      while (i < rootMoves.size() && bestThread->rootMoves[i].score < bestPreviousScore
-                && bestPreviousScore + PawnValueMg/2  > bestThread->rootMoves[i].score)
-  		  {
-                ++i;
-                break;
-        }
-        bestPreviousScore = bestThread->rootMoves[i].score;
-        while (i < rootMoves.size() && bestThread->rootMoves[i].score > bestPreviousScore
-                && bestPreviousScore + PawnValueMg/2  < bestThread->rootMoves[i].score)
-        {
-                bestPreviousScore = bestThread->rootMoves[i].score;
-                ++i;
-        }
-        bestPreviousScore = bestThread->rootMoves[i].score;
-        sync_cout << UCI::pv(bestThread->rootPos, bestThread->completedDepth, -VALUE_INFINITE,
-                             VALUE_INFINITE) << sync_endl;
-        sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[i].pv[0], rootPos.is_chess960());
-        }
- else
-      {
-          sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
-          if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-              std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
-      }
-  }
-  else
-  {
   sync_cout << "bestmove " << UCI::move(bestThread->rootMoves[0].pv[0], rootPos.is_chess960());
 
-  if (bestThread->rootMoves[0].pv.size() > 1 ||
-          bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
-          std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1],
-          rootPos.is_chess960());
-  }
+  if (bestThread->rootMoves[0].pv.size() > 1 || bestThread->rootMoves[0].extract_ponder_from_tt(rootPos))
+      std::cout << " ponder " << UCI::move(bestThread->rootMoves[0].pv[1], rootPos.is_chess960());
+
   std::cout << sync_endl;
 }
 
@@ -461,24 +313,10 @@ void Thread::search() {
 
   std::copy(&lowPlyHistory[2][0], &lowPlyHistory.back().back() + 1, &lowPlyHistory[0][0]);
   std::fill(&lowPlyHistory[MAX_LPH - 2][0], &lowPlyHistory.back().back() + 1, 0);
+  tactical = Options["Tactical"];
+  if (!tactical) multiPV = size_t(Options["MultiPV"]);
 
-  size_t multiPV        = size_t(Options["MultiPV"]);
-  if (adaptive) multiPV=2;
-  if (multiPV == 1)    {
-              tactical = Options["Tactical"];
-      	      tactical_depth = Options["Tactical_Depth"];
-    }
-  else  tactical = 0;
-  if(!adaptive)
-      variety = Options["Variety"];
-  else variety = true;
-
-
-  if (tactical && !variety ) multiPV = size_t(pow(2, tactical));
-  else if (variety && variety_flag)    {
-    multiPV = size_t(3);
-    variety_factor = 1;
-  }
+  multiPV = tactical && tactical_flag ?  size_t(pow(2, tactical)) : 1;
 
   multiPV = std::min(multiPV, rootMoves.size());
   ttHitAverage = TtHitAverageWindow * TtHitAverageResolution / 2;
@@ -508,9 +346,6 @@ void Thread::search() {
          searchAgainCounter++;
 
       // MultiPV loop. We perform a full root search for each PV line
-      if (tactical  && rootDepth > tactical_depth )
-           multiPV = 1;
-      else if  (variety && !variety_flag) multiPV = 1;
       for (pvIdx = 0; pvIdx < multiPV && !Threads.stop; ++pvIdx)
       {
           if (pvIdx == pvLast)
@@ -620,10 +455,6 @@ void Thread::search() {
       if (!mainThread)
           continue;
 
-      // If skill level is enabled and time is up, pick a sub-optimal best move
-      /*if (skill.enabled() && skill.time_to_pick(rootDepth))
-          skill.pick_best(multiPV);
-*/
       // Do we have time for the next iteration? Can we stop searching now?
       if (    Limits.use_time_management()
           && !Threads.stop
@@ -694,14 +525,9 @@ namespace {
     const Depth maxNextDepth = rootNode ? depth : depth + 1;
     if (rootNode)
     {
-        if  (pos.count<ALL_PIECES>() > 24  && variety)    {
-             adaptive_flag =true;
-             variety_flag = true;
-           }
-        else    {
-             variety_flag = false;
-             adaptive_flag =false;
-           }
+        if  (pos.count<ALL_PIECES>() > 24  && openingVariety)
+              variety_flag = true;
+        else  variety_flag = false;
     }
     // Check if we have an upcoming move which draws by repetition, or
     // if the opponent had an alternative move earlier to this position.
@@ -983,8 +809,7 @@ namespace {
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and value
-        Depth R = std::min(int(eval - beta) / 205, 3) + (69 + 5 * depth)/16;
-
+        Depth R = std::min(int(eval - beta) / 205, 3) + depth / 3 + 4;
 
         ss->currentMove = MOVE_NULL;
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -1201,9 +1026,10 @@ moves_loop: // When in check, search starts here
           else
           {
               // Continuation history based pruning (~20 Elo)
-              if (   lmrDepth < 5
-                  && (*contHist[0])[movedPiece][to_sq(move)] < 23 - 23 * depth * depth
-                  && (*contHist[1])[movedPiece][to_sq(move)] < 23 - 23 * depth * depth)
+              if (lmrDepth < 5
+                  && (*contHist[0])[movedPiece][to_sq(move)]
+                  + (*contHist[1])[movedPiece][to_sq(move)]
+                  + (*contHist[3])[movedPiece][to_sq(move)] < -3000 * depth + 3000)
                   continue;
 
               // Futility pruning: parent node (~5 Elo)
@@ -1353,8 +1179,8 @@ moves_loop: // When in check, search starts here
 
           // In general we want to cap the LMR depth search at newDepth. But if
           // reductions are really negative and movecount is low, we allow this move
-          // to be searched deeper than the first move, unless ttMove was extended by 2.
-          Depth d = std::clamp(newDepth - r, 1, newDepth + (r < -1 && moveCount <= 5 && !doubleExtension));
+          // to be searched deeper than the first move in specific cases.
+          Depth d = std::clamp(newDepth - r, 1, newDepth + (r < -1 && (moveCount <= 5 || (depth > 6 && PvNode)) && !doubleExtension));
 
           value = -search<NonPV>(pos, ss+1, -(alpha+1), -alpha, d, true);
 
@@ -1729,6 +1555,9 @@ moves_loop: // When in check, search starts here
        }
     }
 
+    if (openingVariety && variety_flag && (bestValue + (openingVariety * PawnValueEg / 100) >= 0 ))
+	  bestValue += rand() % (openingVariety + 1);
+
     // All legal moves have been searched. A special case: if we're in check
     // and no legal moves were found, it is checkmate.
     if (ss->inCheck && bestValue == -VALUE_INFINITE)
@@ -1983,13 +1812,7 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
   size_t multiPV = std::min((size_t)Options["MultiPV"], rootMoves.size());
   uint64_t nodesSearched = Threads.nodes_searched();
   uint64_t tbHits = Threads.tb_hits() + (TB::RootInTB ? rootMoves.size() : 0);
-  int temp = 0;
 
-  if (tactical)
-      {
-        temp = multiPV;
-        multiPV = 1;
-      }
   for (size_t i = 0; i < multiPV; ++i)
   {
       bool updated = rootMoves[i].score != -VALUE_INFINITE;
@@ -2034,7 +1857,6 @@ string UCI::pv(const Position& pos, Depth depth, Value alpha, Value beta) {
       for (Move m : rootMoves[i].pv)
           ss << " " << UCI::move(m, pos.is_chess960());
   }
-  if (tactical) multiPV = temp;
   return ss.str();
 }
 

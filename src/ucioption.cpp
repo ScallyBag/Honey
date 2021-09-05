@@ -38,7 +38,7 @@ namespace Stockfish {
 UCI::OptionsMap Options; // Global object
 
 namespace UCI {
-
+//extern void UCI_Elo;
 
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
@@ -46,6 +46,8 @@ void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
 //void on_eval_perturb(const Option& o) { Eval::NNUE::RandomEvalPerturb = o; }
+void on_eval_elo(const Option& o) { Eval::NNUE::RandEvalElo = o; }
+void on_eval_str(const Option& o) { Eval::NNUE::RandEvalLimitStrength = o; }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
@@ -98,7 +100,6 @@ void init(OptionsMap& o) {
   o["Use_Book_3"] 	         << Option(false);
   o["Use_Book_4"]            << Option(false);
 
-  o["Analysis Contempt"]     << Option("Both var Off var White var Black var Both", "Both");
   o["Bench_KNPS"]            << Option (2000, 100, 6000);//used for UCI Play By Elo
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Contempt"]              << Option(24, -100, 100);
@@ -106,42 +107,26 @@ void init(OptionsMap& o) {
   o["Minimal_Output"]        << Option(false);
   o["Move Overhead"]         << Option(10, 0, 5000);
   o["MultiPV"]               << Option(1, 1, 256);
-  o["Ponder"]                << Option(false);
-  o["Threads"]               << Option(1, 1, 512, on_threads);
-
-  // A separate weaker play level from the predefined levels below. The difference
-  // between both of the methods and the "skill level" is that the engine is only weakened
-  // by the reduction in nodes searched, thus reducing the move horizon visibility naturally
-  o["Engine_Level"]           << Option("None var World_Champion var Super_GM "
-                                        "var GM var Deep_Thought var SIM var Cray_Blitz "
-                                        "var IM var Master var Expert var Class_A "
-                                        "var Class_B var Class_C var Class_D var Class_E "
-                                        "var None", "None");
-
-
   o["nodestime"]             << Option(0, 0, 10000);
-  o["Search_Depth"]          << Option(0, 0, 30);
+  o["Ponder"]                << Option(false);
+  o["Search_Depth"]          << Option(0, 0, 60);
   o["Search_Nodes"]          << Option(0, 0, 10000000);
   o["Slow Mover"]            << Option(100, 10, 1000);
-  //o["Slow Play"]             << Option(false);
-  o["Tactical_Depth"]        << Option(5, 0, 16);
-  o["Adaptive_Play"]         << Option(false);
-  o["UCI_AnalyseMode"]       << Option(false);
-  o["UCI_Chess960"]          << Option(false);
-  o["UCI_Elo"]               << Option(1000, 1000, 3000);
-  o["UCI_LimitStrength"]     << Option(false);
-  o["UCI_ShowWDL"]           << Option(false);
-  o["Tactical"]              << Option(0, 0, 8);
-  o["Variety"]               << Option(false);
-  //o["SyzygyPath"]          << Option("<4-men>", on_tb_path);
-  //o["SyzygyPath"]          << Option("<empty>", on_tb_path);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyPath"]            << Option("c:\\syzygy", on_tb_path);
   o["SyzygyProbeDepth"]      << Option(1, 1, 100);
   o["SyzygyProbeLimit"]      << Option(7, 0, 7);
-
+  o["Tactical_Depth"]        << Option(0, 0, 32);
+  o["Tactical"]              << Option(0, 0, 8);
+  o["Threads"]               << Option(1, 1, 512, on_threads);
+  o["UCI_AnalyseMode"]       << Option(false);
+  o["UCI_Chess960"]          << Option(false);
+  o["UCI_Elo"]               << Option(1000, 1000, 3000,on_eval_elo);
+  o["UCI_LimitStrength"]     << Option(false,on_eval_str);
+  o["UCI_ShowWDL"]           << Option(false);
+  o["Variety"]               << Option(0, 0, 80);
+  o["Use NNUE"]              << Option(true, on_use_NNUE);
   o["EvalFile"]              << Option(EvalFileDefaultName, on_eval_file);
-  o["UseNN"]                 << Option("pure var true var false var pure", "pure", on_use_NNUE);
 }
 
 

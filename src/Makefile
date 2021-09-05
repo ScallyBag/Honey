@@ -21,7 +21,7 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = Honey-14.exe
+EXE = Honey-v14.exe
 else
 EXE = Honey-v14
 endif
@@ -369,7 +369,7 @@ ifeq ($(COMP),mingw)
 		CXX=g++
 	endif
 
-	CXXFLAGS += -Wextra -Wshadow
+	CXXFLAGS += -pedantic -Wextra -Wshadow
 	LDFLAGS += -static
 endif
 

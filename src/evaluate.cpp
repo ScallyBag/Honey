@@ -61,24 +61,12 @@ namespace Stockfish {
 
 namespace Eval {
 
-  namespace NNUE {
-    string eval_file_loaded = "None";
-    UseNNUEMode useNNUE;
+  bool NNUE::RandEvalLimitStrength = Options["UCI_LimitStrength"];
+  bool useNNUE;
 
-    static UseNNUEMode nnue_mode_from_option(const UCI::Option& mode)
-    {
-      if (mode == "false")
-        return UseNNUEMode::False;
-      else if (mode == "true")
-         return UseNNUEMode::True;
-      else if (mode == "pure")
-        return UseNNUEMode::Pure;
+  int   NNUE::RandEvalElo = Options["UCI_Elo"];
 
-      return UseNNUEMode::False;
-    }
-  }
-
-  float NNUE::RandomEval = 0;
+  string eval_file_loaded = "None";
 
   /// NNUE::init() tries to load a NNUE network at startup time, or when the engine
   /// receives a UCI command "setoption name EvalFile value nn-[a-z0-9]{12}.nnue"
@@ -88,13 +76,23 @@ namespace Eval {
   /// in the engine directory. Distro packagers may define the DEFAULT_NNUE_DIRECTORY
   /// variable to have the engine search in a special directory in their distro.
 
+  //float NNUE::RandomEval = 0;
+
+  //int NNUE::RandomEvalPerturb = 0;
+  //int NNUE::RandEvalElo = 0;
+  //bool NNUE::RandEvalLimitStrength = false;
+
+
+
   void NNUE::init() {
 
-    useNNUE = nnue_mode_from_option(Options["UseNN"]);
-    if (useNNUE == UseNNUEMode::False)
+    useNNUE = Options["Use NNUE"];
+    if (!useNNUE)
         return;
 
     string eval_file = string(Options["EvalFile"]);
+    if (eval_file.empty())
+        eval_file = EvalFileDefaultName;
 
     #if defined(DEFAULT_NNUE_DIRECTORY)
     #define stringify2(x) #x
@@ -132,36 +130,37 @@ namespace Eval {
   }
 
   /// NNUE::verify() verifies that the last net used was loaded successfully
-  void NNUE::verify() {
+ void NNUE::verify() {
 
-    string eval_file = string(Options["EvalFile"]);
+   string eval_file = string(Options["EvalFile"]);
+   if (eval_file.empty())
+       eval_file = EvalFileDefaultName;
 
-    if (useNNUE != UseNNUEMode::False && eval_file_loaded != eval_file)
-    {
-        UCI::OptionsMap defaults;
-        UCI::init(defaults);
+   if (useNNUE && eval_file_loaded != eval_file)
+   {
 /*
-        string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
-        string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
-        string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";
-        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + string(defaults["EvalFile"]);
-        string msg5 = "The engine will be terminated now.";
+       string msg1 = "If the UCI option \"Use NNUE\" is set to true, network evaluation parameters compatible with the engine must be available.";
+       string msg2 = "The option is set to true, but the network file " + eval_file + " was not loaded successfully.";
+       string msg3 = "The UCI option EvalFile might need to specify the full path, including the directory name, to the network file.";
+       string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
+       string msg5 = "The engine will be terminated now.";
 
-        sync_cout << "info string ERROR: " << msg1 << sync_endl;
-        sync_cout << "info string ERROR: " << msg2 << sync_endl;
-        sync_cout << "info string ERROR: " << msg3 << sync_endl;
-        sync_cout << "info string ERROR: " << msg4 << sync_endl;
-        sync_cout << "info string ERROR: " << msg5 << sync_endl;
+       sync_cout << "info string ERROR: " << msg1 << sync_endl;
+       sync_cout << "info string ERROR: " << msg2 << sync_endl;
+       sync_cout << "info string ERROR: " << msg3 << sync_endl;
+       sync_cout << "info string ERROR: " << msg4 << sync_endl;
+       sync_cout << "info string ERROR: " << msg5 << sync_endl;
 
-        exit(EXIT_FAILURE);
-  */  }
+       exit(EXIT_FAILURE);*/
+   }
 
-    if (useNNUE != UseNNUEMode::False)
-        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
-    else
-        sync_cout << "info string classical evaluation enabled" << sync_endl;
-  }
+   if (useNNUE)
+       sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
+   else
+       sync_cout << "info string classical evaluation enabled" << sync_endl;
+ }
 }
+
 
 namespace Trace {
 
@@ -1098,26 +1097,14 @@ make_v:
 
 Value Eval::evaluate(const Position& pos) {
 
-  static thread_local std::mt19937_64 tls_rng = [](){
-    return std::mt19937_64(std::time(0));
-  }();
-
   Value v;
-  int uci_elo = Options["UCI_Elo"];
-  bool uci_limit = Options["UCI_LimitStrength"];
+  int RandomEvalPerturb = 0;
 
-  
+  static thread_local std::mt19937_64 tls_rng = [](){
+     return std::mt19937_64(std::time(0));
+   }();
 
-
-  if (NNUE::useNNUE == NNUE::UseNNUEMode::Pure) {
-      v = NNUE::evaluate(pos);
-
-      // Guarantee evaluation does not hit the tablebase range
-      v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-
-      return v;
-  }
-  else if (NNUE::useNNUE == NNUE::UseNNUEMode::False)
+  if (!Eval::useNNUE)
       v = Evaluation<NO_TRACE>(pos).value();
   else
   {
@@ -1141,7 +1128,8 @@ Value Eval::evaluate(const Position& pos) {
       int r50 = pos.rule50_count();
       Value psq = Value(abs(eg_value(pos.psq_score())));
       bool classical = psq * 5 > (850 + pos.non_pawn_material() / 64) * (5 + r50);
-      if(uci_limit) classical = false;
+      if (NNUE::RandEvalLimitStrength)
+          Stockfish::Search::Limits.nodes = 500000;
 
       v = classical ? Evaluation<NO_TRACE>(pos).value()  // classical
                     : adjusted_NNUE();                   // NNUE
@@ -1149,14 +1137,13 @@ Value Eval::evaluate(const Position& pos) {
 
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
-  if (uci_limit)
-  {
-      NNUE::RandomEval = ((3000-uci_elo)/3 + 200)/10;
-      std::normal_distribution<float> d(0.0, RookValueEg);
+  if (NNUE::RandEvalLimitStrength)    {
+      RandomEvalPerturb = ((3225 - (NNUE::RandEvalElo)) / 28.215) + NNUE::RandEvalElo / 214 ;
+      std::normal_distribution<float> d(0.0, 1500);
       float r = d(tls_rng);
       r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
-      v = (Stockfish::Value((NNUE::RandomEval) * r)  + (100 - Stockfish::Value(NNUE::RandomEval)) * v)/100 ;
+      v = (RandomEvalPerturb * Value(r) + (100 - RandomEvalPerturb) * v) / 100;
   }
 
   // Guarantee evaluation does not hit the tablebase range
@@ -1209,14 +1196,14 @@ std::string Eval::trace(Position& pos) {
      << "|      Total | " << Term(TOTAL)
      << "+------------+-------------+-------------+-------------+\n";
 
-  if (NNUE::useNNUE != NNUE::UseNNUEMode::False)
+  if (Eval::useNNUE)
       ss << '\n' << NNUE::trace(pos) << '\n';
 
   ss << std::showpoint << std::showpos << std::fixed << std::setprecision(2) << std::setw(15);
 
   v = pos.side_to_move() == WHITE ? v : -v;
   ss << "\nClassical evaluation   " << to_cp(v) << " (white side)\n";
-  if (NNUE::useNNUE != NNUE::UseNNUEMode::False)
+  if (Eval::useNNUE)
   {
       v = NNUE::evaluate(pos, false);
       v = pos.side_to_move() == WHITE ? v : -v;
@@ -1226,7 +1213,7 @@ std::string Eval::trace(Position& pos) {
   v = evaluate(pos);
   v = pos.side_to_move() == WHITE ? v : -v;
   ss << "Final evaluation       " << to_cp(v) << " (white side)";
-  if (NNUE::useNNUE == NNUE::UseNNUEMode::True)
+  if (Eval::useNNUE)
      ss << " [with scaled NNUE, hybrid, ...]";
   ss << "\n";
 
