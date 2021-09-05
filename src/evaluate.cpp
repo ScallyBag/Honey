@@ -76,17 +76,9 @@ namespace Eval {
   /// in the engine directory. Distro packagers may define the DEFAULT_NNUE_DIRECTORY
   /// variable to have the engine search in a special directory in their distro.
 
-  //float NNUE::RandomEval = 0;
-
-  //int NNUE::RandomEvalPerturb = 0;
-  //int NNUE::RandEvalElo = 0;
-  //bool NNUE::RandEvalLimitStrength = false;
-
-
-
   void NNUE::init() {
 
-    useNNUE = Options["Use NNUE"];
+    useNNUE = Options["UseNN"];
     if (!useNNUE)
         return;
 
@@ -1138,7 +1130,7 @@ Value Eval::evaluate(const Position& pos) {
   // Damp down the evaluation linearly when shuffling
   v = v * (100 - pos.rule50_count()) / 100;
   if (NNUE::RandEvalLimitStrength)    {
-      RandomEvalPerturb = ((3225 - (NNUE::RandEvalElo)) / 28.215) + NNUE::RandEvalElo / 214 ;
+      RandomEvalPerturb = ((3100 - (NNUE::RandEvalElo)) / 28.215) + NNUE::RandEvalElo / 214 ;
       std::normal_distribution<float> d(0.0, 1500);
       float r = d(tls_rng);
       r = std::clamp<float>(r, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
