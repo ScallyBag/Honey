@@ -117,7 +117,7 @@ void init(OptionsMap& o) {
   o["Threads"]               << Option(1, 1, 512, on_threads);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_Chess960"]          << Option(false);
-  o["UCI_Elo"]               << Option(1000, 1000, 3000,on_eval_elo);
+  o["UCI_Elo"]               << Option(1000, 1000, 3300,on_eval_elo);
   o["UCI_LimitStrength"]     << Option(false,on_eval_str);
   o["UCI_ShowWDL"]           << Option(false);
   o["Variety"]               << Option(0, 0, 80);
