@@ -1107,8 +1107,8 @@ moves_loop: // When in check, search starts from here
       }
 
       // Capture extensions for PvNodes and cutNodes
-      else if (   (PvNode || cutNode) 
-               && captureOrPromotion 
+      else if (   (PvNode || cutNode)
+               && captureOrPromotion
                && moveCount != 1)
           extension = 1;
 
@@ -1333,7 +1333,7 @@ moves_loop: // When in check, search starts from here
     // Bonus for prior countermove that caused the fail low
     else if (   (depth >= 3 || PvNode)
              && !priorCapture)
-        update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * (1 + (PvNode || cutNode)));
+        update_continuation_histories(ss-1, pos.piece_on(prevSq), prevSq, stat_bonus(depth + (PvNode || cutNode)));
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
@@ -1568,6 +1568,8 @@ moves_loop: // When in check, search starts from here
 
     if (openingVariety && variety_flag && (bestValue + (openingVariety * PawnValueEg / 100) >= 0 ))
 	  bestValue += rand() % (openingVariety + 1);
+
+    bestValue = std::clamp(bestValue, -VALUE_INFINITE + 1, VALUE_INFINITE - 1);
 
     // All legal moves have been searched. A special case: if we're in check
     // and no legal moves were found, it is checkmate.

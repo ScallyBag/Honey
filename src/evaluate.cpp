@@ -61,10 +61,10 @@ namespace Stockfish {
 
 namespace Eval {
 
-  bool NNUE::RandEvalLimitStrength = Options["UCI_LimitStrength"];
+  bool NNUE::RandEvalLimitStrength;
   bool useNNUE;
-
-  int   NNUE::RandEvalElo = Options["UCI_Elo"];
+  
+  int NNUE::RandEvalElo;
 
   string eval_file_loaded = "None";
 
@@ -122,7 +122,7 @@ namespace Eval {
   }
 
   /// NNUE::verify() verifies that the last net used was loaded successfully
- void NNUE::verify() {
+  void NNUE::verify() {
 
    string eval_file = string(Options["EvalFile"]);
    if (eval_file.empty())
@@ -137,14 +137,14 @@ namespace Eval {
        string msg4 = "The default net can be downloaded from: https://tests.stockfishchess.org/api/nn/" + std::string(EvalFileDefaultName);
        string msg5 = "The engine will be terminated now.";
 
-       sync_cout << "info string ERROR: " << msg1 << sync_endl;
-       sync_cout << "info string ERROR: " << msg2 << sync_endl;
-       sync_cout << "info string ERROR: " << msg3 << sync_endl;
-       sync_cout << "info string ERROR: " << msg4 << sync_endl;
-       sync_cout << "info string ERROR: " << msg5 << sync_endl;
+        sync_cout << "info string ERROR: " << msg1 << sync_endl;
+        sync_cout << "info string ERROR: " << msg2 << sync_endl;
+        sync_cout << "info string ERROR: " << msg3 << sync_endl;
+        sync_cout << "info string ERROR: " << msg4 << sync_endl;
+        sync_cout << "info string ERROR: " << msg5 << sync_endl;
 
-       exit(EXIT_FAILURE);*/
-   }
+        exit(EXIT_FAILURE);
+  */  }
 
    if (useNNUE)
        sync_cout << "info string NNUE evaluation using " << eval_file << " enabled" << sync_endl;
@@ -152,7 +152,6 @@ namespace Eval {
        sync_cout << "info string classical evaluation enabled" << sync_endl;
  }
 }
-
 
 namespace Trace {
 
