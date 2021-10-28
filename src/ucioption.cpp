@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <cmath>
 #include <ostream>
 #include <sstream>
 
@@ -39,15 +40,22 @@ UCI::OptionsMap Options; // Global object
 
 namespace UCI {
 
+constexpr float exponent = 0.44;
+constexpr int Elo_max = 3500;
+constexpr int Elo_min = 800;
+
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
 void on_hash_size(const Option& o) { TT.resize(size_t(o)); }
 void on_logger(const Option& o) { start_logger(o); }
 void on_threads(const Option& o) { Threads.set(size_t(o)); }
-void on_eval_elo(const Option& o) { Eval::NNUE::RandEvalElo = o; }
-void on_eval_str(const Option& o) { Eval::NNUE::RandEvalLimitStrength = o; }
 void on_tb_path(const Option& o) { Tablebases::init(o); }
+void on_limit_strength(const Option& o) { Eval::limitStrength = o; }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
+void on_uci_elo(const Option& o) {
+  Eval::randomEvalPerturb = int(1000 * std::pow(Elo_max - o      , exponent) /
+                                       std::pow(Elo_max - Elo_min, exponent));
+}
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
 
 void on_book_file1(const Option& o) { polybook1.init(o); }
@@ -117,8 +125,8 @@ void init(OptionsMap& o) {
   o["Threads"]               << Option(1, 1, 512, on_threads);
   o["UCI_AnalyseMode"]       << Option(false);
   o["UCI_Chess960"]          << Option(false);
-  o["UCI_Elo"]               << Option(1000, 1000, 3300,on_eval_elo);
-  o["UCI_LimitStrength"]     << Option(false,on_eval_str);
+  o["UCI_Elo"]               << Option(Elo_min, Elo_min , Elo_max, on_uci_elo);
+  o["UCI_LimitStrength"]     << Option(false, on_limit_strength);
   o["UCI_ShowWDL"]           << Option(false);
   o["Variety"]               << Option(0, 0, 80);
   o["UseNN"]                 << Option(true, on_use_NNUE);

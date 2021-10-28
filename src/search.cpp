@@ -515,9 +515,6 @@ void Thread::search() {
                                               * totBestMoveChanges / Threads.size();
           double totalTime = Time.optimum() * fallingEval * reduction * bestMoveInstability;
 
-          if (Options["UCI_LimitStrength"])
-              Stockfish::Search::Limits.nodes = 40 *totalTime;
-
           // Cap used time in case of a single legal move for a better viewer experience in tournaments
           // yielding correct scores and sufficiently fast moves.
           if (rootMoves.size() == 1)
