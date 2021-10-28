@@ -36,7 +36,7 @@ namespace Eval {
   extern bool useNNUE;
   extern bool limitStrength;
   extern int randomEvalPerturb;
-  extern std::string eval_file_loaded;
+  extern std::string currentEvalFileName;
 
   // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue
   // for the build process (profile-build and fishtest) to work. Do not change the
