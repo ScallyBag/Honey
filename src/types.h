@@ -207,7 +207,7 @@ enum Value : int {
   BishopValueMg = 825*BVM,   BishopValueEg = 915*BVE,
   RookValueMg   = 1276*RVM,  RookValueEg   = 1380*RVE,
   QueenValueMg  = 2538*QVM,  QueenValueEg  = 2682*QVE,
-  RandomValue   = 900,
+  RandomValue   = 775,
 
   MidgameLimit  = 15258, EndgameLimit  = 3915
 };

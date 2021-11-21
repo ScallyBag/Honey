@@ -1081,7 +1081,7 @@ make_v:
         return std::mt19937_64(std::time(nullptr));
       }();
 
-      std::normal_distribution<float> d(0.0, QueenValueEg);
+      std::normal_distribution<float> d(0.0, RandomValue);
       float r = d(tls_rng);
 
       // linearly combine the random term with the real evaluation

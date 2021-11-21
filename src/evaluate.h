@@ -36,6 +36,8 @@ namespace Eval {
   extern bool useNNUE;
   extern bool limitStrength;
   extern int randomEvalPerturb;
+
+
   extern std::string currentEvalFileName;
 
   // The default net name MUST follow the format nn-[SHA256 first 12 digits].nnue

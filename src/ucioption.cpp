@@ -39,10 +39,14 @@ namespace Stockfish {
 UCI::OptionsMap Options; // Global object
 
 namespace UCI {
-
-constexpr float exponent = 0.44;
-constexpr int Elo_max = 3500;
-constexpr int Elo_min = 800;
+//  constexpr float exponent = .72;
+//  constexpr int eloMaxFact = 3150;
+//  constexpr int eloMinFact = 800;
+constexpr float exponent = .402;
+constexpr int eloMaxFactor = 3000;
+constexpr int eloMinFactor = 900;
+constexpr int Elo_max = 3000;
+constexpr int Elo_min = 1000;
 
 /// 'On change' actions, triggered by an option's value change
 void on_clear_hash(const Option&) { Search::clear(); }
@@ -53,8 +57,8 @@ void on_tb_path(const Option& o) { Tablebases::init(o); }
 void on_limit_strength(const Option& o) { Eval::limitStrength = o; }
 void on_use_NNUE(const Option& ) { Eval::NNUE::init(); }
 void on_uci_elo(const Option& o) {
-  Eval::randomEvalPerturb = int(1000 * std::pow(Elo_max - o      , exponent) /
-                                       std::pow(Elo_max - Elo_min, exponent));
+  Eval::randomEvalPerturb = int(1000 * std::pow(eloMaxFactor - o      , exponent) /
+                                       std::pow(eloMaxFactor - eloMinFactor, exponent));
 }
 void on_eval_file(const Option& ) { Eval::NNUE::init(); }
 
@@ -108,6 +112,11 @@ void init(OptionsMap& o) {
 
   o["Clear Hash"]            << Option(on_clear_hash);
   o["Hash"]                  << Option(16, 1, MaxHashMB, on_hash_size);
+
+  /* LimitStrength_NPS_Adj setting of 24 represents "use 24000 nps", one second
+     of total time allotted for that would mean 24000 nodes would be searched
+     for that move. Line 517 in Search*/
+  o["LimitStrength_NPS_Adj"] << Option(50, 1, 200);
   o["Minimal_Output"]        << Option(false);
   o["Move Overhead"]         << Option(10, 0, 5000);
   o["MultiPV"]               << Option(1, 1, 256);
