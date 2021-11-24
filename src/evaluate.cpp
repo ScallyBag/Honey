@@ -991,7 +991,9 @@ namespace {
 
     // Early exit if score is high
     auto lazy_skip = [&](Value lazyThreshold) {
-        return abs(mg_value(score) + eg_value(score)) > lazyThreshold + pos.non_pawn_material() / 32;
+        return abs(mg_value(score) + eg_value(score)) >   lazyThreshold
+                                                        + std::abs(pos.this_thread()->bestValue) * 5 / 4
+                                                        + pos.non_pawn_material() / 32;
     };
 
     if (lazy_skip(LazyThreshold1))
@@ -1106,9 +1108,9 @@ Value Eval::evaluate(const Position& pos) {
       v = Evaluation<NO_TRACE>(pos).value();          // classical
   else
   {
-      int scale =   883
-                  + 32 * pos.count<PAWN>()
-                  + 32 * pos.non_pawn_material() / 1024;
+      int scale =   898
+                  + 24 * pos.count<PAWN>()
+                  + 33 * pos.non_pawn_material() / 1024;
 
        v = NNUE::evaluate(pos, true) * scale / 1024;  // NNUE
 
@@ -1117,7 +1119,7 @@ Value Eval::evaluate(const Position& pos) {
   }
 
   // Damp down the evaluation linearly when shuffling
-  v = v * (100 - pos.rule50_count()) / 100;
+  v = v * (207 - pos.rule50_count()) / 207;
 
   // Optionally, limit the playing strength by perturbing the evaluation
   if (Eval::limitStrength)
@@ -1147,6 +1149,7 @@ std::string Eval::trace(Position& pos) {
   std::memset(scores, 0, sizeof(scores));
 
   pos.this_thread()->trend = SCORE_ZERO; // Reset any dynamic contempt
+  pos.this_thread()->bestValue = VALUE_ZERO; // Reset bestValue for lazyEval
 
   v = Evaluation<TRACE>(pos).value();
 
