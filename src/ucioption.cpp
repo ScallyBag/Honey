@@ -124,6 +124,7 @@ void init(OptionsMap& o) {
   o["Ponder"]                << Option(false);
   o["Search_Depth"]          << Option(0, 0, 60);
   o["Search_Nodes"]          << Option(0, 0, 10000000);
+  o["Search_Mate"]           << Option(0, 0, 50);
   o["Slow Mover"]            << Option(100, 10, 1000);
   o["Syzygy50MoveRule"]      << Option(true);
   o["SyzygyPath"]            << Option("c:\\syzygy", on_tb_path);

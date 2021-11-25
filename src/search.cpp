@@ -69,6 +69,7 @@ using namespace Search;
 
 namespace {
 
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -256,10 +257,13 @@ void MainThread::search() {
       }
       else
       {
-          if(Options["Search_Nodes"])
+          if( Options["Search_Nodes"])
               Limits.nodes = int(Options["Search_Nodes"]) ;
           if ( Options["Search_Depth"])
               Limits.depth = int(Options["Search_Depth"]) ;
+          if ( Options["Search_Mate"])
+              Limits.mate = int(Options["Search_Mate"]) ;
+
 
           Threads.start_searching(); // start non-main threads
           Thread::search();          // main thread start searching
@@ -498,8 +502,12 @@ void Thread::search() {
       // Have we found a "mate in x"?
       if (   Limits.mate
           && bestValue >= VALUE_MATE_IN_MAX_PLY
-          && VALUE_MATE - bestValue <= 2 * Limits.mate)
-          Threads.stop = true;
+          && VALUE_MATE - bestValue <= 2 * Limits.mate
+          && VALUE_MATE - bestValue != 0)
+          {
+            Threads.stop = true;
+            sync_cout << "info string Mate in " << (VALUE_MATE - bestValue + 1) / 2 << " found!" << sync_endl;
+          }
 
       if (!mainThread)
           continue;
@@ -1561,6 +1569,7 @@ moves_loop: // When in check, search starts here
 
       moveCount++;
 
+
       // Futility pruning and moveCount pruning
       if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
           && !givesCheck
@@ -1606,6 +1615,7 @@ moves_loop: // When in check, search starts here
           && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
           && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)
           continue;
+
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
