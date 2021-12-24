@@ -129,6 +129,7 @@ avx512 = no
 vnni256 = no
 vnni512 = no
 neon = no
+arm_version = 0
 STRIP = strip
 
 ### 2.2 Architecture specific
@@ -276,6 +277,7 @@ ifeq ($(ARCH),armv7)
 	arch = armv7
 	prefetch = yes
 	bits = 32
+	arm_version = 7
 endif
 
 ifeq ($(ARCH),armv7-neon)
@@ -284,6 +286,7 @@ ifeq ($(ARCH),armv7-neon)
 	popcnt = yes
 	neon = yes
 	bits = 32
+	arm_version = 7
 endif
 
 ifeq ($(ARCH),armv8)
@@ -291,6 +294,7 @@ ifeq ($(ARCH),armv8)
 	prefetch = yes
 	popcnt = yes
 	neon = yes
+	arm_version = 8
 endif
 
 ifeq ($(ARCH),apple-silicon)
@@ -298,6 +302,7 @@ ifeq ($(ARCH),apple-silicon)
 	prefetch = yes
 	popcnt = yes
 	neon = yes
+	arm_version = 8
 endif
 
 ifeq ($(ARCH),ppc-32)
@@ -455,6 +460,9 @@ else ifeq ($(comp),clang)
 else
 	profile_make = gcc-profile-make
 	profile_use = gcc-profile-use
+	ifeq ($(KERNEL),Darwin)
+		EXTRAPROFILEFLAGS = -fvisibility=hidden
+	endif
 endif
 
 ### Travis CI script uses COMPILER to overwrite CXX
@@ -515,11 +523,17 @@ ifeq ($(optimize),yes)
 		endif
 	endif
 
-	ifeq ($(comp),$(filter $(comp),gcc clang icc))
-		ifeq ($(KERNEL),Darwin)
-			CXXFLAGS += -mdynamic-no-pic
-		endif
-	endif
+    ifeq ($(KERNEL),Darwin)
+        ifeq ($(comp),$(filter $(comp),clang icc))
+            CXXFLAGS += -mdynamic-no-pic
+        endif
+
+        ifeq ($(comp),gcc)
+            ifneq ($(arch),arm64)
+                CXXFLAGS += -mdynamic-no-pic
+            endif
+        endif
+    endif
 
 	ifeq ($(comp),clang)
 		CXXFLAGS += -fexperimental-new-pass-manager
@@ -615,7 +629,7 @@ ifeq ($(mmx),yes)
 endif
 
 ifeq ($(neon),yes)
-	CXXFLAGS += -DUSE_NEON
+	CXXFLAGS += -DUSE_NEON=$(arm_version)
 	ifeq ($(KERNEL),Linux)
 	ifneq ($(COMP),ndk)
 	ifneq ($(arch),armv8)
@@ -866,6 +880,7 @@ config-sanity: net
 	@echo "vnni256: '$(vnni256)'"
 	@echo "vnni512: '$(vnni512)'"
 	@echo "neon: '$(neon)'"
+	@echo "arm_version: '$(arm_version)'"
 	@echo ""
 	@echo "Flags:"
 	@echo "CXX: $(CXX)"
