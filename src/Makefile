@@ -1,5 +1,5 @@
 # Honey, a UCI chess playing engine derived from Glaurung 2.1 and Stockfish
-# Copyright (C) 2004-2021 The Honey developers (see AUTHORS file)
+# Copyright (C) 2004-2022 The Honey developers (see AUTHORS file)
 #
 # Honey is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 ### Executable name
 ifeq ($(COMP),mingw)
-EXE = Honey-v14.exe
+EXE = Honey-v14.2.exe
 else
 EXE = Honey-v14
 endif

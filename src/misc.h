@@ -1,6 +1,6 @@
 /*
   Honey, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2021 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2022 The Stockfish developers (see AUTHORS file)
 
   Honey is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -105,6 +105,9 @@ class RunningAverage {
       bool is_greater(int64_t a, int64_t b)
         { return b * average > a * PERIOD * RESOLUTION ; }
 
+      int64_t value()
+        { return average / (PERIOD * RESOLUTION); }
+
   private :
       static constexpr int64_t PERIOD     = 4096;
       static constexpr int64_t RESOLUTION = 1024;
@@ -160,7 +163,7 @@ inline int64_t sigmoid(int64_t t, int64_t x0,
                                   int64_t  P,
                                   int64_t  Q)
 {
-   assert(C > 0);
+   assert(C > 0 && Q != 0);
    return y0 + P * (t-x0) / (Q * (std::abs(t-x0) + C)) ;
 }
 
