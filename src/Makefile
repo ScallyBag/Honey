@@ -23,7 +23,7 @@
 ifeq ($(COMP),mingw)
 EXE = Honey-v14.2.exe
 else
-EXE = Honey-v14
+EXE = Honey-v14.2
 endif
 
 ### Installation dir definitions

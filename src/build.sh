@@ -46,18 +46,19 @@ function mke() {
 CXXFLAGS='' make -j30 $BUILD  $COMP "$@"
 }
   #for ENG in "NOIR=yes" "BLAU=yes" "HONEY=yes" "STOCKFISH=yes" "BETH=yes"
-  #do
+for ENG in  "HONEY=yes"
+do
   for ARCH in "x86-64-avx2"
   ##for ARCH in "x86-32"
   ##for ARCH in  "x86-64-avx2"  "x86-64" "x86-64-sse41" "x86-64-modern" "x86-64-bmi2"
   do
     echo $ARCH
-    #CPPFLAGS="-march=native"
+    CPPFLAGS="-march=native"
     mke ARCH=$ARCH && wait
-    rename  Honey-14.exe Honey-v14-$ARCH.exe *.exe
+    rename  Honey-v14.2.exe Honey-v14.2-$ARCH.exe *.exe
     #rename  v13.1-.exe v13.1.exe *.exe
   done
-#done
+done
 
 #read # hack to stop script
 ### The script code belows computes the bench nodes for each version, and updates the Makefile
